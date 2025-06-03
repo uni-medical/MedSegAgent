@@ -1,0 +1,13 @@
+{
+    "name": "PanSegData",
+    "description": "Segment pancreas in T1 and T2 MR images",
+    "input_modalities": {
+        "0": "MR"
+    },
+    "labels": {
+        "background": 0,
+        "pancreas": 1
+    },
+    "numTraining": 767,
+    "file_ending": ".nii.gz"
+}

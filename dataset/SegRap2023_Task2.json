@@ -1,0 +1,14 @@
+{
+    "name": "SegRap2023_Task2",
+    "description": "Segmentation of Gross Tumor Volume of NPC for Radiotherapy Planning (SegRap2023) Task2",
+    "input_modalities": {
+        "0": "non_contrast_CT",
+        "1": "contrast_CT"
+    },
+    "labels": {
+        "GTVp": 1,
+        "GTVnd": 2
+    },
+    "numTraining": 120,
+    "file_ending": ".nii.gz"
+}

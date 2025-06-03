@@ -1,0 +1,15 @@
+{
+    "name": "ACDC",
+    "description": "",
+    "input_modalities": {
+        "0": "MR"
+    },
+    "labels": {
+        "background": 0,
+        "Left Ventricle": 1,
+        "Right Ventricle": 2,
+        "Myocardium": 3
+    },
+    "numTraining": 100,
+    "file_ending": ".nii.gz"
+}

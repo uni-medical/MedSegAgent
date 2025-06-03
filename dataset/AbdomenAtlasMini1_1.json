@@ -1,0 +1,37 @@
+{
+    "name": "AbdomenAtlasMini1_1",
+    "description": "Segmentation of 25 organs in abdominal CT images",
+    "input_modalities": {
+        "0": "CT"
+    },
+    "labels": {
+        "background": 0,
+        "adrenal_gland_left": 1,
+        "adrenal_gland_right": 2,
+        "aorta": 3,
+        "bladder": 4,
+        "celiac_trunk": 5,
+        "colon": 6,
+        "duodenum": 7,
+        "esophagus": 8,
+        "femur_left": 9,
+        "femur_right": 10,
+        "gall_bladder": 11,
+        "hepatic_vessel": 12,
+        "intestine": 13,
+        "kidney_left": 14,
+        "kidney_right": 15,
+        "liver": 16,
+        "lung_left": 17,
+        "lung_right": 18,
+        "pancreas": 19,
+        "portal_vein_and_splenic_vein": 20,
+        "postcava": 21,
+        "prostate": 22,
+        "rectum": 23,
+        "spleen": 24,
+        "stomach": 25
+    },
+    "numTraining": 9262,
+    "file_ending": ".nii.gz"
+}

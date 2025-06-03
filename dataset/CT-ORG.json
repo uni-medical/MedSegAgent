@@ -1,0 +1,18 @@
+{
+    "name": "CT-ORG",
+    "description": "The CT multi-organ segmentation dataset officially provides annotations for six organs: lungs, bones, liver, kidneys, bladder, and brain.",
+    "input_modalities": {
+        "0": "CT"
+    },
+    "labels": {
+        "background": 0,
+        "Liver": 1,
+        "Bladder": 2,
+        "Lungs": 3,
+        "Kidneys": 4,
+        "Bone": 5,
+        "Brain": 6
+    },
+    "numTraining": 140,
+    "file_ending": ".nii.gz"
+}

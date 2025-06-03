@@ -1,0 +1,15 @@
+{
+    "name": "MMs",
+    "description": "Multi-Centre, Multi-Vendor & Multi-Disease Cardiac Image Segmentation",
+    "input_modalities": {
+        "0": "MR"
+    },
+    "labels": {
+        "background": 0,
+        "Left Ventricle": 1,
+        "Right Ventricle": 2,
+        "Myocardium": 3
+    },
+    "numTraining": 150,
+    "file_ending": ".nii.gz"
+}

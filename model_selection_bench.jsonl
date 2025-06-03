@@ -1,0 +1,343 @@
+{"query": "Please help me segment the spleen in CT images.", "expected_datasets": {"TotalSegmentator_v2": [1], "FLARE22": [3], "AbdomenAtlasMini": [8], "AMOS22_Task2": [1], "WORD": [2]}}
+{"query": "Please help me segment the right kidney in CT images.", "expected_datasets": {"TotalSegmentator_v2": [2], "FLARE22": [2], "AbdomenAtlasMini": [4], "AMOS22_Task2": [2], "WORD": [4]}}
+{"query": "Please help me segment the left kidney in CT images.", "expected_datasets": {"TotalSegmentator_v2": [3], "FLARE22": [13], "AbdomenAtlasMini": [3], "AMOS22_Task2": [3], "WORD": [3]}}
+{"query": "Please help me segment the kidneys in CT images.", "expected_datasets": {"TotalSegmentator_v2": [2, 3], "FLARE22": [2, 13], "AbdomenAtlasMini": [3, 4], "AMOS22_Task2": [2, 3], "KiTS23": [1], "CT-ORG": [4], "WORD": [3, 4]}}
+{"query": "Please help me segment the gallbladder in CT images.", "expected_datasets": {"TotalSegmentator_v2": [4], "FLARE22": [9], "AbdomenAtlasMini": [2], "AMOS22_Task2": [4], "WORD": [6]}}
+{"query": "Please help me segment the liver in CT images.", "expected_datasets": {"TotalSegmentator_v2": [5], "FLARE22": [1], "AbdomenAtlasMini": [5], "AMOS22_Task2": [6], "CT-ORG": [1], "LiTS": [1], "WORD": [1]}}
+{"query": "Please help me segment the stomach in CT images.", "expected_datasets": {"TotalSegmentator_v2": [6], "FLARE22": [11], "AbdomenAtlasMini": [9], "AMOS22_Task2": [7], "WORD": [5]}}
+{"query": "Please help me segment the pancreas in CT images.", "expected_datasets": {"TotalSegmentator_v2": [7], "FLARE22": [4], "AbdomenAtlasMini": [6], "AMOS22_Task2": [10], "WORD": [8]}}
+{"query": "Please help me segment the right adrenal gland in CT images.", "expected_datasets": {"TotalSegmentator_v2": [8], "FLARE22": [7], "AMOS22_Task2": [11]}}
+{"query": "Please help me segment the left adrenal gland in CT images.", "expected_datasets": {"TotalSegmentator_v2": [9], "FLARE22": [8], "AMOS22_Task2": [12]}}
+{"query": "Please help me segment the adrenal glands in CT images.", "expected_datasets": {"TotalSegmentator_v2": [8, 9], "FLARE22": [7, 8], "AMOS22_Task2": [11, 12], "WORD": [12]}}
+{"query": "Please help me segment the upper lobe of the left lung in CT images.", "expected_datasets": {"TotalSegmentator_v2": [10]}}
+{"query": "Please help me segment the lower lobe of the left lung in CT images.", "expected_datasets": {"TotalSegmentator_v2": [11]}}
+{"query": "Please help me segment the upper lobe of the right lung in CT images.", "expected_datasets": {"TotalSegmentator_v2": [12]}}
+{"query": "Please help me segment the middle lobe of the right lung in CT images.", "expected_datasets": {"TotalSegmentator_v2": [13]}}
+{"query": "Please help me segment the lower lobe of the right lung in CT images.", "expected_datasets": {"TotalSegmentator_v2": [14]}}
+{"query": "Please help me segment the left lung in CT images.", "expected_datasets": {"TotalSegmentator_v2": [10, 11]}}
+{"query": "Please help me segment the right lung in CT images.", "expected_datasets": {"TotalSegmentator_v2": [12, 13, 14]}}
+{"query": "Please help me segment the lungs in CT images.", "expected_datasets": {"CT-ORG": [3], "TotalSegmentator_v2": [10,11,12,13,14]}}
+{"query": "Please help me segment the esophagus in CT images.", "expected_datasets": {"TotalSegmentator_v2": [15], "SegRap2023_Task1": [47], "FLARE22": [10], "AMOS22_Task2": [5], "WORD": [7]}}
+{"query": "Please help me segment the trachea in CT images.", "expected_datasets": {"TotalSegmentator_v2": [16], "SegRap2023_Task1": [54]}}
+{"query": "Please help me segment the thyroid gland in CT images.", "expected_datasets": {"TotalSegmentator_v2": [17], "SegRap2023_Task1": [53]}}
+{"query": "Please help me segment the small bowel in CT images.", "expected_datasets": {"TotalSegmentator_v2": [18]}}
+{"query": "Please help me segment the duodenum in CT images.", "expected_datasets": {"TotalSegmentator_v2": [19], "FLARE22": [12], "AMOS22_Task2": [13], "WORD": [9]}}
+{"query": "Please help me segment the colon in CT images.", "expected_datasets": {"TotalSegmentator_v2": [20], "WORD": [10]}}
+{"query": "Please help me segment the urinary bladder in CT images.", "expected_datasets": {"TotalSegmentator_v2": [21], "CT-ORG": [2], "AMOS22_Task2": [14], "WORD": [14]}}
+{"query": "Please help me segment the prostate in CT images.", "expected_datasets": {"TotalSegmentator_v2": [22], "AMOS22_Task2": [15]}}
+{"query": "Please help me segment the left kidney cyst in CT images.", "expected_datasets": {"TotalSegmentator_v2": [23]}}
+{"query": "Please help me segment the right kidney cyst in CT images.", "expected_datasets": {"TotalSegmentator_v2": [24]}}
+{"query": "Please help me segment the kidney cyst in CT images.", "expected_datasets": {"TotalSegmentator_v2": [23, 24]}}
+{"query": "Please help me segment the sacrum in CT images.", "expected_datasets": {"TotalSegmentator_v2": [25]}}
+{"query": "Please help me segment the C1 cervical vertebra (the first cervical vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [50]}}
+{"query": "Please help me segment the C2 cervical vertebra (the second cervical vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [49]}}
+{"query": "Please help me segment the C3 cervical vertebra (the third cervical vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [48]}}
+{"query": "Please help me segment the C4 cervical vertebra (the fourth cervical vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [47]}}
+{"query": "Please help me segment the C5 cervical vertebra (the fifth cervical vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [46]}}
+{"query": "Please help me segment the C6 cervical vertebra (the sixth cervical vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [45]}}
+{"query": "Please help me segment the C7 cervical vertebra (the seventh cervical vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [44]}}
+{"query": "Please help me segment the cervical spine (C1-C7 cervical vertebrae) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [44, 45, 46, 47, 48, 49, 50]}}
+{"query": "Please help me segment the T1 thoracic vertebra (the first thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [43]}}
+{"query": "Please help me segment the T2 thoracic vertebra (the second thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [42]}}
+{"query": "Please help me segment the T3 thoracic vertebra (the third thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [41]}}
+{"query": "Please help me segment the T4 thoracic vertebra (the fourth thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [40]}}
+{"query": "Please help me segment the T5 thoracic vertebra (the fifth thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [39]}}
+{"query": "Please help me segment the T6 thoracic vertebra (the sixth thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [38]}}
+{"query": "Please help me segment the T7 thoracic vertebra (the seventh thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [37]}}
+{"query": "Please help me segment the T8 thoracic vertebra (the eighth thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [36]}}
+{"query": "Please help me segment the T9 thoracic vertebra (the ninth thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [35]}}
+{"query": "Please help me segment the T10 thoracic vertebra (the tenth thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [34]}}
+{"query": "Please help me segment the T11 thoracic vertebra (the eleventh thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [33]}}
+{"query": "Please help me segment the T12 thoracic vertebra (the twelfth thoracic vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [32]}}
+{"query": "Please help me segment the thoracic spine (T1-T12 thoracic vertebrae) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]}}
+{"query": "Please help me segment the L1 lumbar vertebra (the first lumbar vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [31]}}
+{"query": "Please help me segment the L2 lumbar vertebra (the second lumbar vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [30]}}
+{"query": "Please help me segment the L3 lumbar vertebra (the third lumbar vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [29]}}
+{"query": "Please help me segment the L4 lumbar vertebra (the fourth lumbar vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [28]}}
+{"query": "Please help me segment the L5 lumbar vertebra (the fifth lumbar vertebra) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [27]}}
+{"query": "Please help me segment the lumbar spine (L1-L5 lumbar vertebrae) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [27, 28, 29, 30, 31]}}
+{"query": "Please help me segment the first sacral vertebra (S1) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [26]}}
+{"query": "Please help me segment the lumbosacral spine (L1-S1 lumbar and sacral vertebrae) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [26, 27, 28, 29, 30, 31]}}
+{"query": "Please help me segment the entire spine (C1-S1 cervical, thoracic, lumbar, and sacral vertebrae) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]}}
+{"query": "Please help me segment the heart in CT images.", "expected_datasets": {"TotalSegmentator_v2": [51], "MM-WHS": [1, 2, 3, 4, 5, 6, 7]}}
+{"query": "Please help me segment the aorta in CT images.", "expected_datasets": {"TotalSegmentator_v2": [52], "FLARE22": [5], "AbdomenAtlasMini": [1], "AMOS22_Task2": [8]}}
+{"query": "Please help me segment the pulmonary vein in CT images.", "expected_datasets": {"TotalSegmentator_v2": [53]}}
+{"query": "Please help me segment the brachiocephalic trunk in CT images.", "expected_datasets": {"TotalSegmentator_v2": [54]}}
+{"query": "Please help me segment the right subclavian artery in CT images.", "expected_datasets": {"TotalSegmentator_v2": [55]}}
+{"query": "Please help me segment the left subclavian artery in CT images.", "expected_datasets": {"TotalSegmentator_v2": [56]}}
+{"query": "Please help me segment the subclavian arteries in CT images.", "expected_datasets": {"TotalSegmentator_v2": [55, 56]}}
+{"query": "Please help me segment the right common carotid artery in CT images.", "expected_datasets": {"TotalSegmentator_v2": [57]}}
+{"query": "Please help me segment the left common carotid artery in CT images.", "expected_datasets": {"TotalSegmentator_v2": [58]}}
+{"query": "Please help me segment the common carotid arteries in CT images.", "expected_datasets": {"TotalSegmentator_v2": [57, 58]}}
+{"query": "Please help me segment the left brachiocephalic vein in CT images.", "expected_datasets": {"TotalSegmentator_v2": [59]}}
+{"query": "Please help me segment the right brachiocephalic vein in CT images.", "expected_datasets": {"TotalSegmentator_v2": [60]}}
+{"query": "Please help me segment the brachiocephalic veins in CT images.", "expected_datasets": {"TotalSegmentator_v2": [59, 60]}}
+{"query": "Please help me segment the left atrial appendage in CT images.", "expected_datasets": {"TotalSegmentator_v2": [61]}}
+{"query": "Please help me segment the superior vena cava in CT images.", "expected_datasets": {"TotalSegmentator_v2": [62]}}
+{"query": "Please help me segment the inferior vena cava in CT images.", "expected_datasets": {"TotalSegmentator_v2": [63], "FLARE22": [6], "AMOS22_Task2": [9], "AbdomenAtlasMini": [7]}}
+{"query": "Please help me segment the portal vein and splenic vein in CT images.", "expected_datasets": {"TotalSegmentator_v2": [64]}}
+{"query": "Please help me segment the left iliac artery in CT images.", "expected_datasets": {"TotalSegmentator_v2": [65]}}
+{"query": "Please help me segment the right iliac artery in CT images.", "expected_datasets": {"TotalSegmentator_v2": [66]}}
+{"query": "Please help me segment the iliac arteries in CT images.", "expected_datasets": {"TotalSegmentator_v2": [65, 66]}}
+{"query": "Please help me segment the left iliac vein in CT images.", "expected_datasets": {"TotalSegmentator_v2": [67]}}
+{"query": "Please help me segment the right iliac vein in CT images.", "expected_datasets": {"TotalSegmentator_v2": [68]}}
+{"query": "Please help me segment the iliac veins in CT images.", "expected_datasets": {"TotalSegmentator_v2": [67, 68]}}
+{"query": "Please help me segment the iliac vessels in CT images.", "expected_datasets": {"TotalSegmentator_v2": [65, 66, 67, 68]}}
+{"query": "Please help me segment the left humerus in CT images.", "expected_datasets": {"TotalSegmentator_v2": [69]}}
+{"query": "Please help me segment the right humerus in CT images.", "expected_datasets": {"TotalSegmentator_v2": [70]}}
+{"query": "Please help me segment the humeri in CT images.", "expected_datasets": {"TotalSegmentator_v2": [69, 70]}}
+{"query": "Please help me segment the left scapula in CT images.", "expected_datasets": {"TotalSegmentator_v2": [71]}}
+{"query": "Please help me segment the right scapula in CT images.", "expected_datasets": {"TotalSegmentator_v2": [72]}}
+{"query": "Please help me segment the scapulae in CT images.", "expected_datasets": {"TotalSegmentator_v2": [71, 72]}}
+{"query": "Please help me segment the left clavicle in CT images.", "expected_datasets": {"TotalSegmentator_v2": [73]}}
+{"query": "Please help me segment the right clavicle in CT images.", "expected_datasets": {"TotalSegmentator_v2": [74]}}
+{"query": "Please help me segment the clavicles in CT images.", "expected_datasets": {"TotalSegmentator_v2": [73, 74]}}
+{"query": "Please help me segment the left femur in CT images.", "expected_datasets": {"TotalSegmentator_v2": [75], "WORD": [15]}}
+{"query": "Please help me segment the right femur in CT images.", "expected_datasets": {"TotalSegmentator_v2": [76], "WORD": [16]}}
+{"query": "Please help me segment the femurs in CT images.", "expected_datasets": {"TotalSegmentator_v2": [75, 76], "WORD": [15, 16]}}
+{"query": "Please help me segment the left hip in CT images.", "expected_datasets": {"TotalSegmentator_v2": [77]}}
+{"query": "Please help me segment the right hip in CT images.", "expected_datasets": {"TotalSegmentator_v2": [78]}}
+{"query": "Please help me segment the hips in CT images.", "expected_datasets": {"TotalSegmentator_v2": [77, 78]}}
+{"query": "Please help me segment the spinal cord in CT images.", "expected_datasets": {"TotalSegmentator_v2": [79], "SegRap2023_Task1": [46]}}
+{"query": "Please help me segment the left gluteus maximus in CT images.", "expected_datasets": {"TotalSegmentator_v2": [80]}}
+{"query": "Please help me segment the right gluteus maximus in CT images.", "expected_datasets": {"TotalSegmentator_v2": [81]}}
+{"query": "Please help me segment the gluteus maximus muscles in CT images.", "expected_datasets": {"TotalSegmentator_v2": [80, 81]}}
+{"query": "Please help me segment the left gluteus medius in CT images.", "expected_datasets": {"TotalSegmentator_v2": [82]}}
+{"query": "Please help me segment the right gluteus medius in CT images.", "expected_datasets": {"TotalSegmentator_v2": [83]}}
+{"query": "Please help me segment the gluteus medius muscles in CT images.", "expected_datasets": {"TotalSegmentator_v2": [82, 83]}}
+{"query": "Please help me segment the left gluteus minimus in CT images.", "expected_datasets": {"TotalSegmentator_v2": [84]}}
+{"query": "Please help me segment the right gluteus minimus in CT images.", "expected_datasets": {"TotalSegmentator_v2": [85]}}
+{"query": "Please help me segment the gluteus minimus muscles in CT images.", "expected_datasets": {"TotalSegmentator_v2": [84, 85]}}
+{"query": "Please help me segment the gluteus muscles in CT images.", "expected_datasets": {"TotalSegmentator_v2": [80, 81, 82, 83, 84, 85]}}
+{"query": "Please help me segment the left autochthon muscle group in CT images.", "expected_datasets": {"TotalSegmentator_v2": [86]}}
+{"query": "Please help me segment the right autochthon muscle group in CT images.", "expected_datasets": {"TotalSegmentator_v2": [87]}}
+{"query": "Please help me segment the autochthon muscle groups in CT images.", "expected_datasets": {"TotalSegmentator_v2": [86, 87]}}
+{"query": "Please help me segment the left iliopsoas muscle in CT images.", "expected_datasets": {"TotalSegmentator_v2": [88]}}
+{"query": "Please help me segment the right iliopsoas muscle in CT images.", "expected_datasets": {"TotalSegmentator_v2": [89]}}
+{"query": "Please help me segment the iliopsoas muscles in CT images.", "expected_datasets": {"TotalSegmentator_v2": [88, 89]}}
+{"query": "Please help me segment the brain in CT images.", "expected_datasets": {"TotalSegmentator_v2": [90], "SegRap2023_Task1": [1], "CT-ORG": [6]}}
+{"query": "Please help me segment the skull in CT images.", "expected_datasets": {"TotalSegmentator_v2": [91]}}
+{"query": "Please help me segment the left rib 1 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [94]}}
+{"query": "Please help me segment the left rib 2 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [95]}}
+{"query": "Please help me segment the left rib 3 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [96]}}
+{"query": "Please help me segment the left rib 4 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [97]}}
+{"query": "Please help me segment the left rib 5 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [98]}}
+{"query": "Please help me segment the left rib 6 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [99]}}
+{"query": "Please help me segment the left rib 7 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [100]}}
+{"query": "Please help me segment the left rib 8 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [101]}}
+{"query": "Please help me segment the left rib 9 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [102]}}
+{"query": "Please help me segment the left rib 10 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [103]}}
+{"query": "Please help me segment the left rib 11 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [104]}}
+{"query": "Please help me segment the left rib 12 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [105]}}
+{"query": "Please help me segment the left ribs from 1 to 12 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105]}}
+{"query": "Please help me segment the right rib 1 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [106]}}
+{"query": "Please help me segment the right rib 2 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [107]}}
+{"query": "Please help me segment the right rib 3 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [93]}}
+{"query": "Please help me segment the right rib 4 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [92]}}
+{"query": "Please help me segment the right rib 5 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [108]}}
+{"query": "Please help me segment the right rib 6 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [109]}}
+{"query": "Please help me segment the right rib 7 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [110]}}
+{"query": "Please help me segment the right rib 8 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [111]}}
+{"query": "Please help me segment the right rib 9 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [112]}}
+{"query": "Please help me segment the right rib 10 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [113]}}
+{"query": "Please help me segment the right rib 11 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [114]}}
+{"query": "Please help me segment the right rib 12 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [115]}}
+{"query": "Please help me segment the right ribs from 1 to 12 in CT images.", "expected_datasets": {"TotalSegmentator_v2": [106, 107, 93, 92, 108, 109, 110, 111, 112, 113, 114, 115]}}
+{"query": "Please help me segment all ribs in CT images.", "expected_datasets": {"TotalSegmentator_v2": [94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 93, 92, 108, 109, 110, 111, 112, 113, 114, 115]}}
+{"query": "Please help me segment the left true ribs (1-7) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [94, 95, 96, 97, 98, 99, 100]}}
+{"query": "Please help me segment the right true ribs (1-7) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [106, 107, 93, 92, 108, 109, 110]}}
+{"query": "Please help me segment all true ribs (1-7) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [94, 95, 96, 97, 98, 99, 100, 106, 107, 93, 92, 108, 109, 110]}}
+{"query": "Please help me segment the left false ribs (8-12) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [101, 102, 103, 104, 105]}}
+{"query": "Please help me segment the right false ribs (8-12) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [111, 112, 113, 114, 115]}}
+{"query": "Please help me segment all false ribs (8-12) in CT images.", "expected_datasets": {"TotalSegmentator_v2": [101, 102, 103, 104, 105, 111, 112, 113, 114, 115]}}
+{"query": "Please help me segment the sternum in CT images.", "expected_datasets": {"TotalSegmentator_v2": [116]}}
+{"query": "Please help me segment the costal cartilages in CT images.", "expected_datasets": {"TotalSegmentator_v2": [117]}}
+{"query": "Please help me segment the spleen in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [1], "AMOS22_Task2": [1]}}
+{"query": "Please help me segment the right kidney in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [2], "AMOS22_Task2": [2]}}
+{"query": "Please help me segment the left kidney in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [3], "AMOS22_Task2": [3]}}
+{"query": "Please help me segment the kidneys in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [2, 3], "AMOS22_Task2": [2, 3]}}
+{"query": "Please help me segment the gallbladder in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [4], "AMOS22_Task2": [4]}}
+{"query": "Please help me segment the liver in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [5], "AMOS22_Task2": [6]}}
+{"query": "Please help me segment the stomach in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [6], "AMOS22_Task2": [7]}}
+{"query": "Please help me segment the pancreas in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [7], "AMOS22_Task2": [10]}}
+{"query": "Please help me segment the right suprarenal gland in MR images.", "expected_datasets": {"AMOS22_Task2": [11],"TotalSegmentator_MRI": [8]}}
+{"query": "Please help me segment the left suprarenal gland in MR images.", "expected_datasets": {"AMOS22_Task2": [12], "TotalSegmentator_MRI": [9]}}
+{"query": "Please help me segment the suprarenal glands in MR images.", "expected_datasets": {"AMOS22_Task2": [11, 12],"TotalSegmentator_MRI": [8, 9]}}
+{"query": "Please help me segment the left lung in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [10]}}
+{"query": "Please help me segment the right lung in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [11]}}
+{"query": "Please help me segment the lungs in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [10, 11]}}
+{"query": "Please help me segment the esophagus in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [12], "AMOS22_Task2": [5]}}
+{"query": "Please help me segment the small intestine in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [13]}}
+{"query": "Please help me segment the duodenum in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [14], "AMOS22_Task2": [13]}}
+{"query": "Please help me segment the colon in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [15]}}
+{"query": "Please help me segment the urinary bladder in MR images.", "expected_datasets": {"AMOS22_Task2": [14], "TotalSegmentator_MRI": [16]}}
+{"query": "Please help me segment the prostate in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [17], "AMOS22_Task2": [15]}}
+{"query": "Please help me segment the sacrum in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [18]}}
+{"query": "Please help me segment the vertebrae in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [19]}}
+{"query": "Please help me segment the intervertebral discs in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [20]}}
+{"query": "Please help me segment the spinal cord in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [21]}}
+{"query": "Please help me segment the heart in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [22], "MM-WHS": [1, 2, 3, 4, 5, 6, 7], "MMs": [1,2,3]}}
+{"query": "Please help me segment the aorta in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [23], "AMOS22_Task2": [8]}}
+{"query": "Please help me segment the inferior vena cava in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [24], "AMOS22_Task2": [9]}}
+{"query": "Please help me segment the hepatic portal vein in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [25]}}
+{"query": "Please help me segment the left common iliac artery in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [26]}}
+{"query": "Please help me segment the right common iliac artery in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [27]}}
+{"query": "Please help me segment the common iliac arteries in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [26, 27]}}
+{"query": "Please help me segment the left common iliac vein in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [28]}}
+{"query": "Please help me segment the right common iliac vein in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [29]}}
+{"query": "Please help me segment the common iliac veins in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [28, 29]}}
+{"query": "Please help me segment the common iliac vessels in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [26, 27, 28, 29]}}
+{"query": "Please help me segment the left humerus in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [30]}}
+{"query": "Please help me segment the right humerus in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [31]}}
+{"query": "Please help me segment the humeri in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [30, 31]}}
+{"query": "Please help me segment the fibula in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [32]}}
+{"query": "Please help me segment the tibia in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [33]}}
+{"query": "Please help me segment the left femur in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [34]}}
+{"query": "Please help me segment the right femur in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [35]}}
+{"query": "Please help me segment the femurs in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [34, 35]}}
+{"query": "Please help me segment the left hip in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [36]}}
+{"query": "Please help me segment the right hip in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [37]}}
+{"query": "Please help me segment the hips in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [36, 37]}}
+{"query": "Please help me segment the left gluteus maximus muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [38]}}
+{"query": "Please help me segment the right gluteus maximus muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [39]}}
+{"query": "Please help me segment the gluteus maximus muscles in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [38, 39]}}
+{"query": "Please help me segment the left gluteus medius muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [40]}}
+{"query": "Please help me segment the right gluteus medius muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [41]}}
+{"query": "Please help me segment the gluteus medius muscles in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [40, 41]}}
+{"query": "Please help me segment the left gluteus minimus muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [42]}}
+{"query": "Please help me segment the right gluteus minimus muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [43]}}
+{"query": "Please help me segment the gluteus minimus muscles in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [42, 43]}}
+{"query": "Please help me segment the left autochthon muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [44]}}
+{"query": "Please help me segment the right autochthon muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [45]}}
+{"query": "Please help me segment the autochthon muscles in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [44, 45]}}
+{"query": "Please help me segment the left iliopsoas muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [46]}}
+{"query": "Please help me segment the right iliopsoas muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [47]}}
+{"query": "Please help me segment the iliopsoas muscles in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [46, 47]}}
+{"query": "Please help me segment the left quadriceps femoris muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [48]}}
+{"query": "Please help me segment the right quadriceps femoris muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [49]}}
+{"query": "Please help me segment the quadriceps femoris muscles in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [48, 49]}}
+{"query": "Please help me segment the left medial compartment of the thigh in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [50]}}
+{"query": "Please help me segment the right medial compartment of the thigh in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [51]}}
+{"query": "Please help me segment the medial compartments of the thighs in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [50, 51]}}
+{"query": "Please help me segment the left posterior compartment of the thigh in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [52]}}
+{"query": "Please help me segment the right posterior compartment of the thigh in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [53]}}
+{"query": "Please help me segment the posterior compartments of the thighs in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [52, 53]}}
+{"query": "Please help me segment the left sartorius muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [54]}}
+{"query": "Please help me segment the right sartorius muscle in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [55]}}
+{"query": "Please help me segment the sartorius muscles in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [54, 55]}}
+{"query": "Please help me segment the brain in MR images.", "expected_datasets": {"TotalSegmentator_MRI": [56]}}
+{"query": "Please help me segment the uterus in MR images.", "expected_datasets": {"AMOS22_Task2": [15]}}
+{"query": "Please help me segment the brainstem in CT images.", "expected_datasets": {"SegRap2023_Task1": [2]}}
+{"query": "Please help me segment the chiasm in CT images.", "expected_datasets": {"SegRap2023_Task1": [3]}}
+{"query": "Please help me segment the left temporal lobe in CT images.", "expected_datasets": {"SegRap2023_Task1": [4, 6]}}
+{"query": "Please help me segment the right temporal lobe in CT images.", "expected_datasets": {"SegRap2023_Task1": [5, 7]}}
+{"query": "Please help me segment the left hippocampus in CT images.", "expected_datasets": {"SegRap2023_Task1": [6, 8]}}
+{"query": "Please help me segment the right hippocampus in CT images.", "expected_datasets": {"SegRap2023_Task1": [7, 9]}}
+{"query": "Please help me segment the left eye in CT images.", "expected_datasets": {"SegRap2023_Task1": [10]}}
+{"query": "Please help me segment the right eye in CT images.", "expected_datasets": {"SegRap2023_Task1": [11]}}
+{"query": "Please help me segment the eyes in CT images.", "expected_datasets": {"SegRap2023_Task1": [10, 11]}}
+{"query": "Please help me segment the left lens in CT images.", "expected_datasets": {"SegRap2023_Task1": [12]}}
+{"query": "Please help me segment the right lens in CT images.", "expected_datasets": {"SegRap2023_Task1": [13]}}
+{"query": "Please help me segment the lens in CT images.", "expected_datasets": {"SegRap2023_Task1": [12, 13]}}
+{"query": "Please help me segment the left optic nerve in CT images.", "expected_datasets": {"SegRap2023_Task1": [14]}}
+{"query": "Please help me segment the right optic nerve in CT images.", "expected_datasets": {"SegRap2023_Task1": [15]}}
+{"query": "Please help me segment the optic nerves in CT images.", "expected_datasets": {"SegRap2023_Task1": [14, 15]}}
+{"query": "Please help me segment the left middle ear in CT images.", "expected_datasets": {"SegRap2023_Task1": [16, 20, 24, 30]}}
+{"query": "Please help me segment the right middle ear in CT images.", "expected_datasets": {"SegRap2023_Task1": [17, 21, 25, 31]}}
+{"query": "Please help me segment the middle ears in CT images.", "expected_datasets": {"SegRap2023_Task1": [16, 17, 20, 21, 24, 25, 30, 31]}}
+{"query": "Please help me segment the left internal auditory canal in CT images.", "expected_datasets": {"SegRap2023_Task1": [18]}}
+{"query": "Please help me segment the right internal auditory canal in CT images.", "expected_datasets": {"SegRap2023_Task1": [19]}}
+{"query": "Please help me segment the internal auditory canals in CT images.", "expected_datasets": {"SegRap2023_Task1": [18, 19]}}
+{"query": "Please help me segment the left tympanic cavity in CT images.", "expected_datasets": {"SegRap2023_Task1": [20, 22]}}
+{"query": "Please help me segment the right tympanic cavity in CT images.", "expected_datasets": {"SegRap2023_Task1": [21, 23]}}
+{"query": "Please help me segment the tympanic cavities in CT images.", "expected_datasets": {"SegRap2023_Task1": [20, 21, 22, 23]}}
+{"query": "Please help me segment the left vestibular semi-circular canals in CT images.", "expected_datasets": {"SegRap2023_Task1": [24, 26]}}
+{"query": "Please help me segment the right vestibular semi-circular canals in CT images.", "expected_datasets": {"SegRap2023_Task1": [25, 27]}}
+{"query": "Please help me segment the vestibular semi-circular canals in CT images.", "expected_datasets": {"SegRap2023_Task1": [24, 25, 26, 27]}}
+{"query": "Please help me segment the left cochlea in CT images.", "expected_datasets": {"SegRap2023_Task1": [28]}}
+{"query": "Please help me segment the right cochlea in CT images.", "expected_datasets": {"SegRap2023_Task1": [29]}}
+{"query": "Please help me segment the cochlea in CT images.", "expected_datasets": {"SegRap2023_Task1": [28, 29]}}
+{"query": "Please help me segment the left eustachian tube bone in CT images.", "expected_datasets": {"SegRap2023_Task1": [30, 32]}}
+{"query": "Please help me segment the right eustachian tube bone in CT images.", "expected_datasets": {"SegRap2023_Task1": [31, 33]}}
+{"query": "Please help me segment the eustachian tube bone in CT images.", "expected_datasets": {"SegRap2023_Task1": [30, 31, 32, 33]}}
+{"query": "Please help me segment the pituitary gland in CT images.", "expected_datasets": {"SegRap2023_Task1": [34]}}
+{"query": "Please help me segment the oral cavity in CT images.", "expected_datasets": {"SegRap2023_Task1": [35]}}
+{"query": "Please help me segment the left mandible in CT images.", "expected_datasets": {"SegRap2023_Task1": [36]}}
+{"query": "Please help me segment the right mandible in CT images.", "expected_datasets": {"SegRap2023_Task1": [37]}}
+{"query": "Please help me segment the mandible in CT images.", "expected_datasets": {"SegRap2023_Task1": [36, 37]}}
+{"query": "Please help me segment the left submandibular gland in CT images.", "expected_datasets": {"SegRap2023_Task1": [38]}}
+{"query": "Please help me segment the right submandibular gland in CT images.", "expected_datasets": {"SegRap2023_Task1": [39]}}
+{"query": "Please help me segment the submandibular gland in CT images.", "expected_datasets": {"SegRap2023_Task1": [38, 39]}}
+{"query": "Please help me segment the left parotid gland in CT images.", "expected_datasets": {"SegRap2023_Task1": [40]}}
+{"query": "Please help me segment the right parotid gland in CT images.", "expected_datasets": {"SegRap2023_Task1": [41]}}
+{"query": "Please help me segment the parotid gland in CT images.", "expected_datasets": {"SegRap2023_Task1": [40, 41]}}
+{"query": "Please help me segment the left mastoid in CT images.", "expected_datasets": {"SegRap2023_Task1": [42]}}
+{"query": "Please help me segment the right mastoid in CT images.", "expected_datasets": {"SegRap2023_Task1": [43]}}
+{"query": "Please help me segment the mastoid in CT images.", "expected_datasets": {"SegRap2023_Task1": [42, 43]}}
+{"query": "Please help me segment the left temporomandibular joint in CT images.", "expected_datasets": {"SegRap2023_Task1": [44]}}
+{"query": "Please help me segment the right temporomandibular joint in CT images.", "expected_datasets": {"SegRap2023_Task1": [45]}}
+{"query": "Please help me segment the temporomandibular joint in CT images.", "expected_datasets": {"SegRap2023_Task1": [44, 45]}}
+{"query": "Please help me segment the larynx in CT images.", "expected_datasets": {"SegRap2023_Task1": [48, 49, 50, 51]}}
+{"query": "Please help me segment the glottic part of the larynx in CT images.", "expected_datasets": {"SegRap2023_Task1": [49]}}
+{"query": "Please help me segment the supraglottic part of the larynx in CT images.", "expected_datasets": {"SegRap2023_Task1": [50]}}
+{"query": "Please help me segment the pharyngeal constrictor muscles in CT images.", "expected_datasets": {"SegRap2023_Task1": [51, 52]}}
+{"query": "Please help me segment the bones in the CT image", "expected_datasets": {"CT-ORG": [5], "TotalSegmentator_v2": [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]}}
+{"query": "Please help me segment the abdominal tumors in CT scans.", "expected_datasets": {"Adrenal-ACC-Ki67-Seg": [1], "LiTS": [2], "KiTS23": [3]}}
+{"query": "Please help me segment the coronary arteries in CT images.", "expected_datasets": {"ImageCAS": [1]}}
+{"query": "Please help me segment the adrenal tumor in CT images.", "expected_datasets": {"Adrenal-ACC-Ki67-Seg": [1]}}
+{"query": "Please help me segment the tumors in whole-body PET images.", "expected_datasets": {"AutoPET": [1]}}
+{"query": "Please help me segment the tumors in whole-body CT images.", "expected_datasets": {"Adrenal-ACC-Ki67-Seg": [1], "KiTS23": [3], "AutoPET": [1], "LiTS": [2]}}
+{"query": "Please help me segment the tumors in whole-body combined PET/CT images.", "expected_datasets": {"AutoPET": [1]}}
+{"query": "Please help me segment the whole tumor in brain MRI using T2 FLAIR images.", "expected_datasets": {"BraTS21": [1, 2, 3]}}
+{"query": "Please help me segment the whole tumor in brain MRI using T1 Weighted images.", "expected_datasets": {"BraTS21": [1, 2, 3]}}
+{"query": "Please help me segment the whole tumor in brain MRI using T1 weighted imaging with gadolinium.", "expected_datasets": {"BraTS21": [1, 2, 3]}}
+{"query": "Please help me segment the whole tumor in brain MRI using T2 Weighted images.", "expected_datasets": {"BraTS21": [1, 2, 3]}}
+{"query": "Please help me segment the whole tumor in brain MRI using a combination of T2 FLAIR, T1 Weighted, T1 weighted imaging with gadolinium, and T2 Weighted images.", "expected_datasets": {"BraTS21": [1, 2, 3]}}
+{"query": "Please help me segment the tumor core in brain MRI using T2 FLAIR images.", "expected_datasets": {"BraTS21": [1, 3]}}
+{"query": "Please help me segment the tumor core in brain MRI using T1 Weighted images.", "expected_datasets": {"BraTS21": [1, 3]}}
+{"query": "Please help me segment the tumor core in brain MRI using T1 weighted imaging with gadolinium.", "expected_datasets": {"BraTS21": [1, 3]}}
+{"query": "Please help me segment the tumor core in brain MRI using T2 Weighted images.", "expected_datasets": {"BraTS21": [1, 3]}}
+{"query": "Please help me segment the tumor core in brain MRI using a combination of T2 FLAIR, T1 Weighted, T1 weighted imaging with gadolinium, and T2 Weighted images.", "expected_datasets": {"BraTS21": [1, 3]}}
+{"query": "Please help me segment the enhancing tumor in brain MRI using T2 FLAIR images.", "expected_datasets": {"BraTS21": [3]}}
+{"query": "Please help me segment the enhancing tumor in brain MRI using T1 Weighted images.", "expected_datasets": {"BraTS21": [3]}}
+{"query": "Please help me segment the enhancing tumor in brain MRI using T1 weighted imaging with gadolinium.", "expected_datasets": {"BraTS21": [3]}}
+{"query": "Please help me segment the enhancing tumor in brain MRI using T2 Weighted images.", "expected_datasets": {"BraTS21": [3]}}
+{"query": "Please help me segment the enhancing tumor in brain MRI using a combination of T2 FLAIR, T1 Weighted, T1 weighted imaging with gadolinium, and T2 Weighted images.", "expected_datasets": {"BraTS21": [3]}}
+{"query": "Please help me segment the myocardium in MR images.", "expected_datasets": {"MM-WHS": [1], "MMs": [3]}}
+{"query": "Please help me segment the myocardium in CT images.", "expected_datasets": {"MM-WHS": [1]}}
+{"query": "Please help me segment the left atrium cavity in MR images.", "expected_datasets": {"MM-WHS": [2]}}
+{"query": "Please help me segment the left atrium cavity in CT images.", "expected_datasets": {"MM-WHS": [2]}}
+{"query": "Please help me segment the left ventricle cavity in MR images.", "expected_datasets": {"MM-WHS": [3], "MMs": [1]}}
+{"query": "Please help me segment the left ventricle cavity in CT images.", "expected_datasets": {"MM-WHS": [3]}}
+{"query": "Please help me segment the right atrium cavity in MR images.", "expected_datasets": {"MM-WHS": [4]}}
+{"query": "Please help me segment the right atrium cavity in CT images.", "expected_datasets": {"MM-WHS": [4]}}
+{"query": "Please help me segment the right ventricle cavity in MR images.", "expected_datasets": {"MM-WHS": [5], "MMs": [2]}}
+{"query": "Please help me segment the right ventricle cavity in CT images.", "expected_datasets": {"MM-WHS": [5]}}
+{"query": "Please help me segment the ascending aorta in MR images.", "expected_datasets": {"MM-WHS": [6]}}
+{"query": "Please help me segment the ascending aorta in CT images.", "expected_datasets": {"MM-WHS": [6]}}
+{"query": "Please help me segment the pulmonary artery in MR images.", "expected_datasets": {"MM-WHS": [7]}}
+{"query": "Please help me segment the pulmonary artery in CT images.", "expected_datasets": {"MM-WHS": [7], "Parse22": [1]}}
+{"query": "Please help me segment the left ventricle and myocardium in MR images.", "expected_datasets": {"MM-WHS": [1, 3], "MMs": [1, 3]}}
+{"query": "Please help me segment the left ventricle and myocardium in CT images.", "expected_datasets": {"MM-WHS": [1, 3]}}
+{"query": "Please help me segment the stroke lesions in T1-weighted MR images.", "expected_datasets": {"ISLES22_ATLAS": [1]}}
+{"query": "Please help me segment the stroke lesions using ADC MRI images.", "expected_datasets": {"ISLES22": [1]}}
+{"query": "Please help me segment the stroke lesions using DWI MRI images.", "expected_datasets": {"ISLES22": [1]}}
+{"query": "Please help me segment the stroke lesions using FLAIR MRI images.", "expected_datasets": {"ISLES22": [1]}}
+{"query": "Please help me segment the stroke lesions using a combination of ADC, DWI, and FLAIR MRI images.", "expected_datasets": {"ISLES22": [1]}}
+{"query": "Please help me segment the primary tumor (GTVp) in CT images.", "expected_datasets": {"HECKTOR2022": [1], "SegRap2023_Task2": [1]}}
+{"query": "Please help me segment the lymph nodes (GTVnd) in CT images.", "expected_datasets": {"HECKTOR2022": [2], "SegRap2023_Task2": [2]}}
+{"query": "Please help me segment the primary tumor (GTVp) in PET images.", "expected_datasets": {"HECKTOR2022": [1]}}
+{"query": "Please help me segment the lymph nodes (GTVnd) in PET images.", "expected_datasets": {"HECKTOR2022": [2]}}
+{"query": "Please help me segment the primary tumor (GTVp) in combined PET/CT images.", "expected_datasets": {"HECKTOR2022": [1]}}
+{"query": "Please help me segment the lymph nodes (GTVnd) in combined PET/CT images.", "expected_datasets": {"HECKTOR2022": [2]}}
+{"query": "Please help me segment both the primary tumor (GTVp) and lymph nodes (GTVnd) in CT images.", "expected_datasets": {"HECKTOR2022": [1, 2], "SegRap2023_Task2": [1, 2]}}
+{"query": "Please help me segment both the primary tumor (GTVp) and lymph nodes (GTVnd) in PET images.", "expected_datasets": {"HECKTOR2022": [1, 2]}}
+{"query": "Please help me segment both the primary tumor (GTVp) and lymph nodes (GTVnd) in combined PET/CT images.", "expected_datasets": {"HECKTOR2022": [1, 2]}}
+{"query": "Please help me segment the intracranial hemorrhage in non-contrast head CT images.", "expected_datasets": {"Instance22": [1]}}
+{"query": "Please help me segment the kidney and masses in CT images.", "expected_datasets": {"KiTS23": [1, 2, 3]}}
+{"query": "Please help me segment the kidney masses in CT images.", "expected_datasets": {"KiTS23": [2, 3]}}
+{"query": "Please help me segment the kidney tumors in CT images.", "expected_datasets": {"KiTS23": [3]}}
+{"query": "Please help me segment the liver tumors in CT images.", "expected_datasets": {"LiTS": [2]}}
+{"query": "Please help me segment the liver and liver tumors in CT images.", "expected_datasets": {"LiTS": [1, 2]}}
+{"query": "Please help me segment the pulmonary airway in CT images.", "expected_datasets": {"ATM22": [1]}}
+{"query": "Please help me segment the intestine in CT images.", "expected_datasets": {"WORD": [11]}}
