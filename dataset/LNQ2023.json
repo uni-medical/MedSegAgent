@@ -1,0 +1,13 @@
+{
+    "name": "LNQ2023",
+    "description": "Lymph Node Quantification (LNQ2023) is a CT dataset for automated systems to segment mediastinal lymph nodes.",
+    "input_modalities": {
+        "0": "CT"
+    },
+    "labels": {
+        "background": 0,
+        "mediastinal lymph nodes": 1
+    },
+    "numTraining": 393,
+    "file_ending": ".nii.gz"
+}

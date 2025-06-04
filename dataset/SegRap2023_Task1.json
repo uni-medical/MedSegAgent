@@ -1,6 +1,6 @@
 {
     "name": "SegRap2023_Task1",
-    "description": "Segmentation of Organs-at-Risk for Radiotherapy Planning in both contrast and non-contrast CT",
+    "description": "Segmentation of Organs-at-Risk and Gross Tumor Volume of NPC for Radiotherapy Planning (SegRap2023) both contrast and non-contrast CT",
     "input_modalities": {
         "0": "non_contrast_CT",
         "1": "contrast_CT"
@@ -54,5 +54,23 @@
         "Trachea": 54
     },
     "numTraining": 120,
-    "file_ending": ".nii.gz"
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
 }

@@ -1,6 +1,6 @@
 {
     "name": "TotalSegmentator_v2",
-    "description": "Segmentation of 117 classes in CT images. It was trained on a wide range of different CT images (different scanners, institutions, protocols,...) and therefore should work well on most images.",
+    "description": "Tool for segmentation of over 117 classes in CT images. It was trained on a wide range of different CT images (different scanners, institutions, protocols,...) and therefore should work well on most images.",
     "input_modalities": {
         "0": "CT"
     },

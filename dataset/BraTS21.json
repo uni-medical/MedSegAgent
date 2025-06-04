@@ -1,14 +1,19 @@
 {
-    "name": "Parse22",
-    "description": "3D volumes with refined pulmonary artery label,  these Contrast Enhanced CT Pulmonary Angiography (CTPA) data are obtained from dual-source 64-slice CT scanner",
+    "name": "BraTS21",
+    "description": "Gliomas segmentation tumour in on brain images",
     "input_modalities": {
-        "0": "CT"
+        "0": "MR T2 FLAIR",
+        "1": "MR T1 Weighted",
+        "2": "MR T1 weighted imaging with gadolinium",
+        "3": "MR T2 Weighted"
     },
     "labels": {
         "background": 0,
-        "pulmonary artery": 1
+        "whole_tumor": [1, 2, 3],
+        "tumor_core": [1, 3],
+        "enhancing_tumor": 3
     },
-    "numTraining": 100,
+    "numTraining": 1251,
     "file_ending": ".nii.gz",
     "models": {
         "nnV1": [

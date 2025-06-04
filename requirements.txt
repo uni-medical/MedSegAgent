@@ -1,4 +1,5 @@
 pyautogen==0.2.35
 spacy==3.8.7
 tenacity==9.1.2
+colorlog
 nnunetv2

@@ -1,0 +1,15 @@
+{
+    "name": "CrossMoDA2023",
+    "description": "",
+    "input_modalities": {
+        "0": "ceT1 and T2"
+    },
+    "labels": {
+        "background": 0,
+        "intra-meatal tumor": 1,
+        "extra-meatal tumor": 2,
+        "cochlea": 3
+    },
+    "numTraining": 227,
+    "file_ending": ".nii.gz"
+}

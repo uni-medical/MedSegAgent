@@ -1,14 +1,17 @@
 {
-    "name": "Parse22",
-    "description": "3D volumes with refined pulmonary artery label,  these Contrast Enhanced CT Pulmonary Angiography (CTPA) data are obtained from dual-source 64-slice CT scanner",
+    "name": "ISLES22",
+    "website": "https://www.isles-challenge.org/",
+    "description": "Multimodal MRI infarct segmentation in acute and sub-acute stroke. Participants are requested to Segment brain infarct lesions from acute and sub-acute stroke scans using DWI, ADC and FLAIR images.",
     "input_modalities": {
-        "0": "CT"
+        "0": "MR adc",
+        "1": "MR dwi",
+        "2": "MR flair"
     },
     "labels": {
         "background": 0,
-        "pulmonary artery": 1
+        "stroke lesion": 1
     },
-    "numTraining": 100,
+    "numTraining": 250,
     "file_ending": ".nii.gz",
     "models": {
         "nnV1": [

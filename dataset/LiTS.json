@@ -1,16 +1,15 @@
 {
-  "name": "KiTS23",
-  "description": "The 2023 Kidney and Kidney Tumor Segmentation challenge (abbreviated KiTS23) is a competition in which teams compete to develop the best system for automatic semantic segmentation of kidneys, renal tumors, and renal cysts.",
+  "name": "LiTS",
+  "description": "Liver and liver tumor segmentation",
   "input_modalities": {
       "0": "CT"
   },
   "labels": {
       "background": 0,
-      "kidney and masses": [1,2,3],
-      "kidney masses": [2,3],
-      "kidney tumor": [3]
+      "liver": 1,
+      "liver_tumour": 2
   },
-  "numTraining": 489,
+  "numTraining": 131,
   "file_ending": ".nii.gz",
   "models": {
       "nnV1": [

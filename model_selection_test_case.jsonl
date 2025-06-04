@@ -1,0 +1,2 @@
+{"query": "Please help me segment the spleen in CT images.", "expected_datasets": {"TotalSegmentator_v2": [1], "FLARE22": [3], "AbdomenAtlasMini": [8], "AMOS22_Task2": [1], "WORD": [2]}}
+{"query": "Please help me segment the primary tumor (GTVp) in PET images.", "expected_datasets": {"HECKTOR2022": [1]}}

@@ -10,5 +10,23 @@
         "GTVnd": 2
     },
     "numTraining": 524,
-    "file_ending": ".nii.gz"
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
 }

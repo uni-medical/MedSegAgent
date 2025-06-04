@@ -1,14 +1,14 @@
 {
-    "name": "Parse22",
-    "description": "3D volumes with refined pulmonary artery label,  these Contrast Enhanced CT Pulmonary Angiography (CTPA) data are obtained from dual-source 64-slice CT scanner",
+    "name": "Adrenal-ACC-Ki67-Seg",
+    "description": "This retrospectively acquired data includes contrast enhanced CT imaging studies of 53 confirmed ACC patients between 2006 to 2018 with available clinical and pathological data",
     "input_modalities": {
         "0": "CT"
     },
     "labels": {
         "background": 0,
-        "pulmonary artery": 1
+        "Adrenocortical carcinoma": 1
     },
-    "numTraining": 100,
+    "numTraining": 57,
     "file_ending": ".nii.gz",
     "models": {
         "nnV1": [

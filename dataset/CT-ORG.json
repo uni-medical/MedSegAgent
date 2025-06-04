@@ -1,6 +1,6 @@
 {
     "name": "CT-ORG",
-    "description": "The CT multi-organ segmentation dataset officially provides annotations for six organs: lungs, bones, liver, kidneys, bladder, and brain.",
+    "description": "This dataset consists of 140 computed tomography (CT) scans, each with five organs labeled in 3D: lung, bones, liver, kidneys and bladder. The brain is also labeled on the minority of scans which show it.Patients were included based on the presence of lesions in one or more of the labeled organs. Most of the images exhibit liver lesions, both benign and malignant. Some also exhibit metastatic disease in other organs such as bones and lungs. The images come from a wide variety of sources, including abdominal and full-body; contrast and non-contrast; low-dose and high-dose CT scans. 131 images are dedicated CTs, the remaining 9 are the CT component taken from PET-CT exams. This makes the dataset ideal for training and evaluating organ segmentation algorithms, which ought to perform well in a wide variety of imaging conditions.",
     "input_modalities": {
         "0": "CT"
     },
@@ -14,5 +14,23 @@
         "Brain": 6
     },
     "numTraining": 140,
-    "file_ending": ".nii.gz"
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
 }

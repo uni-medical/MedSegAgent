@@ -1,6 +1,9 @@
 {
     "name": "TotalSegmentator_MRI",
-    "description": "containing 56 main classes on MR images",
+    "description": "Segmentation of TotalSegmentator MRI classes",
+    "reference": "",
+    "licence": "Apache 2.0",
+    "release": "2.0",
     "input_modalities": {
         "0": "MR"
     },

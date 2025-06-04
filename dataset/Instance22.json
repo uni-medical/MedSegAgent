@@ -1,12 +1,13 @@
 {
-    "name": "Parse22",
-    "description": "3D volumes with refined pulmonary artery label,  these Contrast Enhanced CT Pulmonary Angiography (CTPA) data are obtained from dual-source 64-slice CT scanner",
+    "name": "Instance22",
+    "website": "https://instance.grand-challenge.org/",
+    "description": "non-contrast head CT volumes of clinically diagnosed patients with different kinds of ICH, including subdural hemorrhage, epidural hemorrhage, intraventricular hemorrhage, intraparenchymal hemorrhage, and subarachnoid hemorrhage.",
     "input_modalities": {
-        "0": "CT"
+        "0": "Non-Contrast head CT"
     },
     "labels": {
         "background": 0,
-        "pulmonary artery": 1
+        "Intracranial Hemorrhage": 1
     },
     "numTraining": 100,
     "file_ending": ".nii.gz",

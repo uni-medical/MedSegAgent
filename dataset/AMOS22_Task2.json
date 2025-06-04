@@ -23,5 +23,23 @@
         "prostate_or_uterus": 15
     },
     "numTraining": 240,
-    "file_ending": ".nii.gz"
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
 }

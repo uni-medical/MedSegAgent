@@ -1,6 +1,6 @@
 {
     "name": "AutoPET",
-    "description": "The dataset consists of whole-body FDG-PET/CT scans, aiming to segment cancer lesions in patients with melanoma, lymphoma, or lung cancer.",
+    "description": "The challenge cohort consists of patients with histologically proven malignant melanoma, lymphoma or lung cancer as well as negative control patients who were examined by FDG-PET/CT in two large medical centers (University Hospital Tübingen, Germany & University Hospital of the LMU in Munich, Germany). All PET/CT data within this challenge have been acquired on state-of-the-art PET/CT scanners (Siemens Biograph mCT, mCT Flow and Biograph 64, GE Discovery 690) using standardized protocols following international guidelines. CT as well as PET data are provided as 3D volumes consisting of stacks of axial slices. Data provided as part of this challenge consists of whole-body examinations. Usually, the scan range of these examinations extends from the skull base to the mid-thigh level. If clinically relevant, scans can be extended to cover the entire body including the entire head and legs/feet.",
     "input_modalities": {
         "0": "PET",
         "1": "CT"
@@ -9,6 +9,24 @@
         "background": 0,
         "tumor": 1
     },
-    "numTraining": 501,
-    "file_ending": ".nii.gz"
+    "numTraining": 1014,
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
 }

@@ -1,0 +1,13 @@
+{
+    "name": "TDSC-ABUS2023",
+    "description": "tumor segmentation in automated 3D breast ultrasound (ABUS) images.",
+    "input_modalities": {
+        "0": "US"
+    },
+    "labels": {
+        "background": 0,
+        "breast tumor": 1
+    },
+    "numTraining": 100,
+    "file_ending": ".nii.gz"
+}
