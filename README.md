@@ -11,3 +11,4 @@
 
 ## Quick Start:
 [WIP]
+start from eval_example.sh
