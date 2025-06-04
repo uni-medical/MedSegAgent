@@ -3,21 +3,6 @@ import numpy as np
 # expected data format:
 # {"dataset1": [1,2,3], "dataset2": [1]}
 ''' How many percentage of datasets are found'''
-
-# def dataset_hit_rate(gt_answer, llm_answer):
-#     if (len(gt_answer) <= 0):
-#         return 0
-#     hit_number = 0
-#     for dataset, labels in llm_answer.items():
-#         if (dataset not in gt_answer):
-#             return 0  # non-existed dataset given
-#         gt = sorted([int(g) for g in gt_answer[dataset]])
-#         pred = sorted(labels)
-#         if np.array_equal(pred, gt):
-#             hit_number += 1
-#     return hit_number / len(gt_answer)
-
-
 def dataset_hit_rate(gt_answer, llm_answer):
     try:
         hit_count = 0
