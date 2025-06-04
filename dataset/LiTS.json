@@ -1,0 +1,32 @@
+{
+  "name": "LiTS",
+  "description": "Liver and liver tumor segmentation",
+  "input_modalities": {
+      "0": "CT"
+  },
+  "labels": {
+      "background": 0,
+      "liver": 1,
+      "liver_tumour": 2
+  },
+  "numTraining": 131,
+  "file_ending": ".nii.gz",
+  "models": {
+      "nnV1": [
+          "nnUNet",
+          "STU-Net-S",
+          "STU-Net-B",
+          "STU-Net-L"
+      ],
+      "nnV2": [
+          "nnUNet",
+          "STU-Net-S",
+          "STU-Net-B",
+          "STU-Net-L"
+      ],
+      "monai": [
+          "SwinUNETR",
+          "UNETR"
+      ]
+  }
+}

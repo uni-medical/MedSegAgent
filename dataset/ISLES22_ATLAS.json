@@ -1,0 +1,32 @@
+{
+    "name": "ISLES22_ATLAS",
+    "website": "https://atlas.grand-challenge.org/",
+    "description": "Single channel T1-weighted lesion segmentation in acute, sub-acute and chronic stroke (ATLAS challenge). Participants are requested to Segment brain lesions from acute, sub-acute and chronic stroke in single channel weighted T1 images.",
+    "input_modalities": {
+        "0": "MR T1 weighted"
+    },
+    "labels": {
+        "background": 0,
+        "stroke lesion": 1
+    },
+    "numTraining": 655,
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
+}

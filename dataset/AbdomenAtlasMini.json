@@ -1,0 +1,39 @@
+{ 
+    "name": "AbdomenAtlasMini", 
+    "description": "The largest, fully-annotated CT dataset to date, including 5,195 annotated CT volumes (with spleen, liver, kidneys, stomach, gallbladder, pancreas, aorta, and IVC annotations).",
+    "input_modalities": {  
+        "0": "CT"
+    }, 
+    "labels": {
+        "background": 0,
+        "aorta": 1,
+        "gallbladder": 2,
+        "kidney_left": 3,
+        "kidney_right": 4,
+        "liver": 5,
+        "pancreas": 6,
+        "postcava": 7,
+        "spleen": 8,
+        "stomach": 9
+    },
+    "numTraining": 5170, 
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet", 
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    } 
+}

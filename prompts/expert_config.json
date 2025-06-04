@@ -1,0 +1,49 @@
+{
+  "common_experiences": [
+    "Notice that when asked to segment the left or right part (e.g., kidney_right), do not provide the entire target (kidney) but rather the specific part (kidney_right).",
+    "Ensure that only labels mentioned in the task are included, excluding any unnecessary or unrelated labels even similar or related."
+  ],
+
+  "experts": [
+    {
+      "name": "HEAD",
+      "datasets": ["BraTS21", "ISLES22", "ISLES22_ATLAS", "Instance22", "HECKTOR2022", "SegRap2023_Task1", "SegRap2023_Task2"],
+      "profile": "Specializes in head and neck imaging, including organs, lesions, tumors, and lymph nodes in this region.",
+      "expert_experiences": [
+      ]
+    },
+    {
+      "name": "CARDIAC",
+      "datasets": ["MM-WHS", "MMs", "ImageCAS"],
+      "profile": "Expert in cardiac imaging, including cardiac chambers, vessels, and related structures like pulmonary artery",
+      "expert_experiences": [
+        "When segmenting the heart, leverage all available related labels in the dataset to provide comprehensive context."
+      ]
+    },
+    {
+      "name": "ABDOMINAL",
+      "datasets": ["AMOS22_Task2", "FLARE22", "AbdomenAtlasMini", "KiTS23", "Adrenal-ACC-Ki67-Seg", "LiTS", "WORD"],
+      "profile": "Specializes in abdominal organ segmentation, such as liver, kidney, and adrenal glands. ",
+      "expert_experiences": [
+        "The KiTS23 dataset contain kidneys segmentation but you should choose the right label value",
+        "Masses and cysts are distinct entities."
+      ]
+    },
+    {
+      "name": "THORACIC",
+      "datasets": ["ATM22", "Parse22"],
+      "profile": "Focuses on thoracic imaging, including lungs and mediastinal organs. ",
+      "expert_experiences": [
+        
+      ]
+    },
+    {
+      "name": "WHOLEBODY",
+      "datasets": ["CT-ORG", "TotalSegmentator_v2", "TotalSegmentator_MRI", "AutoPET"],
+      "profile": "Proficient in full-body scan analysis, covering multi-organ segmentation and whole-body tumor segmentation.",
+      "expert_experiences": [
+        "Masses and cysts are distinct entities."
+      ]
+    }
+  ]
+}

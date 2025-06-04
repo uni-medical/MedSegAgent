@@ -1,0 +1,32 @@
+{
+    "name": "HECKTOR2022",
+    "description": "The automatic segmentation of Head and Neck (H&N) primary tumors and lymph nodes (new!) in FDG-PET/CT images, focusing on oropharyngeal cancers",
+    "input_modalities": {
+        "0": "PET",
+        "1": "CT"
+    },
+    "labels": {
+        "GTVp": 1,
+        "GTVnd": 2
+    },
+    "numTraining": 524,
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
+}

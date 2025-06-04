@@ -1,0 +1,14 @@
+[
+    {
+        "model": "Qwen/Qwen2.5-32B-Instruct",
+        "api_key": "<Your API KEY>",
+        "base_url": "https://api.siliconflow.cn/v1",
+        "tags": ["silicon"]
+    },
+    {
+        "model": "gpt-4o-2024-08-06",
+        "api_key": "<Your API KEY>",
+        "base_url": "<your BASE URL>",
+        "tags": ["openai"]
+    }
+]

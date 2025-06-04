@@ -1,0 +1,79 @@
+from prompts.react_2shot import REACT_SYS_PROMPT
+from prompts.assigner_experts_v2 import (
+    ASSIGNER_PROMPT,
+    WHOLEBODY_EXPERT_PROMPT,
+    HEAD_EXPERT_PROMPT,
+    CARDIAC_EXPERT_PROMPT,
+    THORACIC_EXPERT_PROMPT,
+    ABDOMINAL_EXPERT_PROMPT,
+)
+from autogen import config_list_from_json, UserProxyAgent, ConversableAgent
+from utils.reply_utils import extract_llm_answer
+
+
+def chat_with_llm_react_multiexpert_experience(query,
+                                               model,
+                                               autogen_config_path,
+                                               sys_prompt_dict=REACT_SYS_PROMPT):
+    autogen_config = config_list_from_json(env_or_file=autogen_config_path,
+                                           filter_dict={"model": [model]})[0]
+    general_chat_history = []
+    user_proxy = UserProxyAgent("user_proxy", code_execution_config=False)
+
+    # Assigner agent
+    assigner_agent = ConversableAgent(
+        name="assigner",
+        system_message=ASSIGNER_PROMPT,
+        llm_config=autogen_config,
+        human_input_mode="NEVER",
+    )
+
+    # Mapping of expert names to their corresponding agents and prompts
+    expert_prompts = {
+        "WHOLEBODY": WHOLEBODY_EXPERT_PROMPT,
+        "ABDOMINAL": ABDOMINAL_EXPERT_PROMPT,
+        "HEAD": HEAD_EXPERT_PROMPT,
+        "CARDIAC": CARDIAC_EXPERT_PROMPT,
+        "THORACIC": THORACIC_EXPERT_PROMPT,
+    }
+
+    # Create expert agents dynamically
+    experts = {
+        name:
+        ConversableAgent(
+            name=f"{name.lower()}_expert",
+            system_message=prompt,
+            llm_config=autogen_config,
+            human_input_mode="NEVER",
+        )
+        for name, prompt in expert_prompts.items()
+    }
+
+    # User -> Assigner
+    assigner_result = user_proxy.initiate_chat(assigner_agent, message=query, max_turns=1)
+    general_chat_history.extend(assigner_result.chat_history)
+    expert_names = extract_llm_answer(assigner_result.summary)
+
+    # Assigner -> Expert(s)
+    expert_answers = {}
+    for expert_name in expert_names:
+        expert_agent = experts.get(expert_name)
+        if expert_agent:
+            # Expert provides initial answer
+            expert_result = user_proxy.initiate_chat(expert_agent, message=query, max_turns=1)
+            llm_answer = extract_llm_answer(expert_result.summary)
+            general_chat_history.extend(expert_result.chat_history)
+
+            expert_answers[expert_name] = llm_answer
+        else:
+            print(f"Expert '{expert_name}' not found.")
+
+    # Combine refined answers
+    final_llm_answer = {}
+    for ans in expert_answers.values():
+        final_llm_answer.update(ans)
+
+    return {
+        "reply": final_llm_answer,
+        "chat_history": general_chat_history,
+    }

@@ -1,0 +1,32 @@
+{
+    "name": "Instance22",
+    "website": "https://instance.grand-challenge.org/",
+    "description": "non-contrast head CT volumes of clinically diagnosed patients with different kinds of ICH, including subdural hemorrhage, epidural hemorrhage, intraventricular hemorrhage, intraparenchymal hemorrhage, and subarachnoid hemorrhage.",
+    "input_modalities": {
+        "0": "Non-Contrast head CT"
+    },
+    "labels": {
+        "background": 0,
+        "Intracranial Hemorrhage": 1
+    },
+    "numTraining": 100,
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
+}

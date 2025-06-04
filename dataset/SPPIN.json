@@ -1,0 +1,13 @@
+{
+    "name": "SPPIN",
+    "description": "The SPPIN dataset includes T2-weighted MRI, contrast-enhanced T1-weighted MRI, and DWI (b0 and b100) modalities, targeting the segmentation of pediatric neuroblastoma tumors for surgical planning.",
+    "input_modalities": {
+        "0": "MR"
+    },
+    "labels": {
+        "background": 0,
+        "Pediatric Neuroblastoma": 1
+    },
+    "numTraining": 767,
+    "file_ending": ".nii.gz"
+}

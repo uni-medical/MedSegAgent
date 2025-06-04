@@ -1,0 +1,34 @@
+{
+    "name": "ISLES22",
+    "website": "https://www.isles-challenge.org/",
+    "description": "Multimodal MRI infarct segmentation in acute and sub-acute stroke. Participants are requested to Segment brain infarct lesions from acute and sub-acute stroke scans using DWI, ADC and FLAIR images.",
+    "input_modalities": {
+        "0": "MR adc",
+        "1": "MR dwi",
+        "2": "MR flair"
+    },
+    "labels": {
+        "background": 0,
+        "stroke lesion": 1
+    },
+    "numTraining": 250,
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
+}

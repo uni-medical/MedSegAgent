@@ -1,0 +1,64 @@
+2025-06-04 10:36:50,690 - INFO - 步骤 1: 查询解析代理
+2025-06-04 10:36:53,094 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:36:53,103 - INFO - Query parsed successfully: {'modality': 'CT', 'target': 'spleen'}
+2025-06-04 10:36:53,103 - INFO - 步骤 2: 对数据集针对模态进行过滤
+2025-06-04 10:36:53,103 - INFO - Modality filtering iteration 1
+2025-06-04 10:36:57,977 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:36:57,982 - INFO - Modality filtering iteration 2
+2025-06-04 10:37:00,519 - INFO - Retrying request to /chat/completions in 0.378578 seconds
+2025-06-04 10:37:05,826 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:05,834 - INFO - Final selected datasets after modality filtering:
+2025-06-04 10:37:05,834 - INFO - ['AMOS22_Task2', 'ATM22', 'AbdomenAtlasMini', 'Adrenal-ACC-Ki67-Seg', 'AutoPET', 'CT-ORG', 'FLARE22', 'FUMPE', 'HECKTOR2022', 'ImageCAS', 'Instance22', 'KiTS23', 'LNQ2023', 'LiTS', 'MM-WHS', 'Parse22', 'SegRap2023_Task1', 'SegRap2023_Task2', 'TotalSegmentator_v2', 'WORD']
+2025-06-04 10:37:05,834 - INFO - 步骤 3: 对数据集针对类别进行过滤
+2025-06-04 10:37:05,834 - INFO - Relevance filtering iteration 1
+2025-06-04 10:37:11,087 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:11,093 - INFO - Relevance filtering iteration 2
+2025-06-04 10:37:14,889 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:14,895 - INFO - Final selected datasets after relevance filtering:
+2025-06-04 10:37:14,895 - INFO - ['AMOS22_Task2', 'AbdomenAtlasMini', 'FLARE22', 'TotalSegmentator_v2', 'WORD']
+2025-06-04 10:37:14,895 - INFO - 步骤 4: 选择数据集和类别
+2025-06-04 10:37:14,895 - INFO - Label selection iteration 1
+2025-06-04 10:37:18,120 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:18,126 - INFO - 最终选择的标签:
+2025-06-04 10:37:18,126 - INFO - {'AbdomenAtlasMini': [8], 'WORD': [2], 'FLARE22': [3], 'TotalSegmentator_v2': [1], 'AMOS22_Task2': [1]}
+2025-06-04 10:37:18,126 - INFO - [1] Chat History:
+
+2025-06-04 10:37:18,126 - INFO - [1] Correct! (hit_rate: 1.0, final: 1.0)
+Expected answer:
+{'TotalSegmentator_v2': [1], 'FLARE22': [3], 'AbdomenAtlasMini': [8], 'AMOS22_Task2': [1], 'WORD': [2]}
+LLM:
+{'AbdomenAtlasMini': [8], 'WORD': [2], 'FLARE22': [3], 'TotalSegmentator_v2': [1], 'AMOS22_Task2': [1]}
+2025-06-04 10:37:18,127 - INFO - 步骤 1: 查询解析代理
+2025-06-04 10:37:19,670 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:19,677 - INFO - Query parsed successfully: {'modality': 'PET', 'target': 'primary tumor (GTVp)'}
+2025-06-04 10:37:19,677 - INFO - 步骤 2: 对数据集针对模态进行过滤
+2025-06-04 10:37:19,677 - INFO - Modality filtering iteration 1
+2025-06-04 10:37:21,135 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:21,144 - INFO - Modality filtering iteration 2
+2025-06-04 10:37:23,130 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:23,140 - INFO - Final selected datasets after modality filtering:
+2025-06-04 10:37:23,140 - INFO - ['AutoPET', 'HECKTOR2022']
+2025-06-04 10:37:23,140 - INFO - 步骤 3: 对数据集针对类别进行过滤
+2025-06-04 10:37:23,140 - INFO - Relevance filtering iteration 1
+2025-06-04 10:37:27,489 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:27,495 - INFO - Relevance filtering iteration 2
+2025-06-04 10:37:31,924 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:31,930 - INFO - Final selected datasets after relevance filtering:
+2025-06-04 10:37:31,930 - INFO - ['HECKTOR2022']
+2025-06-04 10:37:31,930 - INFO - 步骤 4: 选择数据集和类别
+2025-06-04 10:37:31,930 - INFO - Label selection iteration 1
+2025-06-04 10:37:35,821 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 10:37:35,826 - INFO - 最终选择的标签:
+2025-06-04 10:37:35,827 - INFO - {'HECKTOR2022': [1]}
+2025-06-04 10:37:35,827 - INFO - [2] Chat History:
+
+2025-06-04 10:37:35,827 - INFO - [2] Correct! (hit_rate: 1.0, final: 2.0)
+Expected answer:
+{'HECKTOR2022': [1]}
+LLM:
+{'HECKTOR2022': [1]}
+2025-06-04 10:37:35,827 - INFO - [Summary] [Datasets Hit Rate] final score 2.00 / 2.0
+2025-06-04 10:37:35,827 - INFO - [Summary] [All Dataset Found] final score 2.00 / 2.0
+2025-06-04 10:37:35,827 - INFO - [Summary] [Any Dataset Found] final score 2.00 / 2.0
+2025-06-04 10:37:35,827 - INFO - [Results] result saved to results/C2F_model_selection_test_case_gpt-4o-2024-08-06_20250604_103650.json
+2025-06-04 10:37:35,827 - INFO - [Results] clean state

@@ -1,0 +1,45 @@
+{
+    "name": "AMOS22_Task2",
+    "description": "MICCAI2022 Multi-Modality Abdominal Multi-Organ Segmentation Task 2",
+    "input_modalities": {
+        "0": "MR or CT"
+    },
+    "labels": {
+        "background": 0,
+        "spleen": 1,
+        "kidney_right": 2,
+        "kidney_left": 3,
+        "gallbladder": 4,
+        "esophagus": 5,
+        "liver": 6,
+        "stomach": 7,
+        "aorta": 8,
+        "inferior_vena_cava": 9,
+        "pancreas": 10,
+        "adrenal_gland_right": 11,
+        "adrenal_gland_left": 12,
+        "duodenum": 13,
+        "bladder": 14,
+        "prostate_or_uterus": 15
+    },
+    "numTraining": 240,
+    "file_ending": ".nii.gz",
+    "models": {
+        "nnV1": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "nnV2": [
+            "nnUNet",
+            "STU-Net-S",
+            "STU-Net-B",
+            "STU-Net-L"
+        ],
+        "monai": [
+            "SwinUNETR",
+            "UNETR"
+        ]
+    }
+}
