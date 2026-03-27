@@ -91,6 +91,9 @@ This project builds on the open contributions of the medical image segmentation 
 
 We also acknowledge [`nnU-Net`](https://github.com/MIC-DKFZ/nnUNet), which provides the strong self-configuring segmentation framework used for the dataset-specific models in our study.
 
+## TODO
+- Upload the trained segmentation models.
+
 ## Citation
 If you use MedSegAgent in your research, please cite:
 
