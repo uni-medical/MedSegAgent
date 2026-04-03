@@ -22,6 +22,11 @@ MedSegAgent parses a free-form segmentation request, filters candidate datasets 
 
 In the paper setting, MedSegAgent integrates 23 datasets and supports 343 segmentation targets across CT, MRI, PET/CT, and ultrasound-related scenarios.
 
+## Skill
+This repository also includes a reusable skill at [`skills/medsegagent-nnunet-runner/`](skills/medsegagent-nnunet-runner) for inspecting `nnUNet_results`, selecting a deployed task, and running or preparing nnUNet inference.
+
+The skill is intended for environments that already have nnUNet v2 available. To run inference, the target environment must provide a configured `nnUNet_results` path and usable nnUNet CLI or Python API support.
+
 ## Supported Datasets
 The repository currently includes metadata for the following datasets and targets. The summary below is adapted from the dataset table in the paper.
 
