@@ -1,6 +1,6 @@
 # MedSegAgent: A Universal and Scalable Multi-Agent System for Instructive Medical Image Segmentation
 
-This work has been accepted by the *IEEE Journal of Biomedical and Health Informatics (JBHI)*. Paper: [IEEE Xplore](https://ieeexplore.ieee.org/document/11455620).
+This work has been accepted by the *IEEE Journal of Biomedical and Health Informatics (JBHI)*. Paper: [IEEE Xplore](https://ieeexplore.ieee.org/document/11455620) | [PDF](MedSegAgent_JBHI_2026.pdf).
 
 <p align="center">
   <img src="assets/medsegagent-framework.png" alt="MedSegAgent framework" width="100%">
