@@ -28,33 +28,33 @@ This repository also includes a reusable skill at [`skills/medsegagent-nnunet-ru
 The skill is intended for environments that already have nnUNet v2 available. To run inference, the target environment must provide a configured `nnUNet_results` path and usable nnUNet CLI or Python API support.
 
 ## Supported Datasets
-The repository currently includes metadata for the following datasets and targets. The summary below is adapted from the dataset table in the paper.
+The repository currently includes metadata for the following datasets and targets. The summary below is adapted from the dataset table in the paper. The links point to official dataset access pages rather than direct-download mirrors hosted by this repository; some datasets still require registration, challenge participation, or a signed data-use agreement before download.
 
-| Dataset | Modalities | Body Region | Representative Targets |
-| --- | --- | --- | --- |
-| TotalSegmentator v2 | CT | Whole-body | 117 structures including organs, vessels, bones, and brain |
-| TotalSegmentator MRI | MRI | Whole-body | 56 structures including organs, vessels, spine, muscles, and brain |
-| CT-ORG | CT | Whole-body | liver, bladder, lungs, kidneys, bone, brain |
-| AutoPET | PET/CT | Whole-body | whole-body tumor sites |
-| SegRap2023 Task1 | CT | Head and neck | 45 OAR structures |
-| BraTS21 | MRI | Head and neck | whole tumor, tumor core, enhancing tumor |
-| ISLES22 | MRI | Head and neck | stroke lesion |
-| ISLES22 ATLAS | MRI | Head and neck | stroke lesion |
-| Instance22 | CT | Head and neck | intracranial hemorrhage |
-| HECKTOR2022 | PET/CT | Head and neck | GTVp, GTVnd |
-| SegRap2023 Task2 | CT | Head and neck | GTVp, GTVnd |
-| MM-WHS | MRI, CT | Heart | cardiac chambers, myocardium, great vessels |
-| ACDC | MRI | Heart | left ventricle, right ventricle, myocardium |
-| ImageCAS | CT | Heart | coronary artery |
-| Parse22 | CT | Thorax | pulmonary artery |
-| ATM22 | CT | Thorax | pulmonary airway |
-| AbdomenAtlasMini | CT | Abdomen | kidneys, liver, pancreas, spleen, stomach, vessels |
-| AMOS22 Task2 | MRI, CT | Abdomen | 15 abdominal and pelvic structures |
-| FLARE22 | CT | Abdomen | 13 abdominal organs |
-| WORD | CT | Abdomen | abdominal organs, bowel, bladder, femurs |
-| KiTS23 | CT | Abdomen | kidneys, renal tumors, renal cysts |
-| LiTS | CT | Abdomen | liver, liver tumor |
-| Adrenal-ACC-Ki67-Seg | CT | Abdomen | adrenocortical carcinoma |
+| Dataset | Modalities | Body Region | Representative Targets | Data access |
+| --- | --- | --- | --- | --- |
+| TotalSegmentator v2 | CT | Whole-body | 117 structures including organs, vessels, bones, and brain | [Zenodo](https://doi.org/10.5281/zenodo.6802613) |
+| TotalSegmentator MRI | MRI | Whole-body | 56 structures including organs, vessels, spine, muscles, and brain | [Zenodo](https://doi.org/10.5281/zenodo.11367004) |
+| CT-ORG | CT | Whole-body | liver, bladder, lungs, kidneys, bone, brain | [TCIA](https://www.cancerimagingarchive.net/collection/ct-org/) |
+| AutoPET | PET/CT | Whole-body | whole-body tumor sites | [TCIA FDG-PET-CT-Lesions](https://www.cancerimagingarchive.net/collection/fdg-pet-ct-lesions/) |
+| SegRap2023 Task1 | CT | Head and neck | 45 OAR structures | [Grand Challenge](https://segrap2023.grand-challenge.org/dataset/) |
+| BraTS21 | MRI | Head and neck | whole tumor, tumor core, enhancing tumor | [CBICA BraTS 2021](https://www.med.upenn.edu/cbica/brats2021/) |
+| ISLES22 | MRI | Head and neck | stroke lesion | [Zenodo](https://doi.org/10.5281/zenodo.7153326) |
+| ISLES22 ATLAS | MRI | Head and neck | stroke lesion | [Grand Challenge](https://atlas.grand-challenge.org/) |
+| Instance22 | CT | Head and neck | intracranial hemorrhage | [Grand Challenge](https://instance.grand-challenge.org/) |
+| HECKTOR2022 | PET/CT | Head and neck | GTVp, GTVnd | [Grand Challenge](https://hecktor.grand-challenge.org/Data/) |
+| SegRap2023 Task2 | CT | Head and neck | GTVp, GTVnd | [Grand Challenge](https://segrap2023.grand-challenge.org/dataset/) |
+| MM-WHS | MRI, CT | Heart | cardiac chambers, myocardium, great vessels | [Challenge site](https://zmiclab.github.io/zxh/0/mmwhs/) |
+| ACDC | MRI | Heart | left ventricle, right ventricle, myocardium | [Challenge site](https://www.creatis.insa-lyon.fr/Challenge/acdc/databases.html) |
+| ImageCAS | CT | Heart | coronary artery | [Kaggle](https://www.kaggle.com/datasets/xiaoweixumedicalai/imagecas) |
+| Parse22 | CT | Thorax | pulmonary artery | [Grand Challenge](https://parse2022.grand-challenge.org/Dataset/) |
+| ATM22 | CT | Thorax | pulmonary airway | [Grand Challenge](https://atm22.grand-challenge.org/) |
+| AbdomenAtlasMini | CT | Abdomen | kidneys, liver, pancreas, spleen, stomach, vessels | [Hugging Face](https://huggingface.co/datasets/AbdomenAtlas/AbdomenAtlas1.0Mini) |
+| AMOS22 Task2 | MRI, CT | Abdomen | 15 abdominal and pelvic structures | [Zenodo](https://doi.org/10.5281/zenodo.7155725) |
+| FLARE22 | CT | Abdomen | 13 abdominal organs | [Grand Challenge](https://flare22.grand-challenge.org/) |
+| WORD | CT | Abdomen | abdominal organs, bowel, bladder, femurs | [GitHub](https://github.com/HiLab-git/WORD) |
+| KiTS23 | CT | Abdomen | kidneys, renal tumors, renal cysts | [Challenge site](https://kits-challenge.org/kits23/) |
+| LiTS | CT | Abdomen | liver, liver tumor | [Kaggle](https://www.kaggle.com/datasets/andrewmvd/liver-tumor-segmentation) |
+| Adrenal-ACC-Ki67-Seg | CT | Abdomen | adrenocortical carcinoma | [TCIA](https://www.cancerimagingarchive.net/collection/adrenal-acc-ki67-seg/) |
 
 ## Quick Start:
 ### Setup your environment
