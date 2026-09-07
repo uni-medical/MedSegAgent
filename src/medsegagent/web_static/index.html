@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <title>MedSegAgent · 影像分割工作区</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/app.css">
+  <script defer src="/static/vendor/niivue-0.69.0.umd.js"></script>
+  <script defer src="/static/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#request">跳到分割请求</a>
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="MedSegAgent 首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>MedSegAgent</a>
+    <span class="research">Research use only</span>
+    <button class="quiet" id="logout" type="button" hidden>退出</button>
+  </header>
+
+  <main id="workspace" hidden>
+    <aside class="workflow" aria-label="分割任务">
+      <form id="request" class="request-form">
+        <div class="section-heading"><h1>新建分割</h1><span>3D 影像</span></div>
+        <label class="upload-zone" id="drop-zone" for="file">
+          <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 21V6m-6 6 6-6 6 6M6 21v5h20v-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <strong id="file-name">选择或拖入 NIfTI</strong>
+          <span id="file-help">.nii / .nii.gz</span>
+          <input id="file" type="file" accept=".nii,.nii.gz" aria-describedby="file-help">
+        </label>
+        <div class="upload-progress" id="upload-progress" hidden><progress id="upload-bar" max="100" value="0" aria-label="上传进度"></progress><span id="upload-status"></span></div>
+        <p class="file-meta" id="file-meta" hidden></p>
+        <fieldset class="modality"><legend>影像模态</legend><label><input type="radio" name="modality" value="CT" checked>CT</label><label><input type="radio" name="modality" value="MR">MR</label></fieldset>
+        <label for="instruction" class="field-label">需要分割什么？</label>
+        <textarea id="instruction" rows="3" maxlength="4000" placeholder="例如：分割这张 CT 中的肝脏和脾脏" required></textarea>
+        <p class="input-note">影像由本地模型处理。语言模型仅接收文字、模态和允许的目标。</p>
+        <button id="submit" class="primary" type="submit" disabled>开始分割</button>
+        <p id="form-error" class="error" role="alert" hidden></p>
+      </form>
+      <section class="history" aria-labelledby="history-heading">
+        <div class="section-heading"><h2 id="history-heading">任务记录</h2><button type="button" class="quiet" id="refresh-tasks" aria-label="刷新任务记录">刷新</button></div>
+        <p id="history-empty" class="muted">任务将保存在这里，刷新页面后可继续查看。</p>
+        <ol id="task-list"></ol>
+      </section>
+      <p class="research-note">仅供研究，不用于诊断或治疗决策。分割结果需要人工核查。</p>
+    </aside>
+
+    <section class="image-workspace" aria-labelledby="viewer-heading">
+      <div class="viewer-heading"><div><h2 id="viewer-heading">影像工作区</h2><p id="viewer-name">原图与分割叠加</p></div><span id="viewer-indicator" hidden>正在读取影像…</span></div>
+      <div class="task-status" id="task-status" hidden aria-live="polite">
+        <div class="status-line"><strong id="status-title"></strong><button id="cancel-task" type="button" class="quiet" hidden>取消任务</button></div>
+        <p id="status-detail"></p><progress id="task-progress" max="100" aria-label="任务进度"></progress>
+        <p id="task-error" class="error" hidden></p>
+      </div>
+      <div class="viewer-toolbar" aria-label="影像显示控制">
+        <div class="view-modes" role="group" aria-label="查看方式"><button type="button" data-view="multiplanar" aria-pressed="true">三平面</button><button type="button" data-view="axial" aria-pressed="false">轴位</button><button type="button" data-view="coronal" aria-pressed="false">冠状</button><button type="button" data-view="sagittal" aria-pressed="false">矢状</button><button type="button" data-view="render" aria-pressed="false">3D</button></div>
+        <button id="reset-view" type="button" class="quiet">复位</button>
+      </div>
+      <div class="canvas-shell" id="canvas-shell">
+        <canvas id="niivue-canvas" tabindex="0" aria-label="3D 影像查看器：拖动十字线定位，滚动切片，右键拖动调整窗宽窗位"></canvas>
+        <div class="viewer-empty" id="viewer-empty"><svg width="76" height="76" viewBox="0 0 80 80" fill="none" aria-hidden="true"><rect x="17" y="17" width="46" height="46" rx="3" stroke="currentColor"/><ellipse cx="40" cy="40" rx="16" ry="20" stroke="currentColor"/><path d="M9 40h22m18 0h22M40 9v22m0 18v22" stroke="currentColor"/></svg><h3>从一张 3D 影像开始</h3><p>上传后查看原图，完成分割后检查叠加结果。</p></div>
+        <p id="viewer-error" class="viewer-error" role="alert" hidden></p>
+      </div>
+      <div class="viewer-caption"><span id="location">拖动定位 · 滚动切片 · 右键调整窗宽窗位</span><span>NiiVue 0.69.0</span></div>
+      <section class="result-panel" id="result-panel" aria-label="分割结果" hidden>
+        <div class="result-top"><h3>分割标签 <span id="label-count"></span></h3><div class="downloads"><a id="download-mask" class="download" download>下载 NIfTI</a><a id="download-result" class="quiet" download>结果 JSON</a></div></div>
+        <div class="overlay-settings"><label for="opacity">叠加不透明度 <output id="opacity-value" for="opacity">55%</output></label><input id="opacity" type="range" min="0" max="100" value="55"><button id="labels-all" type="button" class="quiet">全选</button><button id="labels-none" type="button" class="quiet">隐藏全部</button></div>
+        <div class="labels" id="labels"></div>
+        <p id="result-summary" class="muted"></p>
+      </section>
+      <p class="connection-note" id="connection-note" role="status" hidden></p>
+    </section>
+  </main>
+
+  <dialog id="login-dialog" aria-labelledby="login-title">
+    <form id="login-form"><div class="login-emblem" aria-hidden="true">M</div><h1 id="login-title">进入研究工作区</h1><p>使用访问令牌登录，查看和管理自己的影像任务。</p><label for="access-token" class="field-label">访问令牌</label><input id="access-token" name="access-token" type="password" autocomplete="current-password" required spellcheck="false"><p id="login-error" class="error" role="alert" hidden></p><button type="submit" class="primary" id="login-submit">进入工作区</button><small>Research use only · 仅供研究</small></form>
+  </dialog>
+  <noscript>请启用 JavaScript 以使用影像查看器。此页面仅供研究。</noscript>
+</body>
+</html>

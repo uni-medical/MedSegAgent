@@ -1,0 +1,2 @@
+# Preserve audited upstream bundle and license bytes (including embedded shader spacing).
+src/medsegagent/web_static/vendor/** -whitespace

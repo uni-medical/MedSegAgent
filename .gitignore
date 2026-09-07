@@ -130,6 +130,24 @@ ENV/
 env.bak/
 venv.bak/
 
+# Local TotalSegmentator runs and model/cache state
+outputs/
+.totalsegmentator/
+runtime/
+output/
+.env.*
+!.env.example
+*.nii
+*.nii.gz
+*.pth
+*.pt
+*.ckpt
+*.sqlite*
+*.db
+.playwright-cli/
+.DS_Store
+*.log
+
 # Spyder project settings
 .spyderproject
 .spyproject

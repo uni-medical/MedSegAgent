@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "medsegagent"
+version = "0.2.0"
+description = "Framework-free tool calling for local research segmentation, with CLI, MCP, Web and A2A"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "mcp==2.1.1",
+    "TotalSegmentator==2.18.0",
+    "httpx==0.28.1",
+    "starlette==1.6.0",
+    "uvicorn==0.52.4",
+    "python-dotenv==1.2.2",
+    "a2a-sdk[http-server]==1.1.2",
+    "dcm2niix==1.0.20260724",
+]
+
+[project.scripts]
+medsegagent-mcp = "medsegagent.mcp_server:main"
+medsegagent = "medsegagent.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4,<10",
+    "ruff>=0.12,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/medsegagent"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

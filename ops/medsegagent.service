@@ -1,0 +1,24 @@
+[Unit]
+Description=MedSegAgent research segmentation Web and A2A
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/mnt/disks/bulk/huangziyan/MedSegAgent
+EnvironmentFile=/mnt/disks/bulk/huangziyan/MedSegAgent/.env
+ExecStart=%h/.local/bin/uv run --frozen --no-sync medsegagent serve --host 127.0.0.1 --port 8767
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=40
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+LimitNOFILE=4096
+MemoryMax=28G
+TasksMax=256
+CPUQuota=800%
+
+[Install]
+WantedBy=default.target

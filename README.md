@@ -1,117 +1,85 @@
-# MedSegAgent: A Universal and Scalable Multi-Agent System for Instructive Medical Image Segmentation
+# MedSegAgent
 
-This work has been accepted by the *IEEE Journal of Biomedical and Health Informatics (JBHI)*. Paper: [IEEE Xplore](https://ieeexplore.ieee.org/document/11455620) | [PDF](MedSegAgent_JBHI_2026.pdf).
+A small research segmentation agent: natural language + a 3D volume → an ordinary
+function call → local inference → a NIfTI mask and structured result. The language model
+receives only the request, declared modality and allowed targets. Image bytes, paths,
+headers and masks stay on the inference host.
 
-<p align="center">
-  <img src="assets/medsegagent-framework.png" alt="MedSegAgent framework" width="100%">
-</p>
+This branch replaces the original orchestration and prompt pipeline. The published paper
+and its original experiments remain available on [main](https://github.com/uni-medical/MedSegAgent/tree/main).
+The historical dataset metadata in `dataset/` is reference material; executable targets
+come from the pinned TotalSegmentator registry.
 
-<p align="center">
-  <em>Overview of the MedSegAgent framework: natural language query parsing, coarse-to-fine dataset matching, and final segmentation with result integration.</em>
-</p>
+## Start
 
-MedSegAgent is a multi-agent system for instructive medical image segmentation. Instead of training one universal segmentation model, it orchestrates specialized dataset-specific models through natural language understanding, coarse-to-fine dataset matching, and execution-time result integration.
-
-## Key Features:
-* **Universal & Scalable:** Tackle diverse medical image segmentation tasks using natural language instructions.
-* **Precise Automation:** Automatically selects the most suitable segmentation models.
-* **Enhanced Robustness:** Improves reliability through multi-model integration and ensemble capabilities.
-
-## Overview
-MedSegAgent parses a free-form segmentation request, filters candidate datasets from modality to anatomy to label, and then runs the matched segmentation models. The current repository organizes each integrated dataset with a standardized JSON metadata entry in [`dataset/`](dataset), making it straightforward to extend the model library with new tasks.
-
-In the paper setting, MedSegAgent integrates 23 datasets and supports 343 segmentation targets across CT, MRI, PET/CT, and ultrasound-related scenarios.
-
-## Skill
-This repository also includes a reusable skill at [`skills/medsegagent-nnunet-runner/`](skills/medsegagent-nnunet-runner) for inspecting `nnUNet_results`, selecting a deployed task, and running or preparing nnUNet inference.
-
-The skill is intended for environments that already have nnUNet v2 available. To run inference, the target environment must provide a configured `nnUNet_results` path and usable nnUNet CLI or Python API support.
-
-## Supported Datasets
-The repository currently includes metadata for the following datasets and targets. The summary below is adapted from the dataset table in the paper. The links point to official dataset access pages rather than direct-download mirrors hosted by this repository; some datasets still require registration, challenge participation, or a signed data-use agreement before download.
-
-| Dataset | Modalities | Body Region | Representative Targets | Data access |
-| --- | --- | --- | --- | --- |
-| TotalSegmentator v2 | CT | Whole-body | 117 structures including organs, vessels, bones, and brain | [Zenodo](https://doi.org/10.5281/zenodo.6802613) |
-| TotalSegmentator MRI | MRI | Whole-body | 56 structures including organs, vessels, spine, muscles, and brain | [Zenodo](https://doi.org/10.5281/zenodo.11367004) |
-| CT-ORG | CT | Whole-body | liver, bladder, lungs, kidneys, bone, brain | [TCIA](https://www.cancerimagingarchive.net/collection/ct-org/) |
-| AutoPET | PET/CT | Whole-body | whole-body tumor sites | [TCIA FDG-PET-CT-Lesions](https://www.cancerimagingarchive.net/collection/fdg-pet-ct-lesions/) |
-| SegRap2023 Task1 | CT | Head and neck | 45 OAR structures | [Grand Challenge](https://segrap2023.grand-challenge.org/dataset/) |
-| BraTS21 | MRI | Head and neck | whole tumor, tumor core, enhancing tumor | [CBICA BraTS 2021](https://www.med.upenn.edu/cbica/brats2021/) |
-| ISLES22 | MRI | Head and neck | stroke lesion | [Zenodo](https://doi.org/10.5281/zenodo.7153326) |
-| ISLES22 ATLAS | MRI | Head and neck | stroke lesion | [Grand Challenge](https://atlas.grand-challenge.org/) |
-| Instance22 | CT | Head and neck | intracranial hemorrhage | [Grand Challenge](https://instance.grand-challenge.org/) |
-| HECKTOR2022 | PET/CT | Head and neck | GTVp, GTVnd | [Grand Challenge](https://hecktor.grand-challenge.org/Data/) |
-| SegRap2023 Task2 | CT | Head and neck | GTVp, GTVnd | [Grand Challenge](https://segrap2023.grand-challenge.org/dataset/) |
-| MM-WHS | MRI, CT | Heart | cardiac chambers, myocardium, great vessels | [Challenge site](https://zmiclab.github.io/zxh/0/mmwhs/) |
-| ACDC | MRI | Heart | left ventricle, right ventricle, myocardium | [Challenge site](https://www.creatis.insa-lyon.fr/Challenge/acdc/databases.html) |
-| ImageCAS | CT | Heart | coronary artery | [Kaggle](https://www.kaggle.com/datasets/xiaoweixumedicalai/imagecas) |
-| Parse22 | CT | Thorax | pulmonary artery | [Grand Challenge](https://parse2022.grand-challenge.org/Dataset/) |
-| ATM22 | CT | Thorax | pulmonary airway | [Grand Challenge](https://atm22.grand-challenge.org/) |
-| AbdomenAtlasMini | CT | Abdomen | kidneys, liver, pancreas, spleen, stomach, vessels | [Hugging Face](https://huggingface.co/datasets/AbdomenAtlas/AbdomenAtlas1.0Mini) |
-| AMOS22 Task2 | MRI, CT | Abdomen | 15 abdominal and pelvic structures | [Zenodo](https://doi.org/10.5281/zenodo.7155725) |
-| FLARE22 | CT | Abdomen | 13 abdominal organs | [Grand Challenge](https://flare22.grand-challenge.org/) |
-| WORD | CT | Abdomen | abdominal organs, bowel, bladder, femurs | [GitHub](https://github.com/HiLab-git/WORD) |
-| KiTS23 | CT | Abdomen | kidneys, renal tumors, renal cysts | [Challenge site](https://kits-challenge.org/kits23/) |
-| LiTS | CT | Abdomen | liver, liver tumor | [Kaggle](https://www.kaggle.com/datasets/andrewmvd/liver-tumor-segmentation) |
-| Adrenal-ACC-Ki67-Seg | CT | Abdomen | adrenocortical carcinoma | [TCIA](https://www.cancerimagingarchive.net/collection/adrenal-acc-ki67-seg/) |
-
-## Quick Start:
-### Setup your environment
-```
-conda create -n medsegagent python=3.12
-conda activate medsegagent
-pip install uv
-uv pip install -r requirements.txt
-```
-Then set your LLM service API keys like [OAI_CONFIG_LIST.example](OAI_CONFIG_LIST.example), the config file should be named `OAI_CONFIG_LIST`.
-```
-[
-    {
-        "model": "Qwen/Qwen2.5-32B-Instruct",
-        "api_key": "<Your API KEY>",
-        "base_url": "https://api.siliconflow.cn/v1",
-        "tags": ["silicon"]
-    },
-    {
-        "model": "gpt-4o-2024-08-06",
-        "api_key": "<Your API KEY>",
-        "base_url": "<your BASE URL>",
-        "tags": ["openai"]
-    }
-]
-```
-### Test script
-Start from eval_example.sh to try our Coarse-to-Fine setting of seg model selection.
-```
-python ./evaluate.py \
-    --test_file_path "model_selection_test_case.jsonl" \
-    --test_pattern "C2F"  \
-    --model "gpt-4o-2024-08-06"    \
-    --log_to_file
+```bash
+uv sync --frozen --group dev
+cp .env.example .env
+chmod 600 .env
+# Configure the HTTPS OpenAI-compatible endpoint, API key and private access tokens.
+uv run medsegagent doctor
+uv run medsegagent run --modality CT --text 'Segment the liver and kidneys' \
+  --input /path/to/scan.nii.gz --output outputs
+uv run medsegagent serve --host 127.0.0.1 --port 8767
 ```
 
-## Acknowledgments
-This project builds on the open contributions of the medical image segmentation community. We gratefully acknowledge the creators and maintainers of the public datasets integrated in MedSegAgent, whose annotations, benchmarks, and challenge platforms make this system possible.
+The provider model is fixed to `deepseek-v4-flash`. `.env` is local and must never be
+committed. Default compute is Apple MPS on macOS and NVIDIA CUDA on Linux; choose a GPU
+with `CUDA_VISIBLE_DEVICES`. All environments use `uv.lock`.
 
-We also acknowledge [`nnU-Net`](https://github.com/MIC-DKFZ/nnUNet), which provides the strong self-configuring segmentation framework used for the dataset-specific models in our study.
+## Interfaces
 
-## TODO
-- Upload the trained segmentation models.
+- **CLI:** `medsegagent run`; `route` tests actual function calling without an image.
+- **MCP:** `uv run medsegagent-mcp` over stdio, with `segment_ct` and `segment_mr`.
+- **Web:** NIfTI upload, natural language, durable progress, NiiVue 3D/slice overlays,
+  label visibility, opacity and authenticated downloads.
+- **A2A 1.0:** public `/.well-known/agent-card.json`, authenticated HTTP+JSON at `/a2a/v1`.
+  See [the integration contract](docs/a2a.md).
 
-## Citation
-If you use MedSegAgent in your research, please cite:
+All four adapters share `src/medsegagent/core.py`. `agent.py` makes one direct
+OpenAI-compatible HTTP request and validates the proposed tool call. `service.py` adds
+one durable SQLite task store; it does not implement another inference pipeline.
 
-```bibtex
-@ARTICLE{11455620,
-  author={Huang, Ziyan and Wang, Haoyu and Ye, Jin and Ji, Yuanfeng and Hu, Xiaowei and Liu, Lihao and Yang, Zhikai and Li, Wei and Hu, Ming and Su, Yanzhou and Li, Tianbin and Gu, Yun and Zhang, Shaoting and Qiao, Yu and Gu, Lixu and He, Junjun},
-  journal={IEEE Journal of Biomedical and Health Informatics},
-  title={MedSegAgent: A Universal and Scalable Multi-Agent System for Instructive Medical Image Segmentation},
-  year={2026},
-  volume={},
-  number={},
-  pages={1-12},
-  keywords={Image segmentation;Medical diagnostic imaging;Filtering;Solid modeling;Natural languages;Computed tomography;Computational modeling;Accuracy;Multi-agent systems;Liver;Universal Medical Image Segmentation;Multi-Agent System;Natural Language Instruction},
-  doi={10.1109/JBHI.2026.3677444}
-}
+## Models and limits
+
+| Tool | Official task | Input | Scope |
+| --- | --- | --- | --- |
+| `segment_ct` | TotalSegmentator `total` | CT | 117 anatomical structures |
+| `segment_mr` | TotalSegmentator `total_mr` | MR | 50 anatomical structures |
+
+TotalSegmentator is pinned to 2.18.0. Both base tasks use the Apache-2.0 fast models.
+An explicit empty or invalid target list fails; omit targets in the local tool only when
+requesting all structures. NIfTI cannot reliably establish modality: callers must declare
+CT or MR. Unsupported lesions or ambiguous requests fail without substituting anatomy.
+
+Web/A2A accept single-volume `.nii` and `.nii.gz`, at most 90 MiB compressed/file size
+and 2 GiB expanded. Remote URLs, inline base64 and DICOM/ZIP uploads are rejected.
+Local DICOM directory conversion has a separate strict boundary in [local tools](docs/simple-local-tools.md).
+
+## Persistence and access
+
+Each inference gets an atomically created run directory with durable state, a private
+process log and an output manifest. An OS file lock serializes GPU work across processes,
+including CLI and MCP. Timeout/cancel terminates the process group. Server jobs use
+per-identity message idempotency, a bounded queue and durable task states. Restart preserves
+completed tasks and explicitly fails interrupted jobs; it never silently redoes inference.
+
+Web uses a 12-hour HttpOnly SameSite=Strict session; HTTPS sessions are Secure. A2A uses
+separate Bearer identities. Uploads, tasks and files are owner scoped. There is no public
+data directory, arbitrary filesystem route or remote URL fetch. Input/result files expire
+under the 24-hour cleanup policy; task records remain as audit/idempotency tombstones.
+Keep research inputs de-identified; user-written text is sent to the configured LLM provider.
+
+## Verification and operations
+
+```bash
+uv run pytest
+uv run ruff check src tests
+uv run ruff format --check src tests
 ```
+
+[Deployment](docs/deployment.md) · [A2A](docs/a2a.md) · [Viewer decision](docs/viewer-decision.md)
+
+**Research use only.** This implementation is not clinical validation, a medical device,
+or evidence of patient benefit. Masks need independent review. Sample canary results
+establish execution and file geometry only.
