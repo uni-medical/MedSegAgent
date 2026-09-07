@@ -8,9 +8,14 @@ from mcp.server.mcpserver.exceptions import ToolError, UnexpectedToolError
 from medsegagent import core, mcp_server
 
 
-def test_mcp_surface_contains_exactly_two_tools():
+def test_mcp_surface_contains_supported_tools():
     tools = asyncio.run(mcp_server.mcp.list_tools())
-    assert [tool.name for tool in tools] == ["segment_ct", "segment_mr"]
+    assert [tool.name for tool in tools] == [
+        "segment_ct",
+        "segment_mr",
+        "segment_lung_nodules",
+        "segment_liver_lesions",
+    ]
     for tool in tools:
         assert set(tool.input_schema["properties"]) == {"input_path", "output_dir", "targets"}
 
@@ -48,3 +53,21 @@ def test_adapter_routes_to_shared_core(monkeypatch):
             "targets": ["liver"],
         }
     ]
+
+
+@pytest.mark.parametrize("task", ["lung_nodules", "liver_lesions"])
+def test_lesion_adapter_limits_targets_and_defaults_to_lesion(task, monkeypatch):
+    calls = []
+
+    async def record(**kwargs):
+        calls.append(kwargs)
+        return {"status": "completed"}
+
+    monkeypatch.setattr(core, "segment", record)
+    tool = getattr(mcp_server, "segment_" + task)
+    asyncio.run(tool("/synthetic.nii"))
+    assert calls[0]["task"] == task and calls[0]["targets"] == [task]
+    for bad in ([], [" "], ["lung"], [task, "liver"]):
+        with pytest.raises(ToolError):
+            asyncio.run(tool("/synthetic.nii", targets=bad))
+    assert len(calls) == 1

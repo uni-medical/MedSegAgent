@@ -9,10 +9,12 @@ For natural language use `uv run medsegagent run --modality CT --text "Segment t
 into the provider payload. `uv run medsegagent route --modality CT --text "Segment the liver"`
 is an image-free, real function-calling canary.
 
-The stdio MCP entrypoint is `uv run medsegagent-mcp`. Its two tools are `segment_ct` and
-`segment_mr`, accepting input_path, output_dir and targets. `output_dir` is always a **parent**:
+The stdio MCP entrypoint is `uv run medsegagent-mcp`. Its tools are `segment_ct`,
+`segment_mr`, `segment_lung_nodules` and `segment_liver_lesions`, accepting input_path,
+output_dir and targets. `output_dir` is always a **parent**:
 each request creates its own atomic run subdirectory, even if many clients use the same
-parent. Omit targets only for all structures. Empty lists, whitespace and unknown targets
+parent. For anatomical tools, omit targets only for all structures; each lesion tool
+defaults to its single namesake lesion target. Empty lists, whitespace and unknown targets
 fail with a readable MCP ToolError.
 
 Each run writes segmentation.nii.gz, result.json, state.json, run_report.json and process.log.
@@ -35,6 +37,12 @@ MEDSEGAGENT_TIMEOUT_SECONDS (7200), MEDSEGAGENT_MAX_INPUT_BYTES (512 MiB),
 MEDSEGAGENT_MAX_UNCOMPRESSED_BYTES (2 GiB), TOTALSEG_HOME_DIR and CUDA_VISIBLE_DEVICES.
 Set TotalSegmentator config.json send_usage_stats to false for offline usage telemetry.
 First inference may download model weights; preserve the cache for later runs.
+
+`lung_nodules` and `liver_lesions` require their standard models, never `--fast` or native
+`--roi_subset`. The common core validates the native output, preserves its private mask,
+and filters to the requested lesion label. The lung model's `lung` label is internal
+supporting anatomy and is not exposed by the dedicated nodule tool. This does not infer
+malignancy, lesion subtype, or disease absence from a nonempty/empty result.
 
 Research use only; the fast models prioritize lower resolution and runtime. An empty mask
 can reflect an absent structure or a model miss; completion is not a claim of correctness.

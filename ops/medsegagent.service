@@ -11,7 +11,9 @@ ExecStart=%h/.local/bin/uv run --frozen --no-sync medsegagent serve --host 127.0
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=40
-KillMode=control-group
+# TERM uv first; it forwards to Python so lifespan records restart before stopping inference.
+# Remaining processes still receive KILL after the main process exits or TimeoutStopSec.
+KillMode=mixed
 UMask=0077
 NoNewPrivileges=true
 PrivateTmp=true

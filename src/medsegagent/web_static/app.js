@@ -256,7 +256,7 @@
     $('download-mask').href = `${taskURL(taskID)}/files/segmentation.nii.gz`;
     $('download-result').href = `${taskURL(taskID)}/files/result.json`;
     const elapsed = result.duration_seconds ?? result.elapsed_seconds ?? result.runtime_seconds;
-    $('result-summary').textContent = [result.tool || result.task || '', Number.isFinite(elapsed) ? `推理用时 ${elapsed.toFixed(1)} 秒` : '', '请核查分割边界与标签'].filter(Boolean).join(' / ');
+    $('result-summary').textContent = [result.tool || result.task || '', Number.isFinite(elapsed) ? `推理用时 ${elapsed.toFixed(1)} 秒` : '', result.detection_status === 'no_target_detected' ? '未检出目标，不能据此排除病变' : '请核查分割边界与标签'].filter(Boolean).join(' / ');
     $('result-panel').hidden = false;
     if (apply) updateOverlay();
   }

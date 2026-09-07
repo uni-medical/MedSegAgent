@@ -13,7 +13,9 @@ from medsegagent import core
 mcp = MCPServer(
     "MedSegAgent",
     instructions=(
-        "Research use only. Choose segment_ct for CT or segment_mr for MR. "
+        "Research use only. Choose segment_ct for CT anatomy or segment_mr for MR anatomy. "
+        "For CT lung nodules use segment_lung_nodules; for CT liver lesions use segment_liver_lesions. "
+        "These lesion tools cannot diagnose disease or classify malignancy. "
         "Translate anatomy names to exact TotalSegmentator class names. "
         "Omit targets only when the user requests all supported structures. "
         "Local 3D NIfTI or a strict single-series CT/MR DICOM directory is accepted. "
@@ -74,8 +76,46 @@ def _doctor() -> dict[str, object]:
     return core.doctor()
 
 
+async def _lesion_call(task, input_path, output_dir, targets):
+    if targets is None:
+        targets = [task]
+    if not isinstance(targets, list) or targets != [task]:
+        raise ToolError(
+            f"targets must contain only '{task}'; empty or other targets are unsupported."
+        )
+    return await _call(task, input_path, output_dir, targets)
+
+
+@mcp.tool()
+async def segment_lung_nodules(
+    input_path: str, output_dir: str | None = None, targets: list[str] | None = None
+) -> dict[str, object]:
+    """Segment CT lung nodules with the dedicated standard-resolution model.
+
+    Omitted targets means ['lung_nodules']; no other targets are accepted. Accepts
+    local 3D NIfTI or the same strict CT DICOM directory boundary as segment_ct.
+    An empty result means no target was detected, not absence of disease. Does not
+    classify malignancy or support MR, arbitrary tumors, boxes or points. Research only.
+    """
+    return await _lesion_call("lung_nodules", input_path, output_dir, targets)
+
+
+@mcp.tool()
+async def segment_liver_lesions(
+    input_path: str, output_dir: str | None = None, targets: list[str] | None = None
+) -> dict[str, object]:
+    """Segment CT liver lesions with the dedicated standard-resolution model.
+
+    Omitted targets means ['liver_lesions']; no other targets are accepted. Accepts
+    local 3D NIfTI or the same strict CT DICOM directory boundary as segment_ct.
+    An empty result means no target was detected, not absence of disease. Does not
+    classify lesion subtype or malignancy and does not support MR lesions. Research only.
+    """
+    return await _lesion_call("liver_lesions", input_path, output_dir, targets)
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Two-tool MedSegAgent MCP server")
+    parser = argparse.ArgumentParser(description="MedSegAgent local segmentation MCP server")
     parser.add_argument("--transport", choices=["stdio"], default="stdio")
     parser.add_argument("--doctor", action="store_true")
     args = parser.parse_args()

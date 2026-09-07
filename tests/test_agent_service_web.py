@@ -96,6 +96,42 @@ def test_provider_projection_and_wrong_modality(monkeypatch):
         asyncio.run(agent.select_tool("liver", "CT", transport=httpx.MockTransport(handler)))
 
 
+@pytest.mark.parametrize("task", ["lung_nodules", "liver_lesions"])
+def test_dedicated_lesion_routing_is_narrow_and_ct_only(task, monkeypatch):
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://example.invalid/v1")
+    monkeypatch.setenv("OPENAI_API_KEY", "test")
+    schema = next(
+        t["function"] for t in agent.tool_schema() if t["function"]["name"] == "segment_" + task
+    )
+    assert schema["parameters"]["properties"]["targets"]["items"]["enum"] == [task]
+
+    def handler(request):
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "tool_calls": [
+                                {
+                                    "function": {
+                                        "name": "segment_" + task,
+                                        "arguments": json.dumps({"targets": [task]}),
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+        )
+
+    selected = asyncio.run(agent.select_tool(task, "CT", transport=httpx.MockTransport(handler)))
+    assert selected.task == task and selected.targets == [task]
+    with pytest.raises(agent.RoutingError, match="modality"):
+        asyncio.run(agent.select_tool(task, "MR", transport=httpx.MockTransport(handler)))
+
+
 def test_auth_upload_bounds_and_owner_isolation(tmp_path):
     with client(tmp_path) as c:
         assert c.get("/api/tasks").status_code == 401

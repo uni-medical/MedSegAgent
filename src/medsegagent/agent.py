@@ -14,10 +14,24 @@ from dataclasses import dataclass
 import httpx
 
 from medsegagent.core import task_classes
+from medsegagent.task_specs import TASK_SPECS
 
 MODEL = "deepseek-v4-flash"
 LLM_TIMEOUT_SECONDS = 90
-TOOLS = {"segment_ct": ("total", "CT"), "segment_mr": ("total_mr", "MR")}
+TOOLS = {spec.tool: (task, spec.modality) for task, spec in TASK_SPECS.items()}
+DESCRIPTIONS = {
+    "total": "CT anatomical structures; no lesion segmentation.",
+    "total_mr": "MR anatomical structures; no lesion segmentation.",
+    "lung_nodules": "CT lung nodules only. No malignancy classification or general lung tumor claim.",
+    "liver_lesions": "CT liver lesions only. No lesion subtype or malignancy classification.",
+}
+
+
+def allowed_targets(task: str) -> set[str]:
+    # Dedicated lesion tools expose the lesion, not their internal cropping anatomy.
+    if task in {"lung_nodules", "liver_lesions"}:
+        return {task}
+    return task_classes(task)
 
 
 class RoutingError(ValueError):
@@ -38,7 +52,7 @@ def tool_schema() -> list[dict]:
             "type": "function",
             "function": {
                 "name": name,
-                "description": f"Local {modality} anatomical segmentation. Research use only.",
+                "description": f"Local {modality} segmentation. {DESCRIPTIONS[task]} Research use only.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -46,7 +60,7 @@ def tool_schema() -> list[dict]:
                             "type": "array",
                             "minItems": 1,
                             "uniqueItems": True,
-                            "items": {"type": "string", "enum": sorted(task_classes(task))},
+                            "items": {"type": "string", "enum": sorted(allowed_targets(task))},
                         },
                     },
                     "required": ["targets"],
@@ -69,10 +83,13 @@ def provider_payload(text: str, modality: str) -> dict:
             {
                 "role": "system",
                 "content": (
-                    "Choose one segmentation tool matching the declared modality and requested anatomy. "
+                    "Choose one segmentation tool matching the declared modality and requested target. "
                     "Return exact supported targets. For all structures, list all allowed targets. "
                     "If the request is unsupported, ambiguous, or conflicts with the declared modality, "
-                    "explain briefly without calling a tool. Do not substitute anatomy for lesions."
+                    "explain briefly without calling a tool. Do not substitute anatomy for lesions. "
+                    "Do not call any tool if satisfying the entire request requires more than one tool. "
+                    "Never execute just part of a request. "
+                    "Lesion tools support only CT lung nodules or CT liver lesions, not diagnosis."
                 ),
             },
             {
@@ -119,9 +136,7 @@ async def select_tool(text: str, modality: str, *, transport=None) -> Selection:
         message = json.loads(body)["choices"][0]["message"]
         calls = message.get("tool_calls") or []
         if len(calls) != 1:
-            raise RoutingError(
-                "Specify one supported anatomical segmentation request and modality."
-            )
+            raise RoutingError("Specify one supported segmentation request and modality.")
         function = calls[0]["function"]
         name = function["name"]
         if name not in TOOLS or TOOLS[name][1] != modality:
@@ -130,7 +145,7 @@ async def select_tool(text: str, modality: str, *, transport=None) -> Selection:
         if not isinstance(arguments, dict) or set(arguments) != {"targets"}:
             raise RoutingError("The model returned invalid tool arguments.")
         targets = arguments["targets"]
-        allowed = task_classes(TOOLS[name][0])
+        allowed = allowed_targets(TOOLS[name][0])
         if (
             not isinstance(targets, list)
             or not targets

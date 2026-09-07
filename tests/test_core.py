@@ -545,3 +545,218 @@ def test_gzip_validation_uses_anonymous_temporary_storage(tmp_path):
         # Unlinked inode cannot survive the last descriptor closing, including a hard crash.
         assert os.fstat(stream.fileno()).st_nlink == 0
         assert stream.read(4) == struct.pack("<i", 348)
+
+
+def test_task_policy_is_an_explicit_four_tool_allowlist():
+    from dataclasses import FrozenInstanceError
+
+    from medsegagent.task_specs import TASK_SPECS
+
+    assert set(TASK_SPECS) == {"total", "total_mr", "lung_nodules", "liver_lesions"}
+    assert TASK_SPECS["total"].default_speed == "fast"
+    assert TASK_SPECS["total_mr"].modality == "MR"
+    assert TASK_SPECS["lung_nodules"].tool == "segment_lung_nodules"
+    assert TASK_SPECS["liver_lesions"].default_targets == ("liver_lesions",)
+    assert core.task_labels("lung_nodules") == {1: "lung", 2: "lung_nodules"}
+    with pytest.raises(FrozenInstanceError):
+        TASK_SPECS["lung_nodules"].modality = "MR"
+    with pytest.raises(core.SegmentationError):
+        core.task_classes("brain_structures")
+
+
+@pytest.mark.parametrize("task", ["lung_nodules", "liver_lesions"])
+def test_specialized_commands_never_pass_fast_or_roi_flags(tmp_path, task):
+    command = core._build_command(
+        task=task,
+        input_path=tmp_path / "scan.nii.gz",
+        output_dir=tmp_path,
+        targets=[task],
+        speed="standard",
+    )
+    assert command[command.index("--task") + 1] == task
+    assert not {"--fast", "--higher_order_resampling", "--roi_subset"}.intersection(command)
+    with pytest.raises(core.SegmentationError, match="standard"):
+        core._build_command(
+            task=task,
+            input_path=tmp_path / "scan.nii.gz",
+            output_dir=tmp_path,
+            targets=[task],
+            speed="fast",
+        )
+    with pytest.raises(core.SegmentationError, match="standard"):
+        asyncio.run(
+            core.segment(task=task, input_path="unused.nii.gz", targets=[task], speed="fast")
+        )
+    with pytest.raises(core.SegmentationError, match="non-empty"):
+        asyncio.run(core.segment(task=task, input_path="unused.nii.gz", targets=[]))
+
+
+async def fake_specialized(command, *, output_dir, on_start, **kwargs):
+    task = command[command.index("--task") + 1]
+    values = np.zeros((3, 4, 5), dtype=np.uint8)
+    if task == "lung_nodules":
+        values[:] = 1  # native task emits a lung label as well as the requested nodules
+        values[0, 0, :2] = 2
+    else:
+        values[0, 0, :2] = 1
+    on_start(os.getpid())
+    image_at(output_dir / "segmentation.nii.gz", values)
+    (output_dir / "run_report.json").write_text("{}")
+
+
+@pytest.mark.parametrize("task", ["lung_nodules", "liver_lesions"])
+def test_specialized_default_speed_and_audited_subset_filter(tmp_path, monkeypatch, task):
+    source = image_at(tmp_path / "ct.nii.gz")
+    monkeypatch.setattr(core, "_run_command", fake_specialized)
+    result = asyncio.run(core.segment(task=task, input_path=str(source), targets=[task]))
+    run = Path(result["output_dir"])
+    assert result["status"] == "completed"
+    assert result["speed"] == "standard"
+    assert result["detection_status"] == "target_detected"
+    assert result["no_target_detected"] is False
+    assert result["nonzero_voxels"] == 2
+    assert [label["name"] for label in result["labels"]] == [task]
+    expected_label = 2 if task == "lung_nodules" else 1
+    assert set(np.unique(np.asanyarray(nib.load(result["segmentation_path"]).dataobj))) == {
+        0,
+        expected_label,
+    }
+    audit = json.loads((run / "filtering.json").read_text())
+    assert audit["retained_label_ids"] == [expected_label]
+    assert audit["geometry_preserved"] is True
+    assert audit["raw_sha256"] == core._file_digest(run / "segmentation.raw.nii.gz")
+    assert audit["segmentation_sha256"] == core._file_digest(run / "segmentation.nii.gz")
+    assert not list(run.glob(".filtered-*"))
+    assert (run / "filtering.json").stat().st_mode & 0o777 == 0o600
+
+
+def test_empty_nodule_prediction_is_legal_and_does_not_exclude_disease(tmp_path, monkeypatch):
+    source = image_at(tmp_path / "ct.nii.gz")
+
+    async def lung_only(command, **kwargs):
+        await fake_specialized(command, **kwargs)
+        image_at(kwargs["output_dir"] / "segmentation.nii.gz", np.ones((3, 4, 5), dtype=np.uint8))
+
+    monkeypatch.setattr(core, "_run_command", lung_only)
+    result = asyncio.run(
+        core.segment(task="lung_nodules", input_path=str(source), targets=["lung_nodules"])
+    )
+    assert result["status"] == "completed"
+    assert result["detection_status"] == "no_target_detected"
+    assert result["no_target_detected"] is True
+    assert result["labels"] == []
+    assert result["nonzero_voxels"] == 0
+    assert "does not rule out disease" in result["warning"]
+    assert result["filtering"]["raw_nonzero_voxels"] == 60
+    assert result["filtering"]["filtered_nonzero_voxels"] == 0
+
+
+def test_native_specialized_mask_is_validated_before_filtering(tmp_path, monkeypatch):
+    source = image_at(tmp_path / "ct.nii.gz")
+
+    async def invalid(command, **kwargs):
+        await fake_specialized(command, **kwargs)
+        image_at(
+            kwargs["output_dir"] / "segmentation.nii.gz", np.full((3, 4, 5), 99, dtype=np.uint8)
+        )
+
+    monkeypatch.setattr(core, "_run_command", invalid)
+    with pytest.raises(core.SegmentationError, match="outside") as error:
+        asyncio.run(
+            core.segment(task="lung_nodules", input_path=str(source), targets=["lung_nodules"])
+        )
+    assert not (error.value.run_dir / "segmentation.raw.nii.gz").exists()
+    assert not (error.value.run_dir / "result.json").exists()
+
+
+@pytest.mark.parametrize("version", [1, 2])
+def test_filter_preserves_voxel_locations_and_rotated_geometry(tmp_path, version):
+    path = tmp_path / "segmentation.nii.gz"
+    values = (np.arange(60).reshape((3, 4, 5)) % 3).astype(np.uint8)
+    affine = np.array([[0, -1, 0, 3], [2, 0, 0, 7], [0, 0, 3, -5], [0, 0, 0, 1]], dtype=float)
+    constructor = nib.Nifti1Image if version == 1 else nib.Nifti2Image
+    nib.save(constructor(values, affine), path)
+    original_sha = core._file_digest(path)
+    result = core._filter_segmentation(
+        path, labels=core.task_labels("lung_nodules"), targets=["lung_nodules"]
+    )
+    filtered = nib.load(path)
+    np.testing.assert_array_equal(np.asanyarray(filtered.dataobj), np.where(values == 2, 2, 0))
+    np.testing.assert_array_equal(filtered.affine, affine)
+    assert result["audit"]["raw_sha256"] == original_sha
+    assert result["geometry"]["shape"] == [3, 4, 5]
+
+
+@pytest.mark.parametrize("mode", ["cancel", "timeout"])
+def test_filter_cancellation_and_timeout_preserve_raw_without_partial_public_mask(
+    tmp_path, monkeypatch, mode
+):
+    import threading
+    from contextlib import contextmanager
+
+    source = image_at(tmp_path / "ct.nii.gz")
+    monkeypatch.setattr(core, "_run_command", fake_specialized)
+    if mode == "timeout":
+        monkeypatch.setenv("MEDSEGAGENT_TIMEOUT_SECONDS", "1")
+    entered = threading.Event()
+    original = core._uncompressed_nifti
+
+    @contextmanager
+    def observed(path, limit, _stop_event=None):
+        with original(path, limit, _stop_event) as stream:
+            if path.name == "segmentation.raw.nii.gz":
+                entered.set()
+                assert _stop_event is not None
+                assert _stop_event.wait(3), "Filtering cancellation did not signal its reader"
+            yield stream
+
+    monkeypatch.setattr(core, "_uncompressed_nifti", observed)
+
+    async def scenario():
+        operation = asyncio.create_task(
+            core.segment(task="lung_nodules", input_path=str(source), targets=["lung_nodules"])
+        )
+        assert await asyncio.to_thread(entered.wait, 2)
+        if mode == "cancel":
+            operation.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await operation
+        else:
+            with pytest.raises(core.SegmentationError, match="timeout"):
+                await operation
+
+    asyncio.run(scenario())
+    run = next((tmp_path / "outputs").iterdir())
+    assert core.read_run(run)["status"] == ("cancelled" if mode == "cancel" else "failed")
+    assert (run / "segmentation.raw.nii.gz").is_file()
+    assert not (run / "segmentation.nii.gz").exists()
+    assert not (run / "result.json").exists()
+    assert not list(run.glob(".filtered-*"))
+
+
+@pytest.mark.parametrize("task", ["lung_nodules", "liver_lesions"])
+def test_dicom_preflight_uses_specialized_task_modality(tmp_path, task):
+    ct = dicom_at(tmp_path / "ct", modality="CT")
+    mr = dicom_at(tmp_path / "mr", modality="MR")
+    assert core.validate_input(str(ct), task) == ct
+    with pytest.raises(core.SegmentationError, match="modality"):
+        core.validate_input(str(mr), task)
+
+
+@pytest.mark.parametrize(
+    "targets,expected_name,expected_voxels",
+    [
+        (None, "lung_nodules", 2),
+        (["lung"], "lung", 58),
+    ],
+)
+def test_lung_defaults_to_nodules_but_core_accepts_explicit_native_class(
+    tmp_path, monkeypatch, targets, expected_name, expected_voxels
+):
+    source = image_at(tmp_path / "ct.nii.gz")
+    monkeypatch.setattr(core, "_run_command", fake_specialized)
+    result = asyncio.run(core.segment(task="lung_nodules", input_path=str(source), targets=targets))
+    assert result["targets"] == [expected_name]
+    assert [label["name"] for label in result["labels"]] == [expected_name]
+    assert result["nonzero_voxels"] == expected_voxels
+    assert Path(result["filtering"]["raw_segmentation_path"]).stat().st_mode & 0o777 == 0o600

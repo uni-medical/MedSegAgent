@@ -354,13 +354,24 @@ class Service:
                         "segmentation_shape",
                         "segmentation_voxel_spacing",
                         "runtime_seconds",
+                        "nonzero_voxels",
+                        "detection_status",
+                        "speed",
                     )
                     if k in result
                 }
                 public.update(
                     model=agent.MODEL,
                     tool=selected.tool,
-                    warning="Research use only. Outputs require review; no clinical validation.",
+                    no_target_detected=result.get("detection_status") == "no_target_detected",
+                    warning=(
+                        "Research use only. Outputs require review; no clinical validation."
+                        + (
+                            " No requested target was detected; this does not rule out disease."
+                            if result.get("detection_status") == "no_target_detected"
+                            else ""
+                        )
+                    ),
                 )
                 files = [
                     {

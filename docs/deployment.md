@@ -49,7 +49,7 @@ is 7200 seconds including queue/routing/inference; LLM selection has a 90-second
 `readyz` checks the process, LLM configuration presence and SQLite only. Run the real canary:
 
 ```bash
-uv run python ops/acceptance.py --url https://medseg.huangziyan97.com \\
+uv run python ops/acceptance.py --url https://medseg.huangziyan97.com \
   --input /path/to/deidentified-research-ct.nii.gz --output outputs/acceptance/public
 ```
 
@@ -61,7 +61,17 @@ refresh, failure and mobile checks as well. Do not substitute synthetic tests fo
 Restart only after inspecting active tasks. Completed Tasks and original message IDs survive
 restart. Interrupted routing/inference gets an explicit failed state; retry requires a new
 messageId. Queued work can resume within its original time limit. Cancel terminates the whole
-inference process group. systemd KillMode=control-group also contains abrupt shutdowns.
+inference process group. The unit uses `KillMode=mixed`: systemd first sends SIGTERM
+only to the main `uv` process, which forwards it to Python. The ASGI lifespan marks
+the service closed before canceling inference, so a restart is recorded as
+`SERVER_RESTART`. Sending TERM to every process simultaneously with `control-group`
+can instead let the inference process exit first and be misclassified as
+`INFERENCE_FAILED`. Remaining processes still receive SIGKILL if the main process
+exits or the 40-second stop timeout expires. Do not use `KillMode=process` or disable
+the final kill. This shutdown order relies on the verified uv signal forwarding and
+must be rechecked if the process launcher changes. See the official
+[systemd kill semantics](https://www.freedesktop.org/software/systemd/man/latest/systemd.kill.html)
+and [uv signal handling](https://docs.astral.sh/uv/concepts/projects/run/#signal-handling).
 
 Input/result files are removed after the 24-hour retention window (cleanup runs every 15
 minutes), except inputs currently referenced by active work. Unregistered upload directories

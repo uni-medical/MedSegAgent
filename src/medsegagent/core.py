@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import fcntl
 import gzip
+import hashlib
 import importlib.metadata
 import io
 import json
@@ -25,7 +26,8 @@ from pathlib import Path
 from shutil import which
 from typing import Literal
 
-Task = Literal["total", "total_mr"]
+from medsegagent.task_specs import TASK_SPECS, Task
+
 DEFAULT_TIMEOUT_SECONDS = 7200
 DEFAULT_MAX_INPUT_BYTES = 512 * 1024 * 1024
 DEFAULT_MAX_UNCOMPRESSED_BYTES = 2 * 1024 * 1024 * 1024
@@ -47,8 +49,8 @@ def task_classes(task: str) -> set[str]:
 def task_labels(task: str) -> dict[int, str]:
     from totalsegmentator.registry import get_task_classes
 
-    if task not in {"total", "total_mr"}:
-        raise SegmentationError("task must be 'total' (CT) or 'total_mr' (MR).")
+    if task not in TASK_SPECS:
+        raise SegmentationError(f"task must be one of: {', '.join(TASK_SPECS)}.")
     return get_task_classes(task)
 
 
@@ -122,9 +124,9 @@ def _inspect_dicom_directory(
     import pydicom
     from pydicom.uid import CTImageStorage, MRImageStorage
 
-    if task not in {"total", "total_mr"}:
-        raise SegmentationError("DICOM requires an explicit CT task 'total' or MR task 'total_mr'.")
-    modality = "CT" if task == "total" else "MR"
+    if task not in TASK_SPECS:
+        raise SegmentationError("DICOM requires an explicit supported task with CT or MR modality.")
+    modality = TASK_SPECS[task].modality
     sop_class = str(CTImageStorage if modality == "CT" else MRImageStorage)
     limit = _positive_int("MEDSEGAGENT_MAX_INPUT_BYTES", DEFAULT_MAX_INPUT_BYTES)
     decoded_limit = _positive_int(
@@ -423,6 +425,103 @@ def _inspect_nifti(
         raise SegmentationError("Input is not a readable, complete NIfTI image.") from exc
 
 
+def _file_digest(path: Path, _stop_event=None) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        while block := stream.read(1024 * 1024):
+            _check_stop(_stop_event)
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _filter_segmentation(
+    path: Path, *, labels: dict[int, str], targets: list[str], _stop_event=None
+) -> dict[str, object]:
+    """Filter a validated native mask without changing geometry or label values.
+
+    The original remains private. Plane-wise filtering and chunked compression bound
+    memory and make cancellation observable throughout output creation. A partial file
+    never replaces the public segmentation filename.
+    """
+    import nibabel as nib
+    import numpy as np
+
+    retained = sorted(index for index, name in labels.items() if name in targets)
+    if not retained:
+        raise SegmentationError("Filtering requires at least one supported target.")
+    raw_path = path.with_name("segmentation.raw.nii.gz")
+    temporary = path.with_name(f".filtered-{uuid.uuid4().hex}.nii.gz")
+    if raw_path.exists():
+        raise SegmentationError("A private raw mask already exists; refusing to replace it.")
+    _check_stop(_stop_event)
+    path.rename(raw_path)
+    os.chmod(raw_path, 0o600)
+    limit = _positive_int("MEDSEGAGENT_MAX_UNCOMPRESSED_BYTES", DEFAULT_MAX_UNCOMPRESSED_BYTES)
+    try:
+        with (
+            _uncompressed_nifti(raw_path, limit, _stop_event) as source,
+            tempfile.TemporaryFile(mode="w+b") as filtered,
+        ):
+            prefix = source.read(4)
+            header_sizes = {struct.unpack("<i", prefix)[0], struct.unpack(">i", prefix)[0]}
+            image_type = nib.Nifti2Image if 540 in header_sizes else nib.Nifti1Image
+            source.seek(0)
+            image = image_type.from_file_map({"image": nib.FileHolder(fileobj=source)}, mmap=False)
+            if image.dataobj.slope != 1 or image.dataobj.inter != 0:
+                raise SegmentationError(
+                    "Native mask intensity scaling must be identity before target filtering."
+                )
+            offset = int(image.dataobj.offset)
+            source.seek(0)
+            remaining = offset
+            while remaining:
+                _check_stop(_stop_event)
+                block = source.read(min(1024 * 1024, remaining))
+                if not block:
+                    raise SegmentationError("Native mask header is truncated.")
+                filtered.write(block)
+                remaining -= len(block)
+            for z in range(image.shape[2]):
+                _check_stop(_stop_event)
+                plane = np.asanyarray(image.dataobj[:, :, z])
+                values = np.where(np.isin(plane, retained), plane, 0).astype(
+                    image.get_data_dtype(), copy=False
+                )
+                filtered.write(values.tobytes(order="F"))
+            filtered.seek(0)
+            with temporary.open("xb") as destination:
+                os.chmod(temporary, 0o600)
+                with gzip.GzipFile(
+                    filename="", mode="wb", fileobj=destination, mtime=0
+                ) as compressed:
+                    while block := filtered.read(1024 * 1024):
+                        _check_stop(_stop_event)
+                        compressed.write(block)
+                destination.flush()
+                os.fsync(destination.fileno())
+        geometry = _inspect_nifti(temporary, label_map=labels, _stop_event=_stop_event)
+        if any(row["name"] not in targets for row in geometry["labels"]):
+            raise SegmentationError("Filtered mask contains an unrequested target.")
+        raw_sha256 = _file_digest(raw_path, _stop_event)
+        filtered_sha256 = _file_digest(temporary, _stop_event)
+        _check_stop(_stop_event)
+        os.replace(temporary, path)
+        return {
+            "geometry": geometry,
+            "audit": {
+                "operation": "retain_requested_label_ids",
+                "requested_targets": targets,
+                "retained_label_ids": retained,
+                "raw_segmentation_path": str(raw_path),
+                "raw_sha256": raw_sha256,
+                "segmentation_sha256": filtered_sha256,
+                "geometry_preserved": True,
+            },
+        }
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def validate_input(input_path: str, task: Task | None = None, *, _stop_event=None) -> Path:
     path = Path(input_path).expanduser().resolve()
     if not path.is_file():
@@ -525,6 +624,13 @@ async def _inference_lock(deadline: float):
 def _build_command(
     *, task: str, input_path: Path, output_dir: Path, targets: list[str] | None, speed: str
 ) -> list[str]:
+    if task not in TASK_SPECS:
+        raise SegmentationError("Unsupported local task.")
+    spec = TASK_SPECS[task]
+    if speed not in {"fast", "standard"}:
+        raise SegmentationError("speed must be 'fast' or 'standard'.")
+    if speed == "fast" and spec.default_speed == "standard":
+        raise SegmentationError(f"{task} requires standard mode; fast mode is unsupported.")
     executable = which("TotalSegmentator")
     if executable is None:
         candidate = Path(os.sys.executable).parent / "TotalSegmentator"
@@ -550,7 +656,7 @@ def _build_command(
     ]
     if speed == "fast":
         command.extend(["--fast", "--higher_order_resampling"])
-    if targets is not None:
+    if targets is not None and spec.supports_roi:
         command.extend(["--roi_subset", *targets])
     return command
 
@@ -631,9 +737,11 @@ async def segment(
     input_path: str,
     output_dir: str | None = None,
     targets: list[str] | None = None,
-    speed: Literal["fast", "standard"] = "fast",
+    speed: Literal["fast", "standard"] | None = None,
 ) -> dict[str, object]:
-    """Run local inference; output_dir is a parent, and targets=None requests all anatomy.
+    """Run local inference; output_dir is a parent and omitted targets use task defaults.
+
+    Anatomy tasks default to all native classes; specialized tasks default to their lesion.
 
     task explicitly declares CT/MR. DICOM directories are strictly preflighted and
     converted from a private snapshot; ZIP is rejected. Cancellation stops readers and
@@ -658,9 +766,17 @@ async def segment(
     update()
     (run / "process.log").touch(mode=0o600)
     try:
+        spec = TASK_SPECS.get(task)
+        if spec is None:
+            raise SegmentationError(f"task must be one of: {', '.join(TASK_SPECS)}.")
+        if targets is None and spec.default_targets is not None:
+            targets = list(spec.default_targets)
+        normalized = normalize_targets(task, targets)
+        speed = spec.default_speed if speed is None else speed
         if speed not in {"fast", "standard"}:
             raise SegmentationError("speed must be 'fast' or 'standard'.")
-        normalized = normalize_targets(task, targets)
+        if speed == "fast" and spec.default_speed == "standard":
+            raise SegmentationError(f"{task} requires standard mode; fast mode is unsupported.")
         selected_device = device()
         timeout = _positive_int("MEDSEGAGENT_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS)
         deadline = time.monotonic() + timeout
@@ -744,6 +860,29 @@ async def segment(
             reference.affine, geometry["affine"], rtol=1e-5, atol=1e-4
         ):
             raise SegmentationError("Segmentation geometry does not match the input volume.")
+        filtering = None
+        if normalized is not None and not spec.supports_roi:
+            update(status="filtering")
+            native_geometry = geometry
+            filtered = await _validation(
+                _filter_segmentation,
+                segmentation_path,
+                labels=task_labels(task),
+                targets=normalized,
+                timeout_seconds=deadline - time.monotonic(),
+            )
+            geometry = filtered["geometry"]
+            if geometry["shape"] != native_geometry["shape"] or not np.allclose(
+                geometry["affine"], native_geometry["affine"], rtol=1e-5, atol=1e-4
+            ):
+                raise SegmentationError("Filtering changed the native mask geometry.")
+            filtering = filtered["audit"]
+            filtering.update(
+                raw_labels=native_geometry["labels"],
+                raw_nonzero_voxels=native_geometry["nonzero_voxels"],
+                filtered_nonzero_voxels=geometry["nonzero_voxels"],
+            )
+            _write_json(run / "filtering.json", filtering)
         if normalized is not None and any(
             row["name"] not in normalized for row in geometry["labels"]
         ):
@@ -764,11 +903,22 @@ async def segment(
             "segmentation_affine": geometry["affine"],
             "labels": geometry["labels"],
             "nonzero_voxels": geometry["nonzero_voxels"],
+            "detection_status": "target_detected"
+            if geometry["nonzero_voxels"]
+            else "no_target_detected",
+            "no_target_detected": not bool(geometry["nonzero_voxels"]),
             "runtime_seconds": inference_seconds,
             "total_seconds": time.monotonic() - started,
             "totalsegmentator_version": importlib.metadata.version("TotalSegmentator"),
-            "warning": WARNING,
+            "warning": WARNING
+            + (
+                " No requested target was detected; this does not rule out disease."
+                if not geometry["nonzero_voxels"]
+                else ""
+            ),
         }
+        if filtering is not None:
+            result["filtering"] = filtering
         _write_json(run / "result.json", result)
         update(status="completed", result=result)
         return result

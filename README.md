@@ -30,7 +30,7 @@ with `CUDA_VISIBLE_DEVICES`. All environments use `uv.lock`.
 ## Interfaces
 
 - **CLI:** `medsegagent run`; `route` tests actual function calling without an image.
-- **MCP:** `uv run medsegagent-mcp` over stdio, with `segment_ct` and `segment_mr`.
+- **MCP:** `uv run medsegagent-mcp` over stdio, with the four local tools below.
 - **Web:** NIfTI upload, natural language, durable progress, NiiVue 3D/slice overlays,
   label visibility, opacity and authenticated downloads.
 - **A2A 1.0:** public `/.well-known/agent-card.json`, authenticated HTTP+JSON at `/a2a/v1`.
@@ -46,11 +46,18 @@ one durable SQLite task store; it does not implement another inference pipeline.
 | --- | --- | --- | --- |
 | `segment_ct` | TotalSegmentator `total` | CT | 117 anatomical structures |
 | `segment_mr` | TotalSegmentator `total_mr` | MR | 50 anatomical structures |
+| `segment_lung_nodules` | TotalSegmentator `lung_nodules` / Dataset913 | CT | Lung nodule mask; no malignancy classification |
+| `segment_liver_lesions` | TotalSegmentator `liver_lesions` / Dataset591 | CT | Liver lesion mask; no subtype or malignancy classification |
 
 TotalSegmentator is pinned to 2.18.0. Both base tasks use the Apache-2.0 fast models.
 An explicit empty or invalid target list fails; omit targets in the local tool only when
 requesting all structures. NIfTI cannot reliably establish modality: callers must declare
-CT or MR. Unsupported lesions or ambiguous requests fail without substituting anatomy.
+CT or MR. The two specialized CT models use their standard resolution and local model-based
+organ cropping. Their tools return only the requested lesion label; the private native
+output remains available for audit. Empty masks return `no_target_detected`, which does
+not exclude disease. MR lesions, arbitrary tumors, spatial prompts and diagnosis are
+unsupported. Each request must fit one tool; unsupported or ambiguous requests are refused.
+See [candidate research](docs/model-candidates.md) and [actual acceptance](docs/validation.md).
 
 Web/A2A accept single-volume `.nii` and `.nii.gz`, at most 90 MiB compressed/file size
 and 2 GiB expanded. Remote URLs, inline base64 and DICOM/ZIP uploads are rejected.
@@ -77,6 +84,8 @@ uv run pytest
 uv run ruff check src tests
 uv run ruff format --check src tests
 ```
+
+[Web](https://medseg.huangziyan97.com) · [Agent Card](https://medseg.huangziyan97.com/.well-known/agent-card.json)
 
 [Deployment](docs/deployment.md) · [A2A](docs/a2a.md) · [Viewer decision](docs/viewer-decision.md)
 

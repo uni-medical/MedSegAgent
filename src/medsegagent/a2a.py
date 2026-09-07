@@ -86,6 +86,9 @@ _RESULT_FIELDS = frozenset(
         "segmentation_shape",
         "segmentation_voxel_spacing",
         "nonzero_voxels",
+        "detection_status",
+        "no_target_detected",
+        "speed",
         "runtime_seconds",
         "model",
     }
@@ -143,8 +146,9 @@ def build_agent_card(
         name="MedSegAgent",
         version=__version__,
         description=(
-            "Research-only local 3D anatomical segmentation using TotalSegmentator CT total "
-            "and MR total_mr. Upload a .nii or .nii.gz through authenticated POST /api/uploads "
+            "Research-only local 3D segmentation using TotalSegmentator CT total, MR total_mr, "
+            "CT lung_nodules and CT liver_lesions. Upload a .nii or .nii.gz as the raw body of "
+            "authenticated POST /api/uploads with X-Filename and Content-Type application/octet-stream "
             "first, then send natural language plus its upload_id and explicit CT/MR modality. "
             "Only same-service, caller-owned upload references are accepted; remote URLs, "
             "inline base64, DICOM uploads and image data sent to the LLM are unsupported. "
@@ -187,11 +191,23 @@ def build_agent_card(
                     "Provide one text request and one data Part with upload_id and modality CT/MR, "
                     "or a same-service /api/uploads/{id}/file URL and a modality data Part. "
                     "Supported targets are restricted by the CT total or MR total_mr tool. "
-                    "No lesion detection, diagnosis or clinical performance is claimed."
+                    "No diagnosis or clinical performance is claimed."
                 ),
                 tags=["research", "3d", "nifti", "ct", "mr", "segmentation"],
                 examples=["Segment the liver and spleen in this uploaded CT volume."],
-            )
+            ),
+            AgentSkill(
+                id="local-ct-lesion-segmentation",
+                name="Local CT lung nodule or liver lesion segmentation",
+                description=(
+                    "The same owned NIfTI upload contract accepts a request for CT lung nodules "
+                    "or CT liver lesions, using one dedicated tool per task. MR lesions, arbitrary "
+                    "tumors, spatial prompts, lesion subtype and malignancy classification are "
+                    "unsupported. An empty mask means no target detected, not absence of disease."
+                ),
+                tags=["research", "3d", "nifti", "ct", "lung-nodules", "liver-lesions"],
+                examples=["Segment lung nodules in this uploaded CT volume."],
+            ),
         ],
     )
 
@@ -306,7 +322,7 @@ def project_task(row: dict, public_url: str, modes: tuple[str, ...] = _MODES) ->
         status=TaskStatus(
             state=_STATES[phase],
             message=Message(
-                message_id=f"{row['id']}-status",
+                message_id=f"{row['id']}-status-{phase}",
                 task_id=row["id"],
                 context_id=row["context_id"],
                 role=Role.ROLE_AGENT,
@@ -349,6 +365,10 @@ def project_task(row: dict, public_url: str, modes: tuple[str, ...] = _MODES) ->
                             "Local segmentation completed, but its result files have expired. "
                             "Submit a new upload and message to rerun. Research use only."
                             if row.get("files_expired")
+                            else "Local segmentation completed. No requested target was detected; "
+                            "this does not rule out disease. Research use only. Download the mask "
+                            "using the same Bearer identity."
+                            if result.get("detection_status") == "no_target_detected"
                             else "Local segmentation completed. Research use only. Download the mask "
                             "using the same Bearer identity."
                         ),

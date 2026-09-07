@@ -12,7 +12,7 @@ from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
-from medsegagent.a2a import routes
+from medsegagent.a2a import project_task, routes
 
 
 class FakeService:
@@ -118,6 +118,19 @@ def request(message_id="one", **configuration):
 
 def reason(response):
     return response.json()["error"]["details"][0]["reason"]
+
+
+def test_status_messages_have_unique_ids_for_distinct_phase_content():
+    messages = []
+    for phase in ("queued", "routing", "running", "completed", "failed", "canceled"):
+        row = {"id": "task-1", "context_id": "context-1", "status": phase, "result": None}
+        message = project_task(row, "https://medseg.example.org").status.message
+        repeated = project_task(row, "https://medseg.example.org").status.message
+        assert message.message_id == repeated.message_id
+        assert message == repeated
+        messages.append(message)
+    assert len({message.parts[0].text for message in messages}) == len(messages)
+    assert len({message.message_id for message in messages}) == len(messages)
 
 
 def test_public_card_uses_v1_sdk_schema_and_declares_file_boundary(fixture):
@@ -430,3 +443,109 @@ def test_real_shared_service_upload_idempotency_owner_and_restart(tmp_path, monk
         assert replay.json()["task"]["id"] == task_id
         assert client.get(f"/api/uploads/{upload_id}/file", headers=alice).content == volume
         assert client.get(f"/api/uploads/{upload_id}/file", headers=bob).status_code == 404
+
+
+@pytest.mark.parametrize("task_name", ["lung_nodules", "liver_lesions"])
+@pytest.mark.parametrize("nonzero_voxels", [0, 2])
+def test_shared_lesion_results_preserve_detection_semantics_without_raw_paths(
+    tmp_path, monkeypatch, task_name, nonzero_voxels
+):
+    """Real upload, SQLite, Web/A2A projection and restart with only inference mocked."""
+    import gzip
+    from pathlib import Path
+
+    import nibabel as nib
+    import numpy as np
+
+    from medsegagent import agent, core
+    from medsegagent.web import create_app
+
+    empty = nonzero_voxels == 0
+    detection_status = "no_target_detected" if empty else "target_detected"
+    private_marker = "private-filtering-audit-must-not-leak"
+    values = np.zeros((4, 5, 6), dtype=np.uint8)
+    values.ravel()[:nonzero_voxels] = 2
+
+    async def select(*args, **kwargs):
+        return agent.Selection("segment_" + task_name, task_name, [task_name])
+
+    async def segment(**kwargs):
+        run = Path(kwargs["output_dir"]) / "unique-run"
+        run.mkdir(parents=True)
+        mask = run / "segmentation.nii.gz"
+        raw_mask = run / "segmentation.raw.nii.gz"
+        nib.save(nib.Nifti1Image(values, np.eye(4)), mask)
+        raw_mask.write_bytes(mask.read_bytes())
+        return {
+            "task": task_name,
+            "targets": [task_name],
+            "speed": "standard",
+            "labels": [] if empty else [{"id": 2, "name": task_name, "voxels": 2}],
+            "nonzero_voxels": nonzero_voxels,
+            "detection_status": detection_status,
+            "no_target_detected": empty,
+            "segmentation_path": str(mask),
+            "filtering": {"raw_segmentation_path": str(raw_mask), "private": private_marker},
+            "warning": f"{private_marker}: {raw_mask}",
+        }
+
+    monkeypatch.setattr(agent, "select_tool", select)
+    monkeypatch.setattr(core, "segment", segment)
+    token = "a" * 40
+    auth = {"Authorization": "Bearer " + token, "A2A-Version": "1.0"}
+    volume = nib.Nifti1Image(np.ones((4, 5, 6), dtype=np.int16), np.eye(4)).to_bytes()
+
+    def app():
+        return create_app(tmp_path, "https://medseg.example.org", tokens={"alice": token})
+
+    with TestClient(app()) as client:
+        upload = client.post(
+            "/api/uploads", content=volume, headers={**auth, "X-Filename": "synthetic.nii"}
+        )
+        assert upload.status_code == 201
+        payload = request(returnImmediately=False)
+        payload["message"]["parts"][0]["text"] = f"Segment {task_name}"
+        payload["message"]["parts"][1]["data"]["upload_id"] = upload.json()["id"]
+        sent = client.post("/a2a/v1/message:send", json=payload, headers=auth)
+        assert sent.status_code == 200, sent.text
+        task = sent.json()["task"]
+        assert task["status"]["state"] == "TASK_STATE_COMPLETED"
+        task_id = task["id"]
+        result = next(
+            a["parts"][0]["data"] for a in task["artifacts"] if a["artifactId"] == "result-json"
+        )
+        assert result["detection_status"] == detection_status
+        assert result["no_target_detected"] is empty
+        assert result["nonzero_voxels"] == nonzero_voxels
+        assert result["speed"] == "standard"
+        assert ("does not rule out disease" in result["warning"]) is empty
+        summary = next(a for a in task["artifacts"] if a["artifactId"] == "summary")
+        assert ("does not rule out disease" in summary["parts"][0]["text"]) is empty
+
+        web = client.get(f"/api/tasks/{task_id}", headers=auth)
+        downloaded = client.get(f"/api/tasks/{task_id}/files/result.json", headers=auth)
+        assert downloaded.status_code == 200
+        for public in (web.json()["result"], downloaded.json()):
+            assert public["no_target_detected"] is empty
+            assert public["detection_status"] == detection_status
+            assert public["nonzero_voxels"] == nonzero_voxels
+            assert ("does not rule out disease" in public["warning"]) is empty
+        for serialized in (sent.text, web.text, downloaded.text):
+            assert str(tmp_path) not in serialized
+            assert private_marker not in serialized
+            assert "segmentation.raw" not in serialized
+            assert "filtering" not in serialized
+        mask = client.get(f"/api/tasks/{task_id}/files/segmentation.nii.gz", headers=auth)
+        assert mask.status_code == 200
+        image = nib.Nifti1Image.from_bytes(gzip.decompress(mask.content))
+        assert np.count_nonzero(np.asanyarray(image.dataobj)) == nonzero_voxels
+        for private_name in ("segmentation.raw.nii.gz", "filtering.json", "process.log"):
+            assert (
+                client.get(f"/api/tasks/{task_id}/files/{private_name}", headers=auth).status_code
+                == 404
+            )
+
+    with TestClient(app()) as client:
+        recovered = client.get(f"/a2a/v1/tasks/{task_id}", headers=auth)
+        assert recovered.status_code == 200
+        assert recovered.json()["artifacts"] == task["artifacts"]

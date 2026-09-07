@@ -7,7 +7,7 @@ the current deployment and real-model test status.
 
 | Item | Value |
 | --- | --- |
-| Planned public interface | `https://medseg.huangziyan97.com/a2a/v1` |
+| Public interface | `https://medseg.huangziyan97.com/a2a/v1` |
 | Public Agent Card | `https://medseg.huangziyan97.com/.well-known/agent-card.json` |
 | Protocol | A2A 1.0 HTTP+JSON; SDK pinned to PyPI release 1.1.2 |
 | Required headers | `A2A-Version: 1.0`, `Authorization: Bearer <token>` |
