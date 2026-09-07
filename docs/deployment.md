@@ -26,6 +26,21 @@ systemctl --user enable --now medsegagent.service
 systemctl --user status medsegagent.service
 ```
 
+Preload weights before accepting work; the TotalSegmentator downloader uses one shared
+temporary filename, so run these commands sequentially:
+
+```bash
+uv run totalseg_download_weights --task total_fast
+uv run totalseg_download_weights --task total_fast_mr
+uv run totalseg_download_weights --task lung_nodules
+uv run totalseg_download_weights --task liver_lesions
+uv run python ops/verify_weights.py
+```
+
+The manifest fixes the actual checkpoint/config bytes used in acceptance. A mismatch
+requires investigation; do not silently update expected hashes to accept changed weights.
+CLI and Web can use the same private cache. No weights are stored in Git.
+
 Only the service's public login shell, static viewer assets, Agent Card and health/readiness
 are unauthenticated. Every upload, task and download requires identity. Web sessions are
 HttpOnly/SameSite=Strict and Secure on HTTPS; A2A requires explicit Bearer. Cookies are
