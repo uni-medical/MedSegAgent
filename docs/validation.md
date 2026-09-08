@@ -198,3 +198,33 @@ Actual pointer acceptance also caught a NiiVue event gap: continuous windowing c
 intensity limits without firing `onIntensityChange`. The UI now compares those limits
 with the selected preset on pointer release/save, showing “手动调整” after a manual change.
 Local real-browser rotation, right-drag windowing and reset passed after this correction.
+
+### Desktop design and durable records (2026-09-08)
+
+The desktop redesign was checked against the actual GMAI-Seeker static UI and CRC-MDT's
+synthetic visual-review page. The three columns separate record navigation, the image
+canvas, and current-image operations. A new local SVG logo/favicon, larger system-font
+scale, quiet green palette, request/results tabs and authenticated original-file downloads
+replace the previous header/form/status arrangement. Completion no longer occupies the
+canvas header. A record is one segmentation request, not a permanent image workspace.
+
+Mac checks passed **158 Python tests** and **19 browser-state regressions**, plus Python
+lint/format, JavaScript syntax, HTML ID/asset references, SVG XML and pinned-viewer hash.
+The added regressions cover retention alignment, immediate expiry, source/result
+independence, safe reuse, upload/selection races and clearing private record text/links
+when switching identities.
+
+Real Chromium at **1280 × 800, 1440 × 900 and 1920 × 1080** showed no horizontal overflow
+in the page or its three panels. FLARE22 source/colored overlays and 3D were inspected.
+Record search, request/results keyboard tabs, immutable historical requests, source reuse,
+new-draft reset, refresh recovery and an actual missing-modality failure passed. Clicking
+all three download links succeeded, including the original filename
+`FLARE22_Tr_0014_0000.nii.gz`. Private screenshots/downloads remain in ignored
+`output/playwright/redesign-*`.
+
+A fresh upload and text-only request through the redesigned Web page produced task
+`d5f0d980-4144-42e6-aad8-7035ebb409fe` using `deepseek-v4-flash`, `segment_ct`/`total`,
+and Mac MPS. Inference took **14.05 s**; the 512 × 512 × 71 output preserved shape/affine
+and had **1,092,389** foreground voxels (right kidney 59,126; left kidney 54,362; liver
+978,901). Input and result expiry aligned exactly. This is an engineering canary, not
+clinical performance evidence.

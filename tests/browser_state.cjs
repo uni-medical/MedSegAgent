@@ -49,6 +49,14 @@ class Element {
     return this.text + this.children.map((child) => child.textContent).join("");
   }
 
+  set href(value) {
+    this.attributes.href = String(value);
+  }
+
+  get href() {
+    return this.attributes.href || "";
+  }
+
   append(...children) {
     this.children.push(...children);
   }
@@ -72,8 +80,8 @@ class Element {
     this.listeners.set(name, listeners);
   }
 
-  async dispatch(name) {
-    const event = { target: this, preventDefault() {} };
+  async dispatch(name, properties = {}) {
+    const event = { target: this, preventDefault() {}, ...properties };
     for (const callback of this.listeners.get(name) || [])
       await callback(event);
   }
@@ -242,8 +250,9 @@ function browser(t, options = {}) {
     return elements.get(id);
   }
 
-  const tasks = [task("A"), task("B")];
+  const tasks = options.tasks || [task("A"), task("B")];
   const requests = [];
+  const uploads = [];
   const slow = new Map();
   const failures = new Set(options.failures || []);
   const timers = new Set();
@@ -257,6 +266,34 @@ function browser(t, options = {}) {
   const context = {
     console,
     AbortController,
+    XMLHttpRequest: class {
+      constructor() {
+        this.upload = {};
+        this.headers = {};
+        uploads.push(this);
+      }
+      open(method, url) {
+        this.method = method;
+        this.url = url;
+      }
+      setRequestHeader(name, value) {
+        this.headers[name] = value;
+      }
+      send(file) {
+        this.file = file;
+      }
+      abort() {
+        this.aborted = true;
+        this.onloadend?.();
+      }
+      complete(data) {
+        if (this.aborted) return;
+        this.status = 201;
+        this.responseText = JSON.stringify(data);
+        this.onload?.();
+        this.onloadend?.();
+      }
+    },
     URL,
     location,
     sessionStorage,
@@ -324,7 +361,7 @@ function browser(t, options = {}) {
       },
     },
     async fetch(url, request = {}) {
-      requests.push({ url, signal: request.signal });
+      requests.push({ url, signal: request.signal, method: request.method });
       const json = (value) => ({
         ok: true,
         json: async () => structuredClone(value),
@@ -335,10 +372,6 @@ function browser(t, options = {}) {
       if (url === "/api/tasks") return json(tasks);
       const selected = /^\/api\/tasks\/([^/]+)$/.exec(url)?.[1];
       if (selected) return json(tasks.find((item) => item.id === selected));
-      assert.match(
-        url,
-        /^\/api\/(uploads\/[^/]+\/file|tasks\/[^/]+\/files\/segmentation\.nii\.gz)$/,
-      );
       if (slow.has(url)) {
         await new Promise((resolve, reject) => {
           const abort = () =>
@@ -348,7 +381,19 @@ function browser(t, options = {}) {
           slow.set(url, resolve);
         });
       }
-      if (failures.delete(url)) return { ok: false, status: 404 };
+      if (failures.delete(url))
+        return {
+          ok: false,
+          status: 404,
+          json: async () => ({ detail: { code: "FILE_NOT_FOUND" } }),
+        };
+      const upload = /^\/api\/uploads\/([^/]+)$/.exec(url)?.[1];
+      if (upload)
+        return json({ id: upload, name: `${upload}.nii`, available: true });
+      assert.match(
+        url,
+        /^\/api\/(uploads\/[^/]+\/file|tasks\/[^/]+\/files\/segmentation\.nii\.gz)$/,
+      );
       return { ok: true, arrayBuffer: async () => new ArrayBuffer(0) };
     },
   };
@@ -361,6 +406,8 @@ function browser(t, options = {}) {
   return {
     element,
     requests,
+    uploads,
+    tasks,
     slow,
     sessionStorage,
     windowEvent: (name) => windowEvents.dispatch(name),
@@ -566,4 +613,223 @@ test("manual windowing shows a custom preset and reset restores automatic window
   assert.equal(b.element("window-preset").value, "auto");
   assert.equal(volume.cal_min, volume.robust_min);
   assert.equal(volume.cal_max, volume.robust_max);
+});
+
+test("a record with an expired source still exposes available result files without requesting the source", async (t) => {
+  const a = {
+    ...task("A"),
+    input_available: false,
+    result_available: true,
+  };
+  const b = browser(t, { tasks: [a] });
+  await eventually(
+    () => !b.element("result-panel").hidden,
+    "Available result metadata was not displayed",
+  );
+  assert.equal(b.element("download-source").hidden, true);
+  assert.equal(b.element("download-source").href, "");
+  assert.equal(b.element("reuse-image").hidden, true);
+  assert.equal(b.element("download-mask").hidden, false);
+  assert.equal(b.element("download-result").hidden, false);
+  assert.match(b.element("download-mask").href, /\/tasks\/A\/files\//);
+  assert.equal(b.element("labels").querySelectorAll("input").length, 2);
+  assert.match(
+    b.element("viewer-error").textContent,
+    /原始影像.*到期|原始影像.*不可用/,
+  );
+  assert.doesNotMatch(b.element("status-detail").textContent, /可查看叠加/);
+  assert.equal(b.element("canvas-shell").dataset.loaded, "false");
+  assert.equal(
+    b.requests.some((item) => item.url.includes("/file")),
+    false,
+  );
+});
+
+test("a fully expired record retains its request but never offers dead file links or inference reuse", async (t) => {
+  const b = browser(t, {
+    tasks: [{ ...task("A"), input_available: false, result_available: false }],
+  });
+  await eventually(
+    () => !b.element("record-request").hidden,
+    "Expired record did not open",
+  );
+  assert.equal(b.element("request-text").textContent, "Synthetic task A");
+  assert.match(b.element("task-list").textContent, /文件已清理/);
+  for (const id of ["download-source", "download-mask", "download-result"]) {
+    assert.equal(b.element(id).hidden, true, `${id} is unavailable`);
+    assert.equal(
+      b.element(id).href,
+      "",
+      `${id} must not retain a previous URL`,
+    );
+  }
+  assert.equal(b.element("reuse-image").hidden, true);
+  assert.equal(b.element("result-panel").hidden, true);
+  assert.equal(b.element("result-empty").hidden, false);
+  assert.match(b.element("file-retention").textContent, /到期|清理/);
+  assert.equal(
+    b.requests.some((item) => item.url.includes("/file")),
+    false,
+  );
+});
+
+test("result expiry while the same source-expired record is open clears previously visible labels", async (t) => {
+  const a = { ...task("A"), input_available: false, result_available: true };
+  const b = browser(t, { tasks: [a] });
+  await eventually(
+    () => !b.element("result-panel").hidden,
+    "Initial available result was not displayed",
+  );
+  a.result_available = false;
+  a.result = null;
+  await b.select("A");
+  assert.equal(b.element("result-panel").hidden, true);
+  assert.equal(b.element("result-empty").hidden, false);
+  assert.equal(b.element("download-mask").hidden, true);
+  assert.equal(b.element("download-mask").href, "");
+  assert.equal(b.element("canvas-shell").dataset.loaded, "false");
+});
+
+test("reuse validates the source and record selection clears the submittable draft", async (t) => {
+  const b = browser(t);
+  await b.loaded();
+  assert.equal(b.element("request").hidden, true);
+  assert.equal(b.element("submit").disabled, true);
+  await b.element("reuse-image").dispatch("click");
+  await eventually(
+    () =>
+      b.element("canvas-shell").dataset.task === "" &&
+      b.element("canvas-shell").dataset.loaded === "true",
+    "Validated source did not open as a fresh draft",
+  );
+  assert.ok(b.requests.some((item) => item.url === "/api/uploads/A"));
+  assert.equal(b.element("instruction").value, "Synthetic task A");
+  assert.equal(b.element("request").hidden, false);
+  assert.equal(b.element("record-request").hidden, true);
+  assert.equal(b.element("submit").disabled, false);
+  assert.equal(b.element("download-mask").hidden, true);
+  assert.equal(b.element("download-mask").href, "");
+  await b.select("B");
+  await b.loaded("B");
+  assert.equal(b.element("submit").disabled, true);
+  assert.equal(b.element("request").hidden, true);
+  assert.equal(b.element("request-text").textContent, "Synthetic task B");
+  assert.match(b.element("download-mask").href, /\/tasks\/B\/files\//);
+  await b.element("new-task").dispatch("click");
+  assert.equal(b.element("instruction").value, "");
+  assert.equal(b.element("submit").disabled, true);
+  assert.equal(b.viewer.volumes.length, 0);
+  assert.equal(b.element("downloads").hidden, true);
+});
+
+test("a source that expires before reuse cannot become a submittable draft", async (t) => {
+  const b = browser(t, { failures: ["/api/uploads/A"] });
+  await b.loaded();
+  await b.element("reuse-image").dispatch("click");
+  assert.equal(b.element("request").hidden, true);
+  assert.equal(b.element("submit").disabled, true);
+  assert.equal(b.element("reuse-image").disabled, false);
+  assert.match(b.element("task-error").textContent, /过期/);
+  assert.equal(b.element("canvas-shell").dataset.task, "A");
+});
+
+test("a delayed reuse validation cannot overwrite a subsequently selected record", async (t) => {
+  const b = browser(t);
+  await b.loaded();
+  b.slow.set("/api/uploads/A", null);
+  const reuse = b.element("reuse-image").dispatch("click");
+  await eventually(
+    () => typeof b.slow.get("/api/uploads/A") === "function",
+    "Reuse validation did not start",
+  );
+  await b.select("B");
+  await b.loaded("B");
+  b.slow.get("/api/uploads/A")();
+  await reuse;
+  assert.equal(b.element("canvas-shell").dataset.task, "B");
+  assert.equal(b.element("request-text").textContent, "Synthetic task B");
+  assert.equal(b.element("request").hidden, true);
+  assert.equal(b.element("submit").disabled, true);
+});
+
+test("record search matches requests and image names without changing the open result", async (t) => {
+  const b = browser(t);
+  await b.loaded();
+  const search = b.element("history-search");
+  search.value = "  b.NII  ";
+  await search.dispatch("input");
+  assert.equal(b.element("task-list").children.length, 1);
+  assert.match(b.element("task-list").textContent, /Synthetic task B/);
+  assert.equal(b.element("canvas-shell").dataset.task, "A");
+  assert.match(b.element("download-mask").href, /\/tasks\/A\/files\//);
+  search.value = "Synthetic task A";
+  await search.dispatch("input");
+  assert.equal(b.element("task-list").children.length, 1);
+  assert.equal(
+    b.element("task-list").children[0].children[0].attributes["aria-current"],
+    "true",
+  );
+  search.value = "unmatched query";
+  await search.dispatch("input");
+  assert.equal(b.element("task-list").children.length, 0);
+  assert.equal(b.element("history-empty").hidden, false);
+  assert.match(b.element("history-empty").textContent, /没有匹配/);
+  search.value = "";
+  await search.dispatch("input");
+  assert.equal(b.element("task-list").children.length, 2);
+  assert.equal(b.element("history-empty").hidden, true);
+});
+
+test("request and result tabs respond to keyboard navigation", async (t) => {
+  const b = browser(t);
+  await b.loaded();
+  assert.equal(b.element("tab-results").attributes["aria-selected"], "true");
+  await b.element("tab-results").dispatch("keydown", { key: "Home" });
+  assert.equal(b.element("panel-request").hidden, false);
+  assert.equal(b.element("panel-results").hidden, true);
+  assert.equal(b.element("tab-request").attributes.tabindex, "0");
+  await b.element("tab-request").dispatch("keydown", { key: "ArrowRight" });
+  assert.equal(b.element("panel-request").hidden, true);
+  assert.equal(b.element("panel-results").hidden, false);
+  assert.equal(b.element("tab-results").attributes.tabindex, "0");
+});
+
+test("finishing an earlier upload cannot replace a record selected during upload", async (t) => {
+  const b = browser(t);
+  await b.loaded();
+  await b.element("new-task").dispatch("click");
+  b.element("file").files = [{ name: "draft.nii", size: 128 }];
+  await b.element("file").dispatch("change");
+  assert.equal(b.uploads.length, 1);
+  assert.equal(b.element("submit").disabled, true);
+  await b.select("B");
+  await b.loaded("B");
+  b.uploads[0].complete({ id: "D", name: "draft.nii", size: 128 });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(b.element("record-request").hidden, false);
+  assert.equal(b.element("request-text").textContent, "Synthetic task B");
+  assert.equal(b.element("canvas-shell").dataset.task, "B");
+  assert.equal(b.element("request").hidden, true);
+  assert.equal(b.element("submit").disabled, true);
+});
+
+test("logging in with no records opens a clean draft instead of the previous identity's record", async (t) => {
+  const b = browser(t);
+  await b.loaded();
+  await b.element("logout").dispatch("click");
+  b.tasks.splice(0);
+  b.element("access-token").value = "synthetic-second-principal";
+  await b.element("login-form").dispatch("submit");
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("login-dialog").open, false);
+  assert.equal(b.element("record-request").hidden, true);
+  assert.equal(b.element("request-text").textContent, "");
+  assert.equal(b.element("request").hidden, false);
+  assert.equal(b.element("instruction").value, "");
+  assert.equal(b.element("submit").disabled, true);
+  assert.equal(b.element("task-list").children.length, 0);
+  assert.equal(b.element("viewer-heading").textContent, "新建分割");
+  assert.equal(b.element("downloads").hidden, true);
+  for (const id of ["download-source", "download-mask", "download-result"])
+    assert.equal(b.element(id).href, "");
 });

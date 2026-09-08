@@ -195,15 +195,22 @@ def create_app(root: Path | None = None, public_url: str | None = None, tokens=N
 
     async def upload_file(request):
         principal = authenticate(request)
-        path = service.upload_path(principal, request.path_params["upload_id"])
+        upload_id = request.path_params["upload_id"]
+        metadata = service.get_upload(principal, upload_id)
+        path = service.upload_path(principal, upload_id)
         return FileResponse(
             path,
             media_type="application/gzip" if path.suffix == ".gz" else "application/octet-stream",
+            filename=metadata.get("name", path.name),
         )
 
-    async def delete_upload(request):
-        service.delete_upload(authenticate(request), request.path_params["upload_id"])
-        return JSONResponse({"deleted": True})
+    async def upload_detail(request):
+        principal = authenticate(request)
+        upload_id = request.path_params["upload_id"]
+        if request.method == "DELETE":
+            service.delete_upload(principal, upload_id)
+            return JSONResponse({"deleted": True})
+        return JSONResponse(service.get_upload(principal, upload_id))
 
     async def tasks(request):
         principal = authenticate(request)
@@ -282,7 +289,7 @@ def create_app(root: Path | None = None, public_url: str | None = None, tokens=N
         Route("/api/config", config),
         Route("/api/uploads", upload, methods=["POST"]),
         Route("/api/uploads/{upload_id}/file", upload_file),
-        Route("/api/uploads/{upload_id}", delete_upload, methods=["DELETE"]),
+        Route("/api/uploads/{upload_id}", upload_detail, methods=["GET", "DELETE"]),
         Route("/api/tasks", tasks, methods=["GET", "POST"]),
         Route("/api/tasks/{task_id}", task),
         Route("/api/tasks/{task_id}/cancel", cancel, methods=["POST"]),

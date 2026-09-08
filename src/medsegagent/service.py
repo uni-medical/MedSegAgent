@@ -24,6 +24,7 @@ from medsegagent import agent, core
 
 TERMINAL = {"completed", "failed", "canceled"}
 MAX_UPLOAD_BYTES = 90 * 1024 * 1024
+INPUT_FIELDS = {"id", "name", "size", "shape", "spacing", "created_at", "expires_at"}
 
 
 class ServiceError(ValueError):
@@ -138,7 +139,71 @@ class Service:
         task = self._task(task_id)
         if task["principal"] != principal:
             raise ServiceError("TASK_NOT_FOUND", "Task not found.", 404)
+        task["input"] = self.input_metadata(task)
+        task["upload_name"] = task["input"].get("name", "")
+        task["input_available"] = task["input"]["available"]
+        expires_at = self.task_expiry(task)
+        if expires_at is not None:
+            task["expires_at"] = expires_at
+            # Enforce the advertised deadline immediately, independently of disk cleanup.
+            if time.time() >= expires_at or task.get("files_expired"):
+                task.update(files_expired=True, files=[], result=None)
+        task["result_available"] = (
+            task["status"] == "completed"
+            and not task.get("files_expired", False)
+            and all(
+                (path := self.root / "tasks" / task_id / name).is_file() and not path.is_symlink()
+                for name in ("segmentation.nii.gz", "result.json")
+            )
+        )
         return {k: v for k, v in task.items() if k not in {"principal", "selection"}}
+
+    def task_expiry(self, task):
+        if task["status"] not in TERMINAL:
+            return None
+        return task.get("expires_at", task["updated_at"] + self.retention_seconds)
+
+    def upload_metadata(self, row):
+        data = json.loads(row["data"])
+        expires_at = data.get("expires_at", row["created"] + self.retention_seconds)
+        active = False
+        for record in self.db.execute(
+            "SELECT data FROM tasks WHERE principal=? AND json_extract(data, '$.upload_id')=?",
+            (row["principal"], row["id"]),
+        ).fetchall():
+            task = json.loads(record["data"])
+            if task["status"] not in TERMINAL:
+                active = True
+            elif not task.get("files_expired") or "expires_at" in task:
+                # Older expired records used updated_at for cleanup itself. That timestamp
+                # must not accidentally renew input retention after an upgrade.
+                expires_at = max(expires_at, self.task_expiry(task))
+        path = Path(row["path"])
+        data.update(
+            expires_at=None if active else expires_at,
+            available=(active or time.time() < expires_at)
+            and path.is_file()
+            and not path.is_symlink(),
+        )
+        return data
+
+    def input_metadata(self, task):
+        row = self.db.execute(
+            "SELECT * FROM uploads WHERE id=? AND principal=?",
+            (task["upload_id"], task["principal"]),
+        ).fetchone()
+        if row:
+            data = self.upload_metadata(row)
+            return {
+                key: value for key, value in data.items() if key in INPUT_FIELDS | {"available"}
+            }
+        # Preserve the identity of an unavailable input without preserving the image itself.
+        data = {key: value for key, value in task.get("input", {}).items() if key in INPUT_FIELDS}
+        expires_at = self.task_expiry(task)
+        if expires_at is not None:
+            data["expires_at"] = max(data.get("expires_at") or 0, expires_at)
+        data.update(id=task["upload_id"], available=False)
+        return data
 
     def list(self, principal):
         rows = self.db.execute(
@@ -148,7 +213,10 @@ class Service:
 
     def update(self, task_id, **changes):
         task = self._task(task_id)
-        task.update(changes, updated_at=time.time())
+        now = time.time()
+        if changes.get("status") in TERMINAL and task["status"] not in TERMINAL:
+            changes.setdefault("expires_at", now + self.retention_seconds)
+        task.update(changes, updated_at=now)
         with self.db:
             self.db.execute(
                 "UPDATE tasks SET status=?,updated=?,data=? WHERE id=?",
@@ -169,9 +237,10 @@ class Service:
         row = self.db.execute(
             "SELECT * FROM uploads WHERE id=? AND principal=?", (upload_id, principal)
         ).fetchone()
-        if not row or not Path(row["path"]).is_file():
+        data = self.upload_metadata(row) if row else None
+        if not data or not data["available"]:
             raise ServiceError("FILE_NOT_FOUND", "Upload not found or expired.", 404)
-        return json.loads(row["data"])
+        return data
 
     def upload_path(self, principal, upload_id):
         self.get_upload(principal, upload_id)
@@ -267,7 +336,7 @@ class Service:
                     "IDEMPOTENCY_CONFLICT", "messageId already belongs to different input.", 409
                 )
             return self.get(principal, existing["id"])
-        self.get_upload(principal, upload_id)
+        upload = self.get_upload(principal, upload_id)
         if context_id:
             owner = self.db.execute(
                 "SELECT principal FROM tasks WHERE context_id=? LIMIT 1", (context_id,)
@@ -287,6 +356,7 @@ class Service:
             "context_id": context_id or uid(),
             "principal": principal,
             "upload_id": upload_id,
+            "input": {key: value for key, value in upload.items() if key in INPUT_FIELDS},
             "text": text,
             "modality": modality,
             "modality_source": "text" if modality is None else "parameter",
@@ -460,22 +530,22 @@ class Service:
         return path
 
     def cleanup(self):
-        cutoff = time.time() - self.retention_seconds
         for row in self.db.execute(
-            "SELECT id,data FROM tasks WHERE updated<? AND status IN ('completed','failed','canceled')",
-            (cutoff,),
+            "SELECT id,data FROM tasks WHERE status IN ('completed','failed','canceled')",
         ).fetchall():
             data = json.loads(row["data"])
-            if not data.get("files_expired"):
+            expires_at = self.task_expiry(data)
+            if not data.get("files_expired") and time.time() >= expires_at:
                 shutil.rmtree(self.root / "tasks" / row["id"], ignore_errors=True)
-                self.update(row["id"], files_expired=True, files=[], result=None)
-        for row in self.db.execute(
-            "SELECT id,principal FROM uploads WHERE created<?", (cutoff,)
-        ).fetchall():
-            try:
-                self.delete_upload(row["principal"], row["id"])
-            except ServiceError:
-                pass
+                self.update(
+                    row["id"], files_expired=True, files=[], result=None, expires_at=expires_at
+                )
+        for row in self.db.execute("SELECT * FROM uploads").fetchall():
+            expires_at = self.upload_metadata(row)["expires_at"]
+            if expires_at is not None and time.time() >= expires_at:
+                shutil.rmtree(self.root / "uploads" / row["id"], ignore_errors=True)
+                with self.db:
+                    self.db.execute("DELETE FROM uploads WHERE id=?", (row["id"],))
         with self.db:
             self.db.execute("DELETE FROM sessions WHERE expires<?", (time.time(),))
 

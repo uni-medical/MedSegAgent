@@ -66,6 +66,8 @@
     restoring: false,
     viewerSave: null,
     defaultScene: null,
+    renderedRecord: null,
+    retentionHours: 24,
   };
   const statusOf = (task) =>
     typeof task.status === "string"
@@ -110,6 +112,107 @@
       !state.authenticated;
     $("submit").textContent = state.submitting ? "正在提交…" : "开始分割";
   };
+
+  function setContext(name) {
+    for (const key of ["request", "results"]) {
+      const active = key === name;
+      $("tab-" + key).setAttribute("aria-selected", String(active));
+      $("tab-" + key).setAttribute("tabindex", active ? "0" : "-1");
+      $("panel-" + key).hidden = !active;
+    }
+  }
+
+  function formatDate(value) {
+    if (!value) return "";
+    const date = new Date(
+      typeof value === "number" && value < 1e12 ? value * 1000 : value,
+    );
+    return Number.isNaN(date.valueOf())
+      ? ""
+      : date.toLocaleString("zh-CN", {
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+  }
+
+  function renderDownloads(input, task = null) {
+    const inputOK =
+      !!input?.id &&
+      input.available !== false &&
+      task?.input_available !== false;
+    const resultOK =
+      !!task && success.has(statusOf(task)) && task.result_available !== false;
+    $("downloads").hidden = !input && !task;
+    $("download-source").hidden = !inputOK;
+    $("download-mask").hidden = !resultOK;
+    $("download-result").hidden = !resultOK;
+    for (const id of ["download-source", "download-mask", "download-result"])
+      $(id).removeAttribute("href");
+    if (inputOK) $("download-source").href = uploadURL(input.id);
+    if (resultOK) {
+      $("download-mask").href = `${taskURL(task.id)}/files/segmentation.nii.gz`;
+      $("download-result").href = `${taskURL(task.id)}/files/result.json`;
+    }
+    const until = task?.expires_at || input?.expires_at;
+    let retention;
+    if (!inputOK && !resultOK)
+      retention =
+        "文件已到期或已清理。请求与状态仍保留，需要再次分割时请重新上传。";
+    else if (
+      resultOK &&
+      inputOK &&
+      input.expires_at &&
+      Math.abs(input.expires_at - task.expires_at) > 60
+    )
+      retention = `结果至 ${formatDate(task.expires_at)}；原图至 ${formatDate(input.expires_at)}。`;
+    else if (until) retention = `文件保留至 ${formatDate(until)}。`;
+    else retention = `任务结束后保留文件 ${state.retentionHours} 小时。`;
+    $("file-retention").textContent =
+      retention + (inputOK || resultOK ? " 长期保存请下载。" : "");
+  }
+
+  function setDraft(upload = null, text = "") {
+    state.upload = upload;
+    state.selected = null;
+    state.renderedRecord = null;
+    state.pendingRequest = null;
+    $("request").hidden = false;
+    $("record-request").hidden = true;
+    $("task-status").hidden = true;
+    $("reuse-image").hidden = true;
+    $("instruction").value = text;
+    $("file-name").textContent = upload?.name || "选择或拖入 NIfTI";
+    $("viewer-heading").textContent = upload?.name || "新建分割";
+    $("viewer-name").textContent = upload?.shape
+      ? `${upload.shape.join(" × ")} · ${size(upload.size || 0)}`
+      : "3D 影像分割与查看";
+    $("empty-title").textContent = "从一张影像开始";
+    $("file-meta").textContent = upload
+      ? [
+          upload.shape?.join(" × "),
+          upload.spacing
+            ? upload.spacing.map((x) => Number(x).toFixed(2)).join(" × ") +
+              " mm"
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" / ")
+      : "";
+    $("file-meta").hidden = !upload;
+    $("upload-progress").hidden = true;
+    upload
+      ? $("drop-zone").classList.add("has-file")
+      : $("drop-zone").classList.remove("has-file");
+    const url = new URL(location.href);
+    url.searchParams.delete("task");
+    history.replaceState({}, "", url);
+    renderDownloads(upload);
+    renderHistory();
+    setContext("request");
+    updateSubmit();
+  }
 
   async function api(path, options = {}) {
     const controller = new AbortController();
@@ -170,7 +273,9 @@
     $("viewer-empty").hidden = false;
     $("result-panel").hidden = true;
     $("result-empty").hidden = false;
+    $("result-empty").textContent = "完成分割后，在这里切换标签和查看结果。";
     $("window-preset").disabled = true;
+    $("location").textContent = "点击定位 · 滚轮切片 · 右键调窗";
     $("niivue-canvas").style.visibility = "hidden";
     $("viewer-indicator").hidden = true;
     $("retry-viewer").hidden = true;
@@ -216,11 +321,32 @@
     state.uploading = false;
     state.submitting = false;
     state.pendingRequest = null;
+    state.renderedRecord = null;
+    $("history-search").value = "";
     $("workspace").hidden = true;
     $("logout").hidden = true;
     $("task-list").replaceChildren();
     $("labels").replaceChildren();
     $("request").reset();
+    $("request").hidden = false;
+    $("instruction").value = "";
+    $("record-request").hidden = true;
+    $("request-text").textContent = "";
+    $("request-meta").textContent = "";
+    $("viewer-heading").textContent = "新建分割";
+    $("downloads").hidden = true;
+    for (const name of ["source", "mask", "result"]) {
+      $("download-" + name).removeAttribute("href");
+      $("download-" + name).hidden = true;
+    }
+    for (const id of [
+      "form-error",
+      "task-error",
+      "viewer-error",
+      "connection-note",
+    ])
+      showError(id, "");
+    setContext("request");
     $("file-name").textContent = "选择或拖入 NIfTI";
     $("file-meta").hidden = true;
     $("upload-progress").hidden = true;
@@ -242,6 +368,7 @@
     showError("login-error", "");
     const config = await api("/api/config");
     state.maxUpload = Number(config.max_upload_bytes) || 0;
+    state.retentionHours = Number(config.retention_hours) || 24;
     if (!state.maxUpload)
       throw new Error("服务器未提供上传大小限制，请检查服务配置。");
     $("file-help").textContent =
@@ -253,6 +380,7 @@
         showError("connection-note", err.message),
       );
     else if (state.tasks.length) await selectTask(state.tasks[0].id);
+    else setDraft();
     schedulePoll();
   }
 
@@ -306,7 +434,7 @@
       }
     };
     xhr.onload = () => {
-      if (epoch !== state.epoch) return;
+      if (epoch !== state.epoch || state.uploadXHR !== xhr) return;
       let data;
       try {
         data = JSON.parse(xhr.responseText);
@@ -325,7 +453,7 @@
         $("upload-progress").hidden = true;
         return;
       }
-      state.upload = data;
+      setDraft(data, $("instruction").value);
       $("drop-zone").classList.add("has-file");
       $("upload-status").textContent = "影像已校验";
       $("upload-bar").value = 100;
@@ -346,7 +474,6 @@
       const url = new URL(location.href);
       url.searchParams.delete("task");
       history.replaceState({}, "", url);
-      $("viewer-name").textContent = data.name || file.name;
       queueViewer({
         key: `upload:${data.id}`,
         uploadID: data.id,
@@ -354,19 +481,19 @@
       });
     };
     xhr.onerror = () => {
-      if (epoch === state.epoch) {
+      if (epoch === state.epoch && state.uploadXHR === xhr) {
         showError("form-error", "上传连接中断，请重新选择影像。");
         $("upload-progress").hidden = true;
       }
     };
     xhr.ontimeout = () => {
-      if (epoch === state.epoch) {
+      if (epoch === state.epoch && state.uploadXHR === xhr) {
         showError("form-error", "上传超时，请检查网络后重试。");
         $("upload-progress").hidden = true;
       }
     };
     xhr.onloadend = () => {
-      if (epoch === state.epoch) {
+      if (epoch === state.epoch && state.uploadXHR === xhr) {
         state.uploading = false;
         state.uploadXHR = null;
         updateSubmit();
@@ -387,7 +514,19 @@
     $("task-list").replaceChildren();
     $("history-empty").hidden = state.tasks.length > 0;
     $("task-count").textContent = state.tasks.length || "";
-    for (const task of state.tasks) {
+    const query = $("history-search").value.trim().toLocaleLowerCase();
+    const tasks = state.tasks.filter((task) =>
+      [task.text, task.upload_name, task.input?.name]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase()
+        .includes(query),
+    );
+    $("history-empty").hidden = tasks.length > 0;
+    $("history-empty").textContent = query
+      ? "没有匹配的分割记录。"
+      : "每次分割会自动记录在这里。";
+    for (const task of tasks) {
       const li = document.createElement("li"),
         button = document.createElement("button");
       button.type = "button";
@@ -406,6 +545,8 @@
         task.error?.code === "MODALITY_REQUIRED"
           ? "待补充说明"
           : statusNames[statusOf(task)] || statusOf(task);
+      if (task.input_available === false && task.result_available === false)
+        status.textContent = "文件已清理";
       if (statusOf(task) === "failed") status.className = "failed";
       const date = document.createElement("span"),
         time = task.created_at || task.createdAt;
@@ -423,7 +564,10 @@
             });
       }
       meta.append(status, date);
-      button.append(title, meta);
+      const source = document.createElement("span");
+      source.className = "task-item-source";
+      source.textContent = task.upload_name || task.input?.name || "";
+      button.append(title, source, meta);
       button.addEventListener("click", () =>
         selectTask(task.id).catch((err) =>
           showError("connection-note", err.message),
@@ -436,9 +580,20 @@
 
   async function selectTask(id) {
     const epoch = state.epoch;
+    const upload = state.uploadXHR;
+    state.uploadXHR = null;
+    state.uploading = false;
+    upload?.abort();
     // Mark the requested ID before fetching so a slower previous request cannot replace it.
     if (state.selected?.id !== id) invalidateViewer();
     state.selected = { id };
+    state.upload = null;
+    $("request").hidden = true;
+    $("record-request").hidden = true;
+    $("task-status").hidden = true;
+    $("reuse-image").hidden = true;
+    $("downloads").hidden = true;
+    updateSubmit();
     let task;
     try {
       task = await api(taskURL(id));
@@ -461,6 +616,28 @@
   function renderTask(task) {
     const status = statusOf(task),
       complete = success.has(status);
+    const input = task.input || { id: task.upload_id, name: task.upload_name };
+    const uploadID = task.upload_id || input.id || input.upload_id;
+    const inputOK = !!uploadID && task.input_available !== false;
+    const resultOK = complete && task.result_available !== false;
+    const availabilityChanged =
+      state.renderedRecord?.inputOK !== inputOK ||
+      state.renderedRecord?.resultOK !== resultOK;
+    const changed = state.renderedRecord?.id !== task.id;
+    const justCompleted =
+      complete && !success.has(state.renderedRecord?.status);
+    if (changed || justCompleted) setContext(complete ? "results" : "request");
+    state.renderedRecord = { id: task.id, status, inputOK, resultOK };
+    $("request").hidden = true;
+    $("record-request").hidden = false;
+    $("request-text").textContent = task.text || "未提供文本请求";
+    $("request-meta").textContent = [
+      formatDate(task.created_at),
+      task.modality,
+      task.result?.task,
+    ]
+      .filter(Boolean)
+      .join(" · ");
     $("task-status").hidden = false;
     $("task-status").dataset.status = status;
     $("status-title").textContent =
@@ -469,7 +646,11 @@
         : statusNames[status] || status;
     const progress = task.progress;
     $("status-detail").textContent = complete
-      ? [task.modality, "可查看叠加结果"].filter(Boolean).join(" · ")
+      ? inputOK && resultOK
+        ? "结果已生成，可查看叠加与下载文件"
+        : resultOK
+          ? "原图不可用，仍可下载分割结果"
+          : "分割文件已到期或已清理"
       : {
           queued: "等待推理资源",
           routing: "正在理解分割请求",
@@ -492,24 +673,44 @@
           ? "任务未完成，请查看错误信息后新建任务重试。"
           : ""),
     );
-    $("viewer-name").textContent =
-      task.upload_name || task.input?.name || task.text || `任务 ${task.id}`;
-    const uploadID = task.upload_id || task.input?.upload_id;
-    $("reuse-image").hidden = !uploadID || task.files_expired;
-    if (uploadID)
+    $("viewer-heading").textContent =
+      task.upload_name || input.name || "分割记录";
+    $("viewer-name").textContent = [
+      task.modality,
+      input.shape?.join(" × "),
+      task.text,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    $("reuse-image").hidden = !inputOK;
+    renderDownloads({ ...input, id: uploadID }, task);
+    if (inputOK)
       queueViewer({
-        key: `${task.id}:${complete ? "result" : "source"}`,
+        key: `${task.id}:${resultOK ? "result" : "source"}`,
         taskID: task.id,
         uploadID,
-        name: task.upload_name || "source.nii",
-        result: complete ? task.result : null,
-        completed: complete,
+        name: task.upload_name || input.name || "source.nii",
+        result: resultOK ? task.result : null,
+        completed: resultOK,
       });
-    else if (state.viewerWanted?.taskID !== task.id) {
+    else if (
+      changed ||
+      availabilityChanged ||
+      state.viewerWanted?.taskID === task.id
+    ) {
+      state.viewerController?.abort();
       state.viewerWanted = null;
       clearViewer();
-      showError("viewer-error", "此任务没有可通过 Web 读取的源影像。");
+      $("empty-title").textContent = "原始影像已清理";
+      showError(
+        "viewer-error",
+        "此记录的原始影像已到期或不可用。请求与状态仍可查看。",
+      );
+      if (resultOK && task.result) showResult(task.result, task.id, false);
     }
+    if (complete && !resultOK)
+      $("result-empty").textContent =
+        "分割文件已到期或已清理。可在分割请求中查看记录。";
   }
 
   function schedulePoll() {
@@ -933,10 +1134,13 @@
       .map((label) => ({ ...label, id: Number(label.id) }));
     state.visibleLabels = new Set(state.labels.map((label) => label.id));
     $("labels").replaceChildren();
+    $("label-search").value = "";
+    $("label-search").hidden = state.labels.length < 8;
     $("label-count").textContent = `(${state.labels.length})`;
     for (const [index, label] of state.labels.entries()) {
       const wrap = document.createElement("label");
       wrap.className = "label-option";
+      wrap.dataset.name = label.name || "";
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.checked = true;
@@ -971,6 +1175,7 @@
       name.title = label.name || "";
       const count = document.createElement("span");
       count.className = "label-voxels";
+      wrap.title = `${name.textContent} (${label.name})`;
       count.textContent = Number.isFinite(label.voxels)
         ? `${label.voxels.toLocaleString()} 体素`
         : "";
@@ -1274,46 +1479,73 @@
     state.pendingRequest = null;
     updateSubmit();
   });
-  function useSelectedImage() {
+  async function useSelectedImage() {
     const task = state.selected;
-    if (!task?.upload_id) return;
-    state.upload = {
-      id: task.upload_id,
-      name: task.upload_name || "当前任务影像",
-    };
-    state.pendingRequest = null;
-    $("file-name").textContent = state.upload.name;
-    $("drop-zone").classList.add("has-file");
-    $("file-meta").hidden = true;
-    $("upload-progress").hidden = true;
-    $("instruction").value = task.text || "";
-    showError("form-error", "");
-    updateSubmit();
-    $("instruction").focus();
-    $("request").scrollIntoView({ block: "nearest" });
+    if (!task?.upload_id || task.input_available === false) return;
+    const epoch = state.epoch;
+    $("reuse-image").disabled = true;
+    try {
+      const input = await api(
+        `/api/uploads/${encodeURIComponent(task.upload_id)}`,
+      );
+      if (epoch !== state.epoch || state.selected?.id !== task.id) return;
+      invalidateViewer();
+      setDraft(input, task.text || "");
+      queueViewer({
+        key: `upload:${input.id}`,
+        uploadID: input.id,
+        name: input.name,
+      });
+      showError("form-error", "");
+      $("instruction").focus();
+    } catch (err) {
+      if (epoch === state.epoch && state.selected?.id === task.id)
+        showError("task-error", err.message);
+    } finally {
+      $("reuse-image").disabled = false;
+    }
   }
   $("reuse-image").addEventListener("click", useSelectedImage);
-  $("new-task").addEventListener("click", () => {
+  function newTask() {
     if (state.uploading || state.submitting) return;
     invalidateViewer();
     clearViewer();
-    state.upload = null;
-    state.selected = null;
-    state.pendingRequest = null;
     $("request").reset();
-    $("file-name").textContent = "选择或拖入 NIfTI";
-    $("drop-zone").classList.remove("has-file");
-    $("file-meta").hidden = true;
-    $("upload-progress").hidden = true;
-    $("task-status").hidden = true;
-    $("reuse-image").hidden = true;
-    $("viewer-name").textContent = "上传影像开始分割";
-    const url = new URL(location.href);
-    url.searchParams.delete("task");
-    history.replaceState({}, "", url);
+    setDraft();
     showError("form-error", "");
-    renderHistory();
-    updateSubmit();
+    showError("viewer-error", "");
+    showError("connection-note", "");
+  }
+  $("new-task").addEventListener("click", newTask);
+  $("choose-image").addEventListener("click", () => {
+    newTask();
+    $("file").click();
+  });
+  for (const name of ["request", "results"]) {
+    $("tab-" + name).addEventListener("click", () => setContext(name));
+    $("tab-" + name).addEventListener("keydown", (event) => {
+      if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+        event.preventDefault();
+        const next =
+          event.key === "Home"
+            ? "request"
+            : event.key === "End"
+              ? "results"
+              : name === "request"
+                ? "results"
+                : "request";
+        setContext(next);
+        $("tab-" + next).focus();
+      }
+    });
+  }
+  $("history-search").addEventListener("input", renderHistory);
+  $("label-search").addEventListener("input", () => {
+    const query = $("label-search").value.trim().toLocaleLowerCase();
+    for (const row of $("labels").children)
+      row.hidden = !(row.textContent + row.dataset.name)
+        .toLocaleLowerCase()
+        .includes(query);
   });
   $("niivue-canvas").addEventListener("pointerup", () => {
     syncWindowPreset();

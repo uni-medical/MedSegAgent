@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <style>
+    .upper { fill: #80A695; }
+    .left, .selection { fill: #285749; }
+    .right { fill: #477C68; }
+    @media (prefers-color-scheme: dark) {
+      .upper { fill: #C0DCCD; }
+      .left, .selection { fill: #94BCA8; }
+      .right { fill: #ACD0BC; }
+    }
+  </style>
+  <path class="upper" d="m15 2 5 3-7 4 7 4-5 3L3 9l12-7Z"/>
+  <path class="left" d="m3 11 12 7v13L3 24V11Z"/>
+  <path class="right" d="m17 18 12-7v13l-12 7V18Z"/>
+  <path class="selection" d="m24 3 6 3.5-6 3.5-6-3.5L24 3Z"/>
+</svg>

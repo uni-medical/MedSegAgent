@@ -103,3 +103,25 @@ URL-backed document options. Optional, bounded `sessionStorage` entries now reme
 view settings per task; they are removed at logout. No token or image buffer is stored.
 `node tests/browser_state.cjs` covers application state regressions; see the dated
 engineering acceptance record for real rendering and pointer/touch checks.
+
+
+### Desktop workspace and record semantics (2026-09-08)
+
+Desktop is the primary layout: a 254–278 px record sidebar, a flexible image canvas,
+and a 320–348 px context panel. The image name is the page identity. Request text,
+progress/errors and reuse sit together in the request tab; display, labels and downloads
+sit together in the results tab. Completed records open results directly, without a
+separate completion banner. Request text remains immutable; reuse validates the original
+file and creates a new draft. Records can be searched by input name or request.
+
+The SF/PingFang system stack uses 15 px body text, 16 px request input, 17 px section
+headings and 24 px image titles. Pine green and pale gray follow the actual Seeker/MDT
+reference applications. The original SVG mark combines three orthogonal faces with a
+separated voxel. Logo and light/dark favicon ship locally; no external fonts or branding
+assets are fetched.
+
+Record metadata persists independently of file lifetime. The UI reflects separate original
+and result availability, permits mask/JSON download when only the source is unavailable,
+and clears stale labels/links when files expire. Superseded uploads and reuse validation
+cannot replace a later selection. Logout clears record text, links, image buffers and
+view preferences before another identity can log in.

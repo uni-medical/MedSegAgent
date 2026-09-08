@@ -5,294 +5,335 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
     <meta name="referrer" content="no-referrer" />
-    <title>MedSegAgent · 影像分割工作区</title>
-    <link rel="icon" href="data:," />
+    <meta name="theme-color" content="#edf0ec" />
+    <title>MedSegAgent · 影像分割</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
     <link rel="stylesheet" href="/static/app.css" />
     <script defer src="/static/vendor/niivue-0.69.0.umd.js"></script>
     <script defer src="/static/app.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#request">跳到分割请求</a>
-    <header class="app-header">
-      <a class="brand" href="/" aria-label="MedSegAgent 首页"
-        ><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span
-        >MedSegAgent</a
-      >
-      <span class="research">研究影像工作区</span
-      ><span class="research research-en">Research use only</span>
-      <button class="quiet" id="logout" type="button" hidden>退出</button>
-    </header>
-
     <main id="workspace" hidden>
-      <aside class="workflow" aria-label="分割任务">
-        <form id="request" class="request-form">
-          <div class="section-heading">
-            <h1>分割助手</h1>
-            <button type="button" class="quiet" id="new-task">新建任务</button>
-          </div>
-          <label class="upload-zone" id="drop-zone" for="file">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 32 32"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M16 21V6m-6 6 6-6 6 6M6 21v5h20v-5"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            <strong id="file-name">选择或拖入 NIfTI</strong>
-            <span id="file-help">.nii / .nii.gz</span>
-            <input
-              id="file"
-              type="file"
-              accept=".nii,.nii.gz"
-              aria-describedby="file-help"
-            />
-          </label>
-          <div class="upload-progress" id="upload-progress" hidden>
-            <progress
-              id="upload-bar"
-              max="100"
-              value="0"
-              aria-label="上传进度"
-            ></progress
-            ><span id="upload-status"></span>
-          </div>
-          <p class="file-meta" id="file-meta" hidden></p>
-          <label for="instruction" class="field-label">需要分割什么？</label>
-          <textarea
-            id="instruction"
-            rows="3"
-            maxlength="4000"
-            placeholder="例如：分割这张 CT 中的肝脏和左右肾。"
-            required
-          ></textarea>
-          <p class="input-note">
-            在文字中说明 CT 或 MR 和分割目标。影像不会发送给语言模型。
-          </p>
-          <button id="submit" class="primary" type="submit" disabled>
-            开始分割
-          </button>
-          <p id="form-error" class="error" role="alert" hidden></p>
-        </form>
+      <aside class="sidebar" aria-label="分割记录导航">
+        <a class="brand" href="/" aria-label="MedSegAgent 首页"
+          ><img src="/static/logo.svg" width="34" height="34" alt="" /><span
+            >MedSegAgent</span
+          ></a
+        >
+        <button type="button" id="new-task" class="new-task">
+          <span aria-hidden="true">＋</span>新建分割
+        </button>
         <section class="history" aria-labelledby="history-heading">
           <div class="section-heading">
-            <h2 id="history-heading">任务记录 <span id="task-count"></span></h2>
+            <h2 id="history-heading">分割记录 <span id="task-count"></span></h2>
             <button
               type="button"
               class="quiet"
               id="refresh-tasks"
-              aria-label="刷新任务记录"
+              aria-label="刷新分割记录"
             >
               刷新
             </button>
           </div>
-          <p id="history-empty" class="muted">
-            任务将保存在这里，刷新页面后可继续查看。
-          </p>
+          <input
+            type="search"
+            id="history-search"
+            placeholder="搜索影像或分割目标"
+            aria-label="搜索分割记录"
+          />
+          <p id="history-empty" class="muted">每次分割会自动记录在这里。</p>
           <ol id="task-list"></ol>
         </section>
-        <p class="research-note">
-          仅供研究，不用于诊断或治疗决策。分割结果需要人工核查。
-        </p>
-      </aside>
-
-      <section class="image-workspace" aria-labelledby="viewer-heading">
-        <div class="viewer-heading">
-          <div>
-            <h2 id="viewer-heading">影像查看</h2>
-            <p id="viewer-name">上传影像开始分割</p>
-          </div>
-          <button type="button" id="reuse-image" class="quiet" hidden>
-            使用此影像
-          </button>
-        </div>
-        <div class="task-status" id="task-status" hidden aria-live="polite">
-          <div class="status-line">
-            <span class="status-dot" aria-hidden="true"></span
-            ><strong id="status-title"></strong><span id="status-detail"></span
-            ><button id="cancel-task" type="button" class="quiet" hidden>
-              取消任务
+        <div class="sidebar-footer">
+          <details class="record-help">
+            <summary>关于分割记录</summary>
+            <p>
+              一条记录对应一次分割请求，可再次打开、复用影像和下载文件。文件按服务保留期限自动清理，记录仍可查看；需要长期保存时请下载到本地。
+            </p>
+            <p>最多显示最近 100 条记录，仅当前身份可见。</p>
+          </details>
+          <div class="account-line">
+            <span>仅供研究</span
+            ><button class="quiet" id="logout" type="button" hidden>
+              退出登录
             </button>
           </div>
-          <progress
-            id="task-progress"
-            max="100"
-            aria-label="任务进度"
-          ></progress>
-          <p id="task-error" class="error" hidden></p>
         </div>
-        <div class="viewer-body">
-          <div class="view-column">
-            <div class="viewer-toolbar" aria-label="影像显示控制">
-              <div class="view-modes" role="group" aria-label="查看方式">
-                <button
-                  type="button"
-                  data-view="multiplanar"
-                  aria-pressed="true"
-                >
-                  四视图</button
-                ><button type="button" data-view="axial" aria-pressed="false">
-                  轴位</button
-                ><button type="button" data-view="coronal" aria-pressed="false">
-                  冠状位</button
-                ><button
-                  type="button"
-                  data-view="sagittal"
-                  aria-pressed="false"
-                >
-                  矢状位</button
-                ><button type="button" data-view="render" aria-pressed="false">
-                  3D
-                </button>
-              </div>
-              <div class="zoom-tools">
-                <button
-                  id="zoom-out"
-                  type="button"
-                  class="quiet"
-                  aria-label="缩小影像"
-                >
-                  −</button
-                ><button
-                  id="zoom-in"
-                  type="button"
-                  class="quiet"
-                  aria-label="放大影像"
-                >
-                  ＋</button
-                ><button
-                  id="reset-view"
-                  type="button"
-                  class="quiet"
-                  title="重置切片位置、缩放、窗宽窗位与 3D 视角"
-                >
-                  复位
-                </button>
-              </div>
-            </div>
-            <div
-              class="canvas-shell"
-              id="canvas-shell"
-              data-view="multiplanar"
-              data-loaded="false"
+      </aside>
+      <section class="image-workspace" aria-labelledby="viewer-heading">
+        <header class="viewer-heading">
+          <div>
+            <h1 id="viewer-heading">新建分割</h1>
+            <p id="viewer-name">3D 影像分割与查看</p>
+          </div>
+        </header>
+        <div class="viewer-toolbar" aria-label="影像显示控制">
+          <div class="view-modes" role="group" aria-label="查看方式">
+            <button type="button" data-view="multiplanar" aria-pressed="true">
+              四视图</button
+            ><button type="button" data-view="axial" aria-pressed="false">
+              轴位</button
+            ><button type="button" data-view="coronal" aria-pressed="false">
+              冠状位</button
+            ><button type="button" data-view="sagittal" aria-pressed="false">
+              矢状位</button
+            ><button type="button" data-view="render" aria-pressed="false">
+              3D
+            </button>
+          </div>
+          <div class="zoom-tools">
+            <button
+              id="zoom-out"
+              type="button"
+              class="quiet"
+              aria-label="缩小影像"
             >
-              <canvas
-                id="niivue-canvas"
-                tabindex="0"
-                aria-label="影像四视图：点击定位，滚轮切片；右键拖动调整窗宽窗位，中键平移"
-              ></canvas>
-              <div class="pane-chrome" data-pane="axial">
-                <span class="pane-title">轴位 <small>Axial</small></span>
-                <div class="slice-control">
-                  <label for="slice-axial">切片</label
-                  ><input
-                    id="slice-axial"
-                    type="range"
-                    min="0"
-                    max="1"
-                    value="0"
-                    aria-label="轴位切片"
-                  /><output id="slice-axial-value"></output>
-                </div>
-              </div>
-              <div class="pane-chrome" data-pane="sagittal">
-                <span class="pane-title">矢状位 <small>Sagittal</small></span>
-                <div class="slice-control">
-                  <label for="slice-sagittal">切片</label
-                  ><input
-                    id="slice-sagittal"
-                    type="range"
-                    min="0"
-                    max="1"
-                    value="0"
-                    aria-label="矢状位切片"
-                  /><output id="slice-sagittal-value"></output>
-                </div>
-              </div>
-              <div class="pane-chrome" data-pane="coronal">
-                <span class="pane-title">冠状位 <small>Coronal</small></span>
-                <div class="slice-control">
-                  <label for="slice-coronal">切片</label
-                  ><input
-                    id="slice-coronal"
-                    type="range"
-                    min="0"
-                    max="1"
-                    value="0"
-                    aria-label="冠状位切片"
-                  /><output id="slice-coronal-value"></output>
-                </div>
-              </div>
-              <div class="pane-chrome" data-pane="render">
-                <span class="pane-title">3D <small>体渲染</small></span
-                ><span class="render-hint">拖动旋转 · 滚轮缩放</span>
-              </div>
-              <div class="viewer-empty" id="viewer-empty">
+              −</button
+            ><button
+              id="zoom-in"
+              type="button"
+              class="quiet"
+              aria-label="放大影像"
+            >
+              ＋</button
+            ><button
+              id="reset-view"
+              type="button"
+              class="quiet"
+              title="重置切片、缩放、窗宽窗位与 3D 视角"
+            >
+              复位
+            </button>
+          </div>
+        </div>
+        <div
+          class="canvas-shell"
+          id="canvas-shell"
+          data-view="multiplanar"
+          data-loaded="false"
+        >
+          <canvas
+            id="niivue-canvas"
+            tabindex="0"
+            aria-label="影像四视图：点击定位，滚轮切片；右键拖动调整窗宽窗位，中键平移"
+          ></canvas>
+          <div class="pane-chrome" data-pane="axial">
+            <span class="pane-title" title="Axial">轴位</span>
+            <div class="slice-control">
+              <label for="slice-axial">切片</label
+              ><input
+                id="slice-axial"
+                type="range"
+                min="0"
+                max="1"
+                value="0"
+                aria-label="轴位切片"
+              /><output id="slice-axial-value"></output>
+            </div>
+          </div>
+          <div class="pane-chrome" data-pane="sagittal">
+            <span class="pane-title" title="Sagittal">矢状位</span>
+            <div class="slice-control">
+              <label for="slice-sagittal">切片</label
+              ><input
+                id="slice-sagittal"
+                type="range"
+                min="0"
+                max="1"
+                value="0"
+                aria-label="矢状位切片"
+              /><output id="slice-sagittal-value"></output>
+            </div>
+          </div>
+          <div class="pane-chrome" data-pane="coronal">
+            <span class="pane-title" title="Coronal">冠状位</span>
+            <div class="slice-control">
+              <label for="slice-coronal">切片</label
+              ><input
+                id="slice-coronal"
+                type="range"
+                min="0"
+                max="1"
+                value="0"
+                aria-label="冠状位切片"
+              /><output id="slice-coronal-value"></output>
+            </div>
+          </div>
+          <div class="pane-chrome" data-pane="render">
+            <span class="pane-title">3D <small>体渲染</small></span
+            ><span class="render-hint">拖动旋转 · 滚轮缩放</span>
+          </div>
+          <div class="viewer-empty" id="viewer-empty">
+            <svg
+              width="68"
+              height="68"
+              viewBox="0 0 80 80"
+              fill="none"
+              aria-hidden="true"
+            >
+              <rect
+                x="17"
+                y="17"
+                width="46"
+                height="46"
+                rx="3"
+                stroke="currentColor"
+              />
+              <ellipse cx="40" cy="40" rx="16" ry="20" stroke="currentColor" />
+              <path
+                d="M9 40h22m18 0h22M40 9v22m0 18v22"
+                stroke="currentColor"
+              />
+            </svg>
+            <h3 id="empty-title">从一张影像开始</h3>
+            <p>上传 3D 影像，用一句话描述分割目标。</p>
+            <button type="button" id="choose-image" class="primary">
+              选择 NIfTI 影像
+            </button>
+          </div>
+          <div
+            id="viewer-indicator"
+            class="viewer-loading"
+            role="status"
+            hidden
+          >
+            <span class="spinner" aria-hidden="true"></span
+            ><span>正在载入影像…</span>
+          </div>
+          <div id="viewer-error" class="viewer-error" role="alert" hidden></div>
+          <button type="button" id="retry-viewer" hidden>重新加载影像</button>
+        </div>
+        <div class="viewer-caption">
+          <span id="location">点击定位 · 滚轮切片 · 右键调窗</span
+          ><span>放射学方向 R / L</span>
+        </div>
+
+        <p
+          class="connection-note"
+          id="connection-note"
+          role="status"
+          hidden
+        ></p>
+      </section>
+      <aside class="context-panel" aria-label="当前影像操作">
+        <div class="context-tabs" role="tablist" aria-label="影像操作">
+          <button
+            type="button"
+            role="tab"
+            id="tab-request"
+            aria-controls="panel-request"
+            aria-selected="true"
+          >
+            分割请求
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="tab-results"
+            aria-controls="panel-results"
+            aria-selected="false"
+            tabindex="-1"
+          >
+            显示与结果
+          </button>
+        </div>
+        <div class="context-content">
+          <section
+            id="panel-request"
+            role="tabpanel"
+            aria-labelledby="tab-request"
+          >
+            <div id="record-request" class="record-request" hidden>
+              <h2>本次请求</h2>
+              <p id="request-text"></p>
+              <div class="request-meta" id="request-meta"></div>
+            </div>
+            <form id="request" class="request-form">
+              <h2>分割影像</h2>
+              <label class="upload-zone" id="drop-zone" for="file">
                 <svg
-                  width="68"
-                  height="68"
-                  viewBox="0 0 80 80"
+                  width="26"
+                  height="26"
+                  viewBox="0 0 32 32"
                   fill="none"
                   aria-hidden="true"
                 >
-                  <rect
-                    x="17"
-                    y="17"
-                    width="46"
-                    height="46"
-                    rx="3"
-                    stroke="currentColor"
-                  />
-                  <ellipse
-                    cx="40"
-                    cy="40"
-                    rx="16"
-                    ry="20"
-                    stroke="currentColor"
-                  />
                   <path
-                    d="M9 40h22m18 0h22M40 9v22m0 18v22"
+                    d="M16 21V6m-6 6 6-6 6 6M6 21v5h20v-5"
                     stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
                   />
                 </svg>
-                <h3>在这里查看你的影像</h3>
-                <p>拖入 NIfTI 文件，即可浏览三个切面与 3D 视图。</p>
+                <strong id="file-name">选择或拖入 NIfTI</strong
+                ><span id="file-help">.nii / .nii.gz</span
+                ><input
+                  id="file"
+                  type="file"
+                  accept=".nii,.nii.gz"
+                  aria-describedby="file-help"
+                />
+              </label>
+              <div class="upload-progress" id="upload-progress" hidden>
+                <progress
+                  id="upload-bar"
+                  max="100"
+                  value="0"
+                  aria-label="上传进度"
+                ></progress
+                ><span id="upload-status"></span>
               </div>
-              <div
-                id="viewer-indicator"
-                class="viewer-loading"
-                role="status"
-                hidden
+              <p class="file-meta" id="file-meta" hidden></p>
+              <label for="instruction" class="field-label"
+                >需要分割什么？</label
               >
-                <span class="spinner" aria-hidden="true"></span
-                ><span>正在载入影像…</span>
-              </div>
-              <div
-                id="viewer-error"
-                class="viewer-error"
-                role="alert"
-                hidden
-              ></div>
-              <button type="button" id="retry-viewer" hidden>
-                重新加载影像
+              <textarea
+                id="instruction"
+                rows="5"
+                maxlength="4000"
+                placeholder="例如：分割这张 CT 中的肝脏和左右肾。"
+                required
+              ></textarea>
+              <p class="input-note">
+                用文字说明 CT 或 MR 和目标，Agent
+                会选择工具。影像不会发送给语言模型。
+              </p>
+              <button id="submit" class="primary" type="submit" disabled>
+                开始分割
               </button>
+              <p id="form-error" class="error" role="alert" hidden></p>
+            </form>
+            <div class="task-status" id="task-status" hidden aria-live="polite">
+              <div class="status-line">
+                <span class="status-dot" aria-hidden="true"></span
+                ><strong id="status-title"></strong
+                ><button id="cancel-task" type="button" class="quiet" hidden>
+                  取消任务
+                </button>
+              </div>
+              <p id="status-detail"></p>
+              <progress
+                id="task-progress"
+                max="100"
+                aria-label="任务进度"
+              ></progress>
+              <p id="task-error" class="error" hidden></p>
             </div>
-            <div class="viewer-caption">
-              <span id="location">点击定位 · 滚轮切片 · 右键调窗</span
-              ><span>放射学方向 R / L</span>
-            </div>
-          </div>
-          <aside class="inspector" aria-label="显示与分割结果">
+            <button type="button" id="reuse-image" class="secondary" hidden>
+              基于此影像新建分割
+            </button>
+          </section>
+          <section
+            id="panel-results"
+            role="tabpanel"
+            aria-labelledby="tab-results"
+            hidden
+          >
             <section class="display-settings">
-              <h3>影像显示</h3>
-              <label for="window-preset">窗宽窗位</label
+              <h2>影像显示</h2>
+              <label for="window-preset" class="field-label">窗宽窗位</label
               ><select id="window-preset" disabled>
                 <option value="auto">自动</option>
                 <option value="custom" disabled>手动调整</option>
@@ -306,22 +347,19 @@
                   checked
                 />显示十字线</label
               >
-              <p class="viewer-help">
-                滚轮切片 · 中键平移<br />右键拖动调整窗宽窗位。
-              </p>
             </section>
             <section
               class="result-panel"
               id="result-panel"
-              aria-label="分割结果"
+              aria-label="分割标签"
               hidden
             >
-              <div class="result-top">
-                <h3>分割标签 <span id="label-count"></span></h3>
+              <div class="section-heading">
+                <h2>分割标签 <span id="label-count"></span></h2>
               </div>
               <div class="overlay-settings">
                 <label for="opacity"
-                  >叠加强度
+                  >叠加透明度
                   <output id="opacity-value" for="opacity">55%</output></label
                 ><input
                   id="opacity"
@@ -338,38 +376,53 @@
                   </button>
                 </div>
               </div>
+              <input
+                type="search"
+                id="label-search"
+                placeholder="查找标签"
+                aria-label="查找分割标签"
+                hidden
+              />
               <div class="labels" id="labels"></div>
               <p id="result-summary" class="muted"></p>
-              <div class="downloads">
-                <a id="download-mask" class="download" download
-                  >下载分割 NIfTI</a
-                ><a id="download-result" class="quiet" download
-                  >下载结果 JSON</a
-                >
-              </div>
             </section>
             <p id="result-empty" class="muted result-empty">
-              完成分割后，可在这里切换标签并下载结果。
+              完成分割后，在这里切换标签和查看结果。
             </p>
-            <p class="inspector-note">
-              分割结果需要人工核查。<br />仅供研究，不用于临床决策。
-            </p>
-          </aside>
+            <section class="downloads" id="downloads" hidden>
+              <h2>下载文件</h2>
+              <p id="file-retention" class="muted"></p>
+              <a id="download-source" class="file-download" download
+                ><span>原始影像</span><span>NIfTI</span></a
+              ><a id="download-mask" class="file-download" download hidden
+                ><span>分割掩膜</span><span>NIfTI</span></a
+              ><a id="download-result" class="file-download" download hidden
+                ><span>结构化结果</span><span>JSON</span></a
+              >
+            </section>
+          </section>
         </div>
-        <p
-          class="connection-note"
-          id="connection-note"
-          role="status"
-          hidden
-        ></p>
-      </section>
+        <details class="workspace-help">
+          <summary>操作帮助与使用范围</summary>
+          <p>
+            点击定位，滚轮切片；中键拖动平移，右键拖动调整窗宽窗位。3D
+            视图可拖动旋转。
+          </p>
+          <p>Research use only。结果需要人工核查，不用于诊断或治疗决策。</p>
+        </details>
+      </aside>
     </main>
-
     <dialog id="login-dialog" aria-labelledby="login-title">
       <form id="login-form">
-        <div class="login-emblem" aria-hidden="true">M</div>
-        <h1 id="login-title">进入研究工作区</h1>
-        <p>使用访问令牌登录，查看和管理自己的影像任务。</p>
+        <img
+          class="login-emblem"
+          src="/static/logo.svg"
+          width="52"
+          height="52"
+          alt="MedSegAgent"
+        />
+        <h1 id="login-title">进入 MedSegAgent</h1>
+        <p>用自然语言分割影像，在同一处查看与管理结果。</p>
         <label for="access-token" class="field-label">访问令牌</label
         ><input
           id="access-token"

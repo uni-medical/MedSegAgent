@@ -80,6 +80,12 @@ Web uses a 12-hour HttpOnly SameSite=Strict session; HTTPS sessions are Secure. 
 separate Bearer identities. Uploads, tasks and files are owner scoped. There is no public
 data directory, arbitrary filesystem route or remote URL fetch. Input/result files expire
 under the 24-hour cleanup policy; task records remain as audit/idempotency tombstones.
+The Web sidebar's **分割记录** is one automatically saved record per segmentation, not
+an independent workspace or permanent image archive. Within the retention period, records
+reopen the original/overlay, offer original NIfTI, mask and JSON downloads, and can start
+another request using the same image. A source remains protected while a related task is
+active and until the latest related task's file deadline. Availability and expiry are checked
+at read time, so the UI disables missing/expired files before the periodic disk cleanup.
 Keep research inputs de-identified; user-written text is sent to the configured LLM provider.
 
 ## Verification and operations
