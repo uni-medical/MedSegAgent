@@ -1,48 +1,101 @@
-# Local tools
+# CLI and MCP
 
-Install the pinned environment with `uv sync --frozen --group dev`. Run
-`uv run medsegagent doctor` to check the actual backend. macOS defaults to MPS; Linux
-uses CUDA (`MEDSEGAGENT_DEVICE=gpu`, with `CUDA_VISIBLE_DEVICES` selecting a card).
+Install and configure the app using the [quick start](../README.md#quick-start).
+Prepare the required [model weights](deployment.md#prepare-models), then check the backend:
 
-For natural language use `uv run medsegagent run --modality CT --text "Segment the liver"
---input /path/to/scan.nii.gz --output outputs` (on one line). The image is never serialized
-into the provider payload. `uv run medsegagent route --modality CT --text "Segment the liver"`
-is an image-free, real function-calling canary.
+```bash
+uv run medsegagent doctor
+```
 
-The stdio MCP entrypoint is `uv run medsegagent-mcp`. Its tools are `segment_ct`,
-`segment_mr`, `segment_lung_nodules` and `segment_liver_lesions`, accepting input_path,
-output_dir and targets. `output_dir` is always a **parent**:
-each request creates its own atomic run subdirectory, even if many clients use the same
-parent. For anatomical tools, omit targets only for all structures; each lesion tool
-defaults to its single namesake lesion target. Empty lists, whitespace and unknown targets
-fail with a readable MCP ToolError.
+## Command line
 
-Each run writes segmentation.nii.gz, result.json, state.json, run_report.json and process.log.
-No statistics.json is promised. State updates are atomic and synced to disk. Process logs
-are private and are not returned over public HTTP. Native TotalSegmentator subprocesses
-do not inherit the LLM API key or service tokens.
+```bash
+uv run medsegagent run --modality CT --text "Segment the liver and kidneys" \
+  --input /path/to/scan.nii.gz --output outputs
+uv run medsegagent catalog --query lung --modality CT
+uv run medsegagent catalog --task total_v3
+uv run medsegagent weights
+```
 
-NIfTI is validated through the entire volume, including gzip integrity, bounded expansion,
-raw spacing (before nibabel repairs headers), finite intensities, dimensionality and affine.
-The output must use the requested labels and preserve the converted/input NIfTI geometry.
+`run` accepts a NIfTI image or a local DICOM series directory. With `--modality` omitted,
+the Agent can use a CT/MR declaration in the request or gather local modality evidence.
+`route` previews a model selection using text alone:
 
-Local DICOM directories require a declared CT/MR tool, a single patient/study/series,
-consistent geometry and supported uncompressed single-frame slices. A private snapshot is
-converted with pinned dcm2niix before inference. Mismatched modality and mixed series are
-rejected before the model is invoked. ZIP, arbitrary DICOM archives and Web DICOM upload
-are not supported. dcm2niix is installed through uv; converter errors are recorded privately.
+```bash
+uv run medsegagent route --modality CT --text "Segment the liver"
+```
 
-Runtime settings: MEDSEGAGENT_OUTPUT_ROOT, MEDSEGAGENT_LOCK_PATH,
-MEDSEGAGENT_TIMEOUT_SECONDS (7200), MEDSEGAGENT_MAX_INPUT_BYTES (512 MiB),
-MEDSEGAGENT_MAX_UNCOMPRESSED_BYTES (2 GiB), TOTALSEG_HOME_DIR and CUDA_VISIBLE_DEVICES.
-Set TotalSegmentator config.json send_usage_stats to false for offline usage telemetry.
-First inference may download model weights; preserve the cache for later runs.
+The catalog lists 33 available tasks: 27 CT and 6 MR. Search matches task names,
+labels and composite regions. An explicit task query includes its exact labels,
+quality modes, requirements, license and local weight readiness. `tasks` and
+`weights-status` are aliases for `catalog` and `weights`.
 
-`lung_nodules` and `liver_lesions` require their standard models, never `--fast` or native
-`--roi_subset`. The common core validates the native output, preserves its private mask,
-and filters to the requested lesion label. The lung model's `lung` label is internal
-supporting anatomy and is not exposed by the dedicated nodule tool. This does not infer
-malignancy, lesion subtype, or disease absence from a nonempty/empty result.
+`run` returns JSON with `completion` and `result`. Requested outputs are in
+`result.outputs[]`; their regions identify `artifact_id` and voxel `values` in
+`artifacts[].path`. Files retain their own label IDs, so use those returned selectors.
+An incomplete request exits nonzero and retains any completed outputs. `route` returns
+one selection for inspection; `run` executes the full request.
 
-Research use only; the fast models prioritize lower resolution and runtime. An empty mask
-can reflect an absent structure or a model miss; completion is not a claim of correctness.
+## MCP server
+
+Start a stdio server from the repository root:
+
+```bash
+uv run --env-file .env medsegagent-mcp
+```
+
+Configure your MCP client with this command and the repository as its working directory.
+The server exposes five tools:
+
+| Tool | Arguments |
+| --- | --- |
+| `get_capabilities` | `query?`, `task?`, `modality?` |
+| `detect_modality` | `input_path?`, `execution_id?`, `modality?`, `output_dir?` |
+| `segment` | `input_path`, `targets`, `modality?`, `output_dir?`, `execution_id?`, `task?`, `quality?`, `supersedes?` |
+| `inspect_artifact` | `execution_id`, `region_ids` |
+| `compose_masks` | `execution_id`, `operation`, `region_ids`, `name` |
+
+Start with `get_capabilities` to discover models and labels. For a known modality,
+call `segment` with an input path, target names and `CT` or `MR`. For an unknown modality,
+call `detect_modality` with the input path, then choose CT/MR in `segment` using the
+returned evidence. The first valid segmentation choice establishes the execution's modality.
+
+The response includes an `execution_id`. Use it for later operations on the same image;
+`segment` also requires the original `input_path`. Each execution creates a separate
+subdirectory under `output_dir`. A session retains up to eight inputs, and generated
+files remain available after the stdio process ends.
+
+Specify a `task` to choose a model, or an array such as `["total", "total_v3"]` to run
+several models for the same targets. Use each task's exact label names. Omitting `task`
+uses the default model for that modality and target. Omitting `quality` uses the model's
+default; supported modes are listed by the catalog. Whole CT lungs expand to five lobes,
+and whole MR lungs to the two native lung labels.
+
+Inspection and composition use returned `region_ids`. Composition supports `union`,
+`intersection` and `difference`; difference subtracts all later regions from the first.
+Repeated requests within an execution reuse existing results for the same model and
+quality. See the [tool reference](tool-management.md) for failed-attempt replacement.
+
+`local_outputs[]` gives the files for requested objects. Each file's `labels` describes
+its full contents, while `requested_regions[].label_ids` selects a particular target.
+A shared file may include additional labels used to construct that target. Model and
+quality metadata distinguish results from different runs.
+
+The external MCP client chooses its own model and tool sequence. The server runs local
+operations and returns their results directly to that client.
+
+## Inputs and runtime
+
+NIfTI validation checks dimensions, gzip integrity, finite intensities, spacing and
+affine geometry. Local DICOM input uses a consistent, uncompressed single-frame CT/MR
+series from one patient/study/series, converted with the bundled dcm2niix. Web and A2A
+accept NIfTI files; local DICOM directories are available through CLI and MCP.
+
+Backend directories contain `segmentation.nii.gz`, `state.json`, `run_report.json` and
+`process.log`. An execution's `execution.json` records its regions and output references.
+Native masks and normalization metadata are retained alongside these files.
+
+CLI requests use a 7200-second deadline by default, with 24 model requests and 64 work-tool
+calls. Configure `MEDSEGAGENT_TIMEOUT_SECONDS`, `MEDSEGAGENT_MAX_MODEL_REQUESTS` and
+`MEDSEGAGENT_MAX_TOOL_CALLS` in `.env`. Device scheduling, caches and service storage are
+covered in [Deployment](deployment.md).

@@ -42,30 +42,24 @@
             placeholder="搜索影像或分割目标"
             aria-label="搜索分割记录"
           />
-          <p id="history-empty" class="muted">每次分割会自动记录在这里。</p>
+          <p id="history-empty" class="muted">暂无分割记录</p>
           <ol id="task-list"></ol>
         </section>
         <div class="sidebar-footer">
-          <details class="record-help">
-            <summary>关于分割记录</summary>
-            <p>
-              一条记录对应一次分割请求，可再次打开、复用影像和下载文件。文件按服务保留期限自动清理，记录仍可查看；需要长期保存时请下载到本地。
-            </p>
-            <p>最多显示最近 100 条记录，仅当前身份可见。</p>
-          </details>
           <div class="account-line">
-            <span>仅供研究</span
+            <span id="account-name"></span
             ><button class="quiet" id="logout" type="button" hidden>
               退出登录
             </button>
           </div>
+          <small>仅供研究</small>
         </div>
       </aside>
       <section class="image-workspace" aria-labelledby="viewer-heading">
         <header class="viewer-heading">
           <div>
             <h1 id="viewer-heading">新建分割</h1>
-            <p id="viewer-name">3D 影像分割与查看</p>
+            <p id="viewer-name" hidden></p>
           </div>
         </header>
         <div class="viewer-toolbar" aria-label="影像显示控制">
@@ -165,32 +159,53 @@
             ><span class="render-hint">拖动旋转 · 滚轮缩放</span>
           </div>
           <div class="viewer-empty" id="viewer-empty">
-            <svg
-              width="68"
-              height="68"
-              viewBox="0 0 80 80"
-              fill="none"
-              aria-hidden="true"
+            <div class="welcome-upload">
+              <h3 id="empty-title">从一张影像开始</h3>
+              <button type="button" id="choose-image" class="primary">
+                选择 NIfTI 影像
+              </button>
+            </div>
+            <section
+              id="example-gallery"
+              class="example-gallery"
+              aria-labelledby="examples-heading"
+              hidden
             >
-              <rect
-                x="17"
-                y="17"
-                width="46"
-                height="46"
-                rx="3"
-                stroke="currentColor"
-              />
-              <ellipse cx="40" cy="40" rx="16" ry="20" stroke="currentColor" />
-              <path
-                d="M9 40h22m18 0h22M40 9v22m0 18v22"
-                stroke="currentColor"
-              />
-            </svg>
-            <h3 id="empty-title">从一张影像开始</h3>
-            <p>上传 3D 影像，用一句话描述分割目标。</p>
-            <button type="button" id="choose-image" class="primary">
-              选择 NIfTI 影像
-            </button>
+              <h4 id="examples-heading">试用示例</h4>
+              <div id="example-cards" class="example-cards"></div>
+            </section>
+            <section
+              class="capability-overview"
+              aria-labelledby="capability-heading"
+            >
+              <header class="capability-heading">
+                <h2 id="capability-heading">支持 300+ 人体结构与病灶分割目标类别</h2>
+              </header>
+              <div class="capability-modalities">
+                <section
+                  class="capability-modality"
+                  aria-labelledby="capability-ct"
+                >
+                  <h3 id="capability-ct">CT</h3>
+                  <p class="capability-range">
+                    胸腹盆腔脏器、各肺叶、逐节脊椎、肝段、牙齿与牙髓，以及头颈结构、骨骼、肌群、血管与气道。
+                  </p>
+                  <p class="capability-lesions">
+                    肺结节、肝脏病灶、肾囊肿、脑内出血、胸腔及心包积液。
+                  </p>
+                </section>
+                <section
+                  class="capability-modality"
+                  aria-labelledby="capability-mr"
+                >
+                  <h3 id="capability-mr">MR</h3>
+                  <p class="capability-range">
+                    脑、胸腹盆腔脏器、左右肺、逐节脊椎、椎间盘、肝段，以及骨骼、肌群与主要血管。
+                  </p>
+                  <p class="capability-lesions">肝脏病灶、脑动脉瘤。</p>
+                </section>
+              </div>
+            </section>
           </div>
           <div
             id="viewer-indicator"
@@ -199,7 +214,7 @@
             hidden
           >
             <span class="spinner" aria-hidden="true"></span
-            ><span>正在载入影像…</span>
+            ><span id="viewer-loading-text">正在载入影像…</span>
           </div>
           <div id="viewer-error" class="viewer-error" role="alert" hidden></div>
           <button type="button" id="retry-viewer" hidden>重新加载影像</button>
@@ -250,7 +265,6 @@
               <div class="request-meta" id="request-meta"></div>
             </div>
             <form id="request" class="request-form">
-              <h2>分割影像</h2>
               <label class="upload-zone" id="drop-zone" for="file">
                 <svg
                   width="26"
@@ -269,12 +283,9 @@
                 </svg>
                 <strong id="file-name">选择或拖入 NIfTI</strong
                 ><span id="file-help">.nii / .nii.gz</span
-                ><input
-                  id="file"
-                  type="file"
-                  accept=".nii,.nii.gz"
-                  aria-describedby="file-help"
-                />
+                ><!-- Omit accept: macOS can disable .nii.gz for compound-extension filters.
+                     uploadFile and the server enforce the actual NIfTI format. -->
+                <input id="file" type="file" aria-describedby="file-help" />
               </label>
               <div class="upload-progress" id="upload-progress" hidden>
                 <progress
@@ -285,7 +296,14 @@
                 ></progress
                 ><span id="upload-status"></span>
               </div>
-              <p class="file-meta" id="file-meta" hidden></p>
+              <dl class="file-meta" id="file-meta" hidden>
+                <dt>文件大小</dt>
+                <dd id="file-size"></dd>
+                <dt>影像尺寸</dt>
+                <dd id="file-shape"></dd>
+                <dt>体素间距</dt>
+                <dd id="file-spacing"></dd>
+              </dl>
               <label for="instruction" class="field-label"
                 >需要分割什么？</label
               >
@@ -296,34 +314,44 @@
                 placeholder="例如：分割这张 CT 中的肝脏和左右肾。"
                 required
               ></textarea>
-              <p class="input-note">
-                用文字说明 CT 或 MR 和目标，Agent
-                会选择工具。影像不会发送给语言模型。
-              </p>
+              <div
+                id="example-prompts"
+                class="example-prompts"
+                aria-label="示例分割需求"
+                hidden
+              ></div>
               <button id="submit" class="primary" type="submit" disabled>
                 开始分割
               </button>
               <p id="form-error" class="error" role="alert" hidden></p>
             </form>
-            <div class="task-status" id="task-status" hidden aria-live="polite">
+            <div class="task-status" id="task-status" hidden>
               <div class="status-line">
                 <span class="status-dot" aria-hidden="true"></span
-                ><strong id="status-title"></strong
+                ><strong id="status-title" aria-live="polite"></strong
                 ><button id="cancel-task" type="button" class="quiet" hidden>
                   取消任务
                 </button>
               </div>
               <p id="status-detail"></p>
+              <div id="task-timing" class="task-timing" aria-live="off" hidden>
+                <span id="task-elapsed"></span>
+                <span id="task-estimate"></span>
+              </div>
               <progress
                 id="task-progress"
                 max="100"
-                aria-label="任务进度"
+                aria-label="预估进度"
               ></progress>
               <p id="task-error" class="error" hidden></p>
             </div>
             <button type="button" id="reuse-image" class="secondary" hidden>
               基于此影像新建分割
             </button>
+            <details id="example-switch" class="example-switch" hidden>
+              <summary>切换示例</summary>
+              <div id="example-switch-list" class="example-switch-list"></div>
+            </details>
           </section>
           <section
             id="panel-results"
@@ -339,8 +367,34 @@
                 <option value="custom" disabled>手动调整</option>
                 <option value="soft">CT 软组织</option>
                 <option value="lung">CT 肺窗</option>
-                <option value="bone">CT 骨窗</option></select
-              ><label class="crosshair-setting"
+                <option value="bone">CT 骨窗</option>
+              </select>
+              <div class="window-numbers">
+                <label for="window-width"
+                  >窗宽 <span>WW</span>
+                  <input
+                    id="window-width"
+                    type="number"
+                    step="any"
+                    inputmode="decimal"
+                    aria-describedby="window-error"
+                    disabled
+                  />
+                </label>
+                <label for="window-level"
+                  >窗位 <span>WL</span>
+                  <input
+                    id="window-level"
+                    type="number"
+                    step="any"
+                    inputmode="decimal"
+                    aria-describedby="window-error"
+                    disabled
+                  />
+                </label>
+              </div>
+              <p id="window-error" class="error" role="alert" hidden></p>
+              <label class="crosshair-setting"
                 ><input
                   id="crosshair-toggle"
                   type="checkbox"
@@ -354,8 +408,23 @@
               aria-label="分割标签"
               hidden
             >
+              <div
+                id="result-output-choice"
+                class="result-output-choice"
+                hidden
+              >
+                <label for="result-output">结果</label>
+                <select id="result-output" aria-label="选择分割结果"></select>
+              </div>
               <div class="section-heading">
                 <h2>分割标签 <span id="label-count"></span></h2>
+                <div class="label-actions" aria-label="标签显隐">
+                  <button id="labels-all" type="button" class="quiet">
+                    显示全部</button
+                  ><button id="labels-none" type="button" class="quiet">
+                    隐藏全部
+                  </button>
+                </div>
               </div>
               <div class="overlay-settings">
                 <label for="opacity"
@@ -368,13 +437,6 @@
                   max="100"
                   value="55"
                 />
-                <div class="label-actions">
-                  <button id="labels-all" type="button" class="quiet">
-                    显示全部</button
-                  ><button id="labels-none" type="button" class="quiet">
-                    隐藏全部
-                  </button>
-                </div>
               </div>
               <input
                 type="search"
@@ -385,35 +447,34 @@
               />
               <div class="labels" id="labels"></div>
               <p id="result-summary" class="muted"></p>
+              <p id="result-explanation" hidden></p>
             </section>
-            <p id="result-empty" class="muted result-empty">
-              完成分割后，在这里切换标签和查看结果。
-            </p>
+            <p id="result-empty" class="muted result-empty">尚无分割结果</p>
             <section class="downloads" id="downloads" hidden>
               <h2>下载文件</h2>
-              <p id="file-retention" class="muted"></p>
               <a id="download-source" class="file-download" download
                 ><span>原始影像</span><span>NIfTI</span></a
-              ><a id="download-mask" class="file-download" download hidden
-                ><span>分割掩膜</span><span>NIfTI</span></a
-              ><a id="download-result" class="file-download" download hidden
-                ><span>结构化结果</span><span>JSON</span></a
               >
+              <div id="download-labels" hidden></div>
             </section>
           </section>
         </div>
+        <details id="capabilities" class="workspace-help" hidden>
+          <summary>能力范围</summary>
+          <p id="capability-summary"></p>
+          <p id="capability-limits"></p>
+        </details>
         <details class="workspace-help">
-          <summary>操作帮助与使用范围</summary>
+          <summary>操作帮助</summary>
           <p>
             点击定位，滚轮切片；中键拖动平移，右键拖动调整窗宽窗位。3D
             视图可拖动旋转。
           </p>
-          <p>Research use only。结果需要人工核查，不用于诊断或治疗决策。</p>
         </details>
       </aside>
     </main>
     <dialog id="login-dialog" aria-labelledby="login-title">
-      <form id="login-form">
+      <div class="login-content">
         <img
           class="login-emblem"
           src="/static/logo.svg"
@@ -422,22 +483,26 @@
           alt="MedSegAgent"
         />
         <h1 id="login-title">进入 MedSegAgent</h1>
-        <p>用自然语言分割影像，在同一处查看与管理结果。</p>
-        <label for="access-token" class="field-label">访问令牌</label
-        ><input
-          id="access-token"
-          name="access-token"
-          type="password"
-          autocomplete="current-password"
-          required
-          spellcheck="false"
-        />
+        <p>上传影像，用自然语言完成分割。</p>
+        <div class="login-options">
+          <button type="button" class="primary" id="guest-button">
+            立即体验
+          </button>
+          <a
+            id="github-login"
+            class="github-login"
+            href="/api/auth/github/start"
+            hidden
+            >GitHub 登录</a
+          >
+        </div>
         <p id="login-error" class="error" role="alert" hidden></p>
-        <button type="submit" class="primary" id="login-submit">
-          进入工作区</button
-        ><small>Research use only · 仅供研究</small>
-      </form>
+        <p class="login-footnote">
+          分割记录按账号独立保存。GitHub 登录后进入个人账号，游客记录不会转入。
+        </p>
+        <small>仅供研究</small>
+      </div>
     </dialog>
-    <noscript>请启用 JavaScript 以使用影像查看器。此页面仅供研究。</noscript>
+    <noscript>请启用 JavaScript 以使用影像查看器。</noscript>
   </body>
 </html>

@@ -8,15 +8,12 @@ import httpx
 import nibabel as nib
 import numpy as np
 import pytest
+from auth_helpers import ALICE, BOB
+from auth_helpers import create_test_app as create_app
 from starlette.testclient import TestClient
 
-from medsegagent import agent, core
+from medsegagent import agent, catalog, core
 from medsegagent.service import Service
-from medsegagent.web import create_app
-
-TOKENS = {"alice": "a" * 40, "bob": "b" * 40}
-ALICE = {"Authorization": "Bearer " + TOKENS["alice"]}
-BOB = {"Authorization": "Bearer " + TOKENS["bob"]}
 
 
 def nifti_bytes(value=0):
@@ -25,7 +22,7 @@ def nifti_bytes(value=0):
 
 
 def client(tmp_path):
-    return TestClient(create_app(tmp_path, "http://localhost", TOKENS))
+    return TestClient(create_app(tmp_path, "http://localhost"))
 
 
 @pytest.mark.parametrize("bad", [[], [" "], ["liver", ""], ["bogus"], None])
@@ -46,7 +43,7 @@ def test_model_arguments_fail_closed(monkeypatch, bad):
                             "tool_calls": [
                                 {
                                     "function": {
-                                        "name": "segment_ct",
+                                        "name": "segment",
                                         "arguments": json.dumps({"targets": bad}),
                                     }
                                 }
@@ -61,7 +58,7 @@ def test_model_arguments_fail_closed(monkeypatch, bad):
         asyncio.run(agent.select_tool("分割肝脏", "CT", transport=httpx.MockTransport(handler)))
 
 
-def test_provider_projection_and_wrong_modality(monkeypatch):
+def test_provider_projection_and_wrong_modality_producer(monkeypatch):
     monkeypatch.setenv("OPENAI_BASE_URL", "https://example.invalid/v1")
     monkeypatch.setenv("OPENAI_API_KEY", "private-key")
 
@@ -69,9 +66,10 @@ def test_provider_projection_and_wrong_modality(monkeypatch):
         body = json.loads(request.content)
         assert len(body["messages"]) == 2
         assert json.loads(body["messages"][1]["content"]) == {"modality": "CT", "request": "liver"}
-        assert all(
-            set(t["function"]["parameters"]["properties"]) == {"targets"} for t in body["tools"]
-        )
+        schemas = {t["function"]["name"]: t["function"] for t in body["tools"]}
+        assert set(schemas) == {"get_capabilities", "segment"}  # Image-free preview only.
+        assert set(schemas["segment"]["parameters"]["properties"]) == {"targets", "task", "quality"}
+        assert "total_mr" not in schemas["segment"]["parameters"]["properties"]["task"]["enum"]
         return httpx.Response(
             200,
             json={
@@ -81,8 +79,8 @@ def test_provider_projection_and_wrong_modality(monkeypatch):
                             "tool_calls": [
                                 {
                                     "function": {
-                                        "name": "segment_mr",
-                                        "arguments": '{"targets":["liver"]}',
+                                        "name": "segment",
+                                        "arguments": '{"task":"total_mr","targets":["liver"]}',
                                     }
                                 }
                             ]
@@ -92,7 +90,7 @@ def test_provider_projection_and_wrong_modality(monkeypatch):
             },
         )
 
-    with pytest.raises(agent.RoutingError, match="modality"):
+    with pytest.raises(agent.RoutingError):
         asyncio.run(agent.select_tool("liver", "CT", transport=httpx.MockTransport(handler)))
 
 
@@ -112,29 +110,37 @@ def routing_transport(monkeypatch, tool, arguments, *, check_request=None):
 @pytest.mark.parametrize(
     ("text", "tool", "modality"),
     [
-        ("请分割这份CT中的肝脏", "segment_ct", "CT"),
+        ("请分割这份CT中的肝脏", "segment", "CT"),
         (
             "Segment the liver in this computed tomography",
-            "segment_ct",
+            "segment",
             "CT",
         ),
-        ("分割磁共振影像中的肝脏", "segment_mr", "MR"),
-        ("分割核磁共振中的肝脏", "segment_mr", "MR"),
-        ("Segment the liver in this MRI", "segment_mr", "MR"),
+        ("分割磁共振影像中的肝脏", "segment", "MR"),
+        ("分割核磁共振中的肝脏", "segment", "MR"),
+        ("Segment the liver in this MRI", "segment", "MR"),
     ],
 )
-def test_text_modality_uses_single_tool_call_and_targets_only(monkeypatch, text, tool, modality):
+def test_text_modality_binds_context_and_preserves_optional_producer(
+    monkeypatch, text, tool, modality
+):
     requests = []
 
     def check(payload):
         requests.append(payload)
         assert json.loads(payload["messages"][1]["content"]) == {
-            "modality": None,
+            "modality": modality,
             "request": text,
         }
-        for schema in payload["tools"]:
-            assert schema["function"]["parameters"]["required"] == ["targets"]
-            assert set(schema["function"]["parameters"]["properties"]) == {"targets"}
+        schema = next(
+            row["function"] for row in payload["tools"] if row["function"]["name"] == "segment"
+        )
+        assert schema["name"] == "segment"
+        assert schema["parameters"]["required"] == ["targets"]
+        assert set(schema["parameters"]["properties"]) == {"targets", "task", "quality"}
+        assert schema["parameters"]["properties"]["task"]["enum"] == list(
+            catalog.public_task_names(modality)
+        )
 
     selected = asyncio.run(
         agent.select_tool(
@@ -164,14 +170,14 @@ def test_absent_or_ambiguous_modality_is_local_clarification_without_provider(mo
     with pytest.raises(agent.RoutingError) as error:
         asyncio.run(agent.select_tool(text, transport=httpx.MockTransport(handler)))
     assert error.value.code == "MODALITY_REQUIRED"
-    assert "请在描述中注明" in str(error.value)
+    assert "请注明" in str(error.value)
 
 
 @pytest.mark.parametrize(
     ("tool", "arguments"),
     [
-        ("segment_ct", {"targets": ["liver"], "unexpected": "CT"}),
-        ("segment_ct", {"targets": []}),
+        ("segment", {"targets": ["liver"], "unexpected": "CT"}),
+        ("segment", {"targets": []}),
         ("segment_mr", {"targets": ["liver"]}),
     ],
 )
@@ -190,14 +196,32 @@ def test_invalid_explicit_modality_does_not_become_text_selection(modality):
         agent.provider_payload("CT liver", modality)
 
 
-@pytest.mark.parametrize("task", ["lung_nodules", "liver_lesions"])
-def test_dedicated_lesion_routing_is_narrow_and_ct_only(task, monkeypatch):
+@pytest.mark.parametrize(
+    ("task", "modality", "target"),
+    [
+        ("lung_nodules", "CT", "lung_nodules"),
+        ("liver_lesions", "CT", "liver_lesions"),
+        ("liver_lesions_mr", "MR", "liver_lesions"),
+    ],
+)
+def test_lesion_defaults_and_explicit_producer_modality(task, modality, target, monkeypatch):
     monkeypatch.setenv("OPENAI_BASE_URL", "https://example.invalid/v1")
     monkeypatch.setenv("OPENAI_API_KEY", "test")
     schema = next(
-        t["function"] for t in agent.tool_schema() if t["function"]["name"] == "segment_" + task
+        row["function"]
+        for row in agent.tool_schema(modality)
+        if row["function"]["name"] == "segment"
     )
-    assert schema["parameters"]["properties"]["targets"]["items"]["enum"] == [task]
+    assert "enum" not in schema["parameters"]["properties"]["targets"]["items"]
+    assert task in schema["parameters"]["properties"]["task"]["anyOf"][0]["enum"]
+    assert catalog.public_native_targets(task) == {target}
+    other_modality = "MR" if modality == "CT" else "CT"
+    other_schema = next(
+        row["function"]
+        for row in agent.tool_schema(other_modality)
+        if row["function"]["name"] == "segment"
+    )
+    assert task not in other_schema["parameters"]["properties"]["task"]["anyOf"][0]["enum"]
 
     def handler(request):
         return httpx.Response(
@@ -209,8 +233,8 @@ def test_dedicated_lesion_routing_is_narrow_and_ct_only(task, monkeypatch):
                             "tool_calls": [
                                 {
                                     "function": {
-                                        "name": "segment_" + task,
-                                        "arguments": json.dumps({"targets": [task]}),
+                                        "name": "segment",
+                                        "arguments": json.dumps({"targets": [target]}),
                                     }
                                 }
                             ]
@@ -220,10 +244,22 @@ def test_dedicated_lesion_routing_is_narrow_and_ct_only(task, monkeypatch):
             },
         )
 
-    selected = asyncio.run(agent.select_tool(task, "CT", transport=httpx.MockTransport(handler)))
-    assert selected.task == task and selected.targets == [task]
-    with pytest.raises(agent.RoutingError, match="modality"):
-        asyncio.run(agent.select_tool(task, "MR", transport=httpx.MockTransport(handler)))
+    selected = asyncio.run(
+        agent.select_tool(target, modality, transport=httpx.MockTransport(handler))
+    )
+    assert selected.task == task and selected.targets == [target]
+    # Native producer identity remains modality-specific even when the semantic
+    # target (liver_lesions) exists in both CT and MR.
+    with pytest.raises(agent.RoutingError):
+        asyncio.run(
+            agent.select_tool(
+                target,
+                other_modality,
+                transport=routing_transport(
+                    monkeypatch, "segment", {"task": task, "targets": [target]}
+                ),
+            )
+        )
 
 
 def test_auth_upload_bounds_and_owner_isolation(tmp_path):
@@ -271,24 +307,23 @@ def test_auth_upload_bounds_and_owner_isolation(tmp_path):
 
 
 def test_https_cookie_and_csrf(tmp_path):
-    app = create_app(tmp_path, "https://testserver", TOKENS)
+    app = create_app(tmp_path, "https://testserver")
     with TestClient(app, base_url="https://testserver") as c:
         bad = c.post(
-            "/api/session",
-            json={"token": TOKENS["alice"]},
+            "/api/auth/guest",
             headers={"Origin": "https://evil.invalid"},
         )
         assert bad.status_code == 403
-        response = c.post("/api/session", json={"token": TOKENS["alice"]})
+        response = c.post("/api/auth/guest")
         assert response.status_code == 200
         cookie = response.headers["set-cookie"].lower()
-        assert "httponly" in cookie and "secure" in cookie and "samesite=strict" in cookie
+        assert "httponly" in cookie and "secure" in cookie and "samesite=lax" in cookie
         assert c.get("/api/tasks").status_code == 200
         assert (
             c.post("/api/tasks", json={}, headers={"Origin": "https://evil.invalid"}).status_code
             == 403
         )
-        assert c.post("/a2a/v1/message:send", json={}).status_code == 401
+        assert c.post("/a2a/v1/message:send", json={}).status_code == 400
         assert c.delete("/api/session").status_code == 200
         assert c.get("/api/tasks").status_code == 401
 
@@ -297,7 +332,7 @@ def test_task_idempotency_cancel_and_restart(tmp_path, monkeypatch):
     async def slow_select(*args, **kwargs):
         await asyncio.sleep(60)
 
-    monkeypatch.setattr(agent, "select_tool", slow_select)
+    monkeypatch.setattr(agent, "run_agent", slow_select)
     with client(tmp_path) as c:
         upload = c.post(
             "/api/uploads", headers={**ALICE, "X-Filename": "ct.nii"}, content=nifti_bytes()
@@ -320,8 +355,9 @@ def test_task_idempotency_cancel_and_restart(tmp_path, monkeypatch):
 
 
 def test_completed_result_survives_restart_and_files_remain_private(tmp_path, monkeypatch):
-    async def select(*args, **kwargs):
-        return agent.Selection("segment_ct", "total", ["liver"])
+    async def select(text, modality, execution, **kwargs):
+        await execution.call("segment", {"targets": ["liver"]})
+        return {"status": "completed", "summary": "Liver segmented", "unresolved": []}
 
     async def segment(**kwargs):
         parent = Path(kwargs["output_dir"]) / "unique-run"
@@ -336,7 +372,7 @@ def test_completed_result_survives_restart_and_files_remain_private(tmp_path, mo
             "labels": [{"id": 5, "name": "liver", "voxels": 512}],
         }
 
-    monkeypatch.setattr(agent, "select_tool", select)
+    monkeypatch.setattr(agent, "run_agent", select)
     monkeypatch.setattr(core, "segment", segment)
     with client(tmp_path) as c:
         upload = c.post(
@@ -382,12 +418,14 @@ def test_single_service_lock(tmp_path):
     asyncio.run(exercise())
 
 
-def test_web_text_modality_persists_and_replay_survives_restart(tmp_path, monkeypatch):
+def test_web_agent_text_modality_choice_persists_and_replay_survives_restart(tmp_path, monkeypatch):
     calls = []
 
-    async def select(text, modality):
+    async def select(text, modality, execution, **kwargs):
         calls.append((text, modality))
-        return agent.Selection("segment_mr", "total_mr", ["liver"])
+        assert execution.modality is None
+        await execution.call("segment", {"targets": ["liver"], "modality": "MR"})
+        return {"status": "completed", "summary": "MR liver segmented", "unresolved": []}
 
     async def segment(**kwargs):
         assert kwargs["task"] == "total_mr"
@@ -395,9 +433,14 @@ def test_web_text_modality_persists_and_replay_survives_restart(tmp_path, monkey
         parent.mkdir(parents=True)
         path = parent / "segmentation.nii.gz"
         nib.save(nib.Nifti1Image(np.ones((8, 8, 8), dtype=np.uint8), np.eye(4)), path)
-        return {"segmentation_path": str(path), "task": "total_mr", "targets": ["liver"]}
+        return {
+            "segmentation_path": str(path),
+            "task": "total_mr",
+            "targets": ["liver"],
+            "labels": [{"id": 1, "name": "liver", "voxels": 512}],
+        }
 
-    monkeypatch.setattr(agent, "select_tool", select)
+    monkeypatch.setattr(agent, "run_agent", select)
     monkeypatch.setattr(core, "segment", segment)
     with client(tmp_path) as c:
         upload = c.post(
@@ -412,7 +455,7 @@ def test_web_text_modality_persists_and_replay_survives_restart(tmp_path, monkey
             if row["status"] == "completed":
                 break
         assert row["status"] == "completed", row
-        assert row["modality"] == "MR" and row["modality_source"] == "text"
+        assert row["modality"] == "MR" and row["modality_source"] == "agent"
         assert c.post("/api/tasks", headers=ALICE, json=body).json()["id"] == task_id
         assert (
             c.post("/api/tasks", headers=ALICE, json={**body, "modality": "MR"}).status_code == 409
@@ -425,16 +468,20 @@ def test_web_text_modality_persists_and_replay_survives_restart(tmp_path, monkey
 
 
 def test_web_projects_modality_clarification_without_inference(tmp_path, monkeypatch):
-    original_select = agent.select_tool
-    transport = routing_transport(monkeypatch, None, None)
-
-    async def select(text, modality):
-        return await original_select(text, modality, transport=transport)
+    async def select(text, modality, execution, **kwargs):
+        observed = await execution.call("detect_modality", {})
+        assert observed["status"] == "completed"
+        assert observed["modality_detection"]["status"] == "uncertain"
+        return {
+            "status": "needs_input",
+            "summary": "图像强度不足以可靠区分 CT 还是 MR，请确认模态。",
+            "unresolved": ["模态无法可靠识别"],
+        }
 
     async def segment(**kwargs):
         pytest.fail("Missing modality must never start inference")
 
-    monkeypatch.setattr(agent, "select_tool", select)
+    monkeypatch.setattr(agent, "run_agent", select)
     monkeypatch.setattr(core, "segment", segment)
     with client(tmp_path) as c:
         upload = c.post(
@@ -452,7 +499,7 @@ def test_web_projects_modality_clarification_without_inference(tmp_path, monkeyp
             if row["status"] == "failed":
                 break
         assert row["status"] == "failed", row
-        assert row["error"]["code"] == "MODALITY_REQUIRED"
-        assert "请在描述中注明" in row["error"]["message"]
+        assert row["error"]["code"] == "INPUT_REQUIRED"
+        assert "CT 还是 MR" in row["error"]["message"]
         assert row["upload_id"] == upload["id"] and row["text"] == "分割肝脏"
         assert c.get(f"/api/uploads/{upload['id']}/file", headers=ALICE).status_code == 200

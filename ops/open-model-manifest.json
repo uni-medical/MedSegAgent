@@ -1,0 +1,1458 @@
+{
+  "schema": 2,
+  "totalsegmentator_version": "2.18.0",
+  "usage_policy": "public_noncommercial",
+  "verified_at": 1788861408.5916102,
+  "tasks": {
+    "total": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          291,
+          292,
+          293,
+          294,
+          295,
+          298
+        ],
+        "fast": [
+          297,
+          298
+        ],
+        "fastest": [
+          298
+        ]
+      }
+    },
+    "total_v3": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          831,
+          832,
+          833,
+          834,
+          835,
+          298
+        ],
+        "fast": [
+          836,
+          298
+        ],
+        "fastest": [
+          837,
+          298
+        ]
+      }
+    },
+    "body": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          299
+        ],
+        "fast": [
+          300
+        ]
+      }
+    },
+    "body_mr": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          597
+        ],
+        "fast": [
+          598
+        ]
+      }
+    },
+    "vertebrae_mr": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          756
+        ]
+      }
+    },
+    "lung_vessels": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          117,
+          297
+        ]
+      }
+    },
+    "lung_vessels_LEGACY": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          258,
+          298
+        ]
+      }
+    },
+    "cerebral_bleed": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          150,
+          298
+        ]
+      }
+    },
+    "hip_implant": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          260,
+          298
+        ]
+      }
+    },
+    "pleural_pericard_effusion": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          315,
+          298
+        ]
+      }
+    },
+    "vertebrae_body": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          305
+        ]
+      }
+    },
+    "vertebrae_pp": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          803
+        ]
+      }
+    },
+    "vertebrae_pp_refined": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          803,
+          305
+        ]
+      }
+    },
+    "total_mr": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          850,
+          851,
+          852
+        ],
+        "fast": [
+          852
+        ],
+        "fastest": [
+          853,
+          852
+        ]
+      }
+    },
+    "head_glands_cavities": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          775,
+          298
+        ]
+      }
+    },
+    "head_muscles": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          777,
+          298
+        ]
+      }
+    },
+    "headneck_bones_vessels": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          776,
+          298
+        ]
+      }
+    },
+    "headneck_muscles": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          778,
+          779,
+          298
+        ]
+      }
+    },
+    "liver_vessels": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          8,
+          298
+        ]
+      }
+    },
+    "liver_lesions": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          591,
+          297
+        ]
+      }
+    },
+    "liver_lesions_mr": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          589,
+          852
+        ]
+      }
+    },
+    "oculomotor_muscles": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          351,
+          298
+        ]
+      }
+    },
+    "lung_nodules": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          913,
+          298
+        ]
+      }
+    },
+    "kidney_cysts": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          789,
+          298
+        ]
+      }
+    },
+    "breasts": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          527
+        ]
+      }
+    },
+    "ventricle_parts": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          552,
+          298
+        ]
+      }
+    },
+    "liver_segments": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          570,
+          298
+        ]
+      }
+    },
+    "liver_segments_mr": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          576,
+          852
+        ]
+      }
+    },
+    "craniofacial_structures": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          115,
+          298
+        ]
+      }
+    },
+    "abdominal_muscles": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          952,
+          300
+        ]
+      }
+    },
+    "teeth": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          113,
+          115,
+          298
+        ]
+      }
+    },
+    "trunk_cavities": {
+      "license": "Apache-2.0",
+      "modes": {
+        "standard": [
+          343
+        ]
+      }
+    },
+    "brain_aneurysm": {
+      "license": "CC-BY-NC-4.0",
+      "modes": {
+        "standard": [
+          615
+        ]
+      }
+    }
+  },
+  "models": [
+    {
+      "model_id": 8,
+      "folder": "Dataset008_HepaticVessel",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.4.0-weights/Dataset008_HepaticVessel.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 403,
+          "sha256": "b428bb08eb7b1742a3961ec40994c4e351aedc38f2600be000ef10e6c003ed22"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 246833979,
+          "sha256": "5ee0c719698fc66835f6cafa85f50dafb1a0813afe4ce9beaa78fff8b705a32f"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11440,
+          "sha256": "6dcc720c6ed67fa55cebb2a8d2d27758d14343b89f8180376fe0955a12ca7997"
+        }
+      ]
+    },
+    {
+      "model_id": 113,
+      "folder": "Dataset113_ToothFairy3",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset113_ToothFairy3.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_onlyMirror01__nnUNetPlans__3d_lowres_high/dataset.json",
+          "bytes": 3854,
+          "sha256": "f47f7aff7b7690c5239a8c696a1361f521c93635865f207c41998d87aadf884c"
+        },
+        {
+          "path": "nnUNetTrainer_onlyMirror01__nnUNetPlans__3d_lowres_high/fold_0/checkpoint_final.pth",
+          "bytes": 252197438,
+          "sha256": "195ef8bb3f6de012c1200a961110ac5df525025cdbadbe09077ea35fd5424ef0"
+        },
+        {
+          "path": "nnUNetTrainer_onlyMirror01__nnUNetPlans__3d_lowres_high/plans.json",
+          "bytes": 16346,
+          "sha256": "42a68b962ecf6533b14e96de96b556f213f70258a3b8a2d66f2ae7e31ba1c125"
+        }
+      ]
+    },
+    {
+      "model_id": 115,
+      "folder": "Dataset115_mandible",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset115_mandible.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 385,
+          "sha256": "d23ce3c12647fecab96d5e8b9e3602274fab1cb91ee89f2d535591cf8e0f84f5"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 247186029,
+          "sha256": "8a65ceca091d90e4eb42ae994840e5813cb811bc8dc587c3612c05490259b44f"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11608,
+          "sha256": "395d99a03f4b422ceaa40bdee121ab87c9e28e9bac312cd8fc117b3020199945"
+        }
+      ]
+    },
+    {
+      "model_id": 117,
+      "folder": "Dataset117_lung_airways_arteries_veins_282subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset117_lung_airways_arteries_veins_282subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerSkeletonRecall__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 461,
+          "sha256": "7068c2b217d67c03287447831d364589b242c06cf7aa26b51bae1bf043e0fb2d"
+        },
+        {
+          "path": "nnUNetTrainerSkeletonRecall__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 246938302,
+          "sha256": "46330f87669b4351d966f0d963c749035d462b3e16738aba3e543fc75a01e8bb"
+        },
+        {
+          "path": "nnUNetTrainerSkeletonRecall__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 16314,
+          "sha256": "84619dace5d940b640f196c8150ae2526c1495b48c11fe143f7b90a2cd566802"
+        }
+      ]
+    },
+    {
+      "model_id": 150,
+      "folder": "Dataset150_icb_v0",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset150_icb_v0.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 383,
+          "sha256": "21996c4158b757f97a446cbf681a3239a2cc21a4ca0e762a2582a902761164d8"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 348723347,
+          "sha256": "ec3631e060dd08e5602093531915e9095a09fe4783b9739603d183ec3ea71033"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11708,
+          "sha256": "a398431826ee81d8715f4ab380c26512615180e831b8e57d9d54ae590c95750a"
+        }
+      ]
+    },
+    {
+      "model_id": 258,
+      "folder": "Dataset258_lung_vessels_248subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset258_lung_vessels_248subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 477,
+          "sha256": "92f35d95786d36de719174f5d8720ba44bd4ff057e2ab6eb243d868ade012c0a"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 246834171,
+          "sha256": "d34156a092a832bc0d765891b0b3a2a47099cd2fcee3a0fa138e966e39aca6b9"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11211,
+          "sha256": "37d67b4e7d54c71465e6b64cfe00394d1e31015f4b9e6aa823385279e375ccc2"
+        }
+      ]
+    },
+    {
+      "model_id": 260,
+      "folder": "Dataset260_hip_implant_71subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset260_hip_implant_71subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 401,
+          "sha256": "5d3801039ed94d3cebd392f9de10e73aa9f6d2259c00735c68f0aaba91f6eb86"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 249376443,
+          "sha256": "30651d837baa36bc240b92c2fb4a0cd68df8e098ff746fc73b4c48f475303e70"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11427,
+          "sha256": "099113e1d0c60d547957a8115807f57da35134d5ef48183f7474e5fde108c4de"
+        }
+      ]
+    },
+    {
+      "model_id": 291,
+      "folder": "Dataset291_TotalSegmentator_part1_organs_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset291_TotalSegmentator_part1_organs_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1035,
+          "sha256": "09089590277fe1e62e73857145617c2392f449fe98a6c752a67aa6dc2023b1e2"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251697787,
+          "sha256": "98c429f89fd9b3b08890fbb2b4c08c365ad4655fdcadb45efaa29380129fd890"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11186,
+          "sha256": "d77d815eb2bd11ec79b623161561dab4cef3def17dec0a0fe0f8d8dee3a761d5"
+        }
+      ]
+    },
+    {
+      "model_id": 292,
+      "folder": "Dataset292_TotalSegmentator_part2_vertebrae_1532subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset292_TotalSegmentator_part2_vertebrae_1532subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1066,
+          "sha256": "5c967bfe82c846a6491473706e3c5d322f470ed4fce2eb5047a22c702ae64c79"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251848251,
+          "sha256": "7022f71829ef00aa14d790a7667bc18eb1691f2fe5b0a38c475862abc84c2457"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11188,
+          "sha256": "72fcde2fa59183f65b92fc86a12467acd81511d93d8d2577608550ad0c1938cd"
+        }
+      ]
+    },
+    {
+      "model_id": 293,
+      "folder": "Dataset293_TotalSegmentator_part3_cardiac_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset293_TotalSegmentator_part3_cardiac_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 974,
+          "sha256": "ac8ee8e6d0040938a0e621b025fddd9fb82d15842b427ef1e590e84c6bb390c5"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251268859,
+          "sha256": "189010ac67fec3f1704df7547306d0067eabaaf620e0a46a1bdd183afa0800e4"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11184,
+          "sha256": "a048b27bfe30ca72a7a76f16cc5145ecc15f28911c6897793b93e6bea4b0e4a3"
+        }
+      ]
+    },
+    {
+      "model_id": 294,
+      "folder": "Dataset294_TotalSegmentator_part4_muscles_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset294_TotalSegmentator_part4_muscles_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1028,
+          "sha256": "3c0002bc06677197f1597a5143ccfebd556508563edd9282a46f057d5a0d5965"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251633339,
+          "sha256": "655eb40de03aa3de7348b69d7569a1cc3a2dc7969a11c0d60a7331e07df11c28"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11185,
+          "sha256": "63c9175c2f3fdff5e67ae55ea56250fb44ba53034335f1781081da9b9bdea709"
+        }
+      ]
+    },
+    {
+      "model_id": 295,
+      "folder": "Dataset295_TotalSegmentator_part5_ribs_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset295_TotalSegmentator_part5_ribs_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1039,
+          "sha256": "71228770dbcb9d303e6943dd1017b19346857b3fbc30e912dba30a704d1ac8f6"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251846011,
+          "sha256": "a674364c60b304fbd56feccdd95f8d0fe0c45a5bfa1ef25815516e4dde04d3fc"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11184,
+          "sha256": "241fa585e763462a7f4ab593d34e466a58cbce17c87b64d260a7ee5010416132"
+        }
+      ]
+    },
+    {
+      "model_id": 297,
+      "folder": "Dataset297_TotalSegmentator_total_3mm_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset297_TotalSegmentator_total_3mm_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 3796,
+          "sha256": "e804e08ad8912e3a6f541741c8c78799d75acbd3f4f3f18ff5f211bbd3da961a"
+        },
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 164939235,
+          "sha256": "1e38e40356adc2706a662e365405a97f862d62a7da65f6bf81d025aee1b979ac"
+        },
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 7110,
+          "sha256": "d1cb3c15f53dc36fdb618e0f9082573d1f50b74a9b5fa73094ac8680845839f1"
+        }
+      ]
+    },
+    {
+      "model_id": 298,
+      "folder": "Dataset298_TotalSegmentator_total_6mm_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset298_TotalSegmentator_total_6mm_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 3796,
+          "sha256": "e804e08ad8912e3a6f541741c8c78799d75acbd3f4f3f18ff5f211bbd3da961a"
+        },
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 164951587,
+          "sha256": "3489323a4b759506ab46b489eb78b72142f2143aea6e6d828604d754bd7a9270"
+        },
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 6898,
+          "sha256": "bfd9ab6cfc0e094ced3aff7d7ad23e00e4d50376110b9fdfce0fbca5564c8ca8"
+        }
+      ]
+    },
+    {
+      "model_id": 299,
+      "folder": "Dataset299_body_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset299_body_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 406,
+          "sha256": "e0b704e61fe7d3a38dadff40d3b1712633a965429a10b313efbe705b3b769510"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 250110587,
+          "sha256": "a7383a312864522a8796e677569c73fdf73adca5ddc2b08613596db9c96d794d"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11157,
+          "sha256": "dea1187d1a9b96859b06b828e3cffc74d41fae5fd4c3e2227e617a3579c813c2"
+        }
+      ]
+    },
+    {
+      "model_id": 300,
+      "folder": "Dataset300_body_6mm_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset300_body_6mm_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 406,
+          "sha256": "e0b704e61fe7d3a38dadff40d3b1712633a965429a10b313efbe705b3b769510"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 132901923,
+          "sha256": "ae993f22dc8316fb2c015656dd6a2c15fa062f6174915bef06355a71c93f394c"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 6874,
+          "sha256": "ab978efe380e7bb6c1ee1b34baa9580ee02c8b7199635f4c876b5d1a6dfd6937"
+        }
+      ]
+    },
+    {
+      "model_id": 305,
+      "folder": "Dataset305_vertebrae_discs_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset305_vertebrae_discs_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 414,
+          "sha256": "46e1d8e6ee452b9155884c5e55c580c358115c0b5fd242f9a1f3b3771654526e"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 250105965,
+          "sha256": "dfa728d147ef64c531be3eea21ef06c8bd1bedeba8d33146ac3bd7a03c73d968"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11168,
+          "sha256": "d43bba201ce6602a084bf1a54c24d8b5b8d2134ceebb34119a556d8f5ecb745d"
+        }
+      ]
+    },
+    {
+      "model_id": 315,
+      "folder": "Dataset315_thoraxCT",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.0.0-weights/Dataset315_thoraxCT.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 448,
+          "sha256": "2175d6f274c4591fb2d8fbbe094a0e73747ccfdd1939c161a7b9ccb54764992e"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 250183291,
+          "sha256": "c971fd018e32079a0d2abd9744f26e234d8778f6567c53ed948b22c21a1b84f0"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11154,
+          "sha256": "779bff719b043483cbb20338c18f5645ea4a054794620beaa165a53eed9875af"
+        }
+      ]
+    },
+    {
+      "model_id": 343,
+      "folder": "Dataset343_mediastinum_1786subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset343_mediastinum_1786subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 463,
+          "sha256": "9bfa7dcdfc61219d23c5e4c75b8bba27a6e231899f5ac191f776ddbc894aeb58"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 250256126,
+          "sha256": "67f58b41e23969222e3eb5bc4ce280d7ab264881b769d03a07aa5a58e3e7628c"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 10480,
+          "sha256": "d42a2eeee742267bc450d1ecd5ba6cb5a705c2cadb65cc0663a657205cd8e916"
+        }
+      ]
+    },
+    {
+      "model_id": 351,
+      "folder": "Dataset351_oculomotor_muscles_18subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.4.0-weights/Dataset351_oculomotor_muscles_18subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1101,
+          "sha256": "8b5c8377eebc1ea05bc9123c654ffc209a0cf61dc808fa6911276b5d9506e283"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 248038957,
+          "sha256": "39c001aacc815b1e61803b308b378bf49e823ac8b601d0d429eb616e5d1ad43b"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11294,
+          "sha256": "3fcd50029512810c8caec0158761a9fcc0281ac5274b4a36e2821e34a70eb801"
+        }
+      ]
+    },
+    {
+      "model_id": 527,
+      "folder": "Dataset527_breasts_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset527_breasts_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 371,
+          "sha256": "cc2536280ef6590b4c4c6a15d2d3fed871d5650679ed8c996a1f51eb2645d06e"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 250033965,
+          "sha256": "bdd3a727e54bbdf6e2557f0be774861efe9432dccabcb8239cb18538f32a350e"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11161,
+          "sha256": "5962fc74e68dfe4e75528e59e8859558bdffd58f0496ff6ea5fc9c586c6d7b4f"
+        }
+      ]
+    },
+    {
+      "model_id": 552,
+      "folder": "Dataset552_ventricle_parts_38subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset552_ventricle_parts_38subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 817,
+          "sha256": "cf549a338a703472bebac56a96c10733c705254686bb73c13a1b750a7bdffeea"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 250174331,
+          "sha256": "54fd40a8deec522b75b8b1c69c14046498e1332edb65bf020ce1534d07ecaff3"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11214,
+          "sha256": "f0e4e25cee41140d5eb9220f31566a9e019330dbae2c4d9fb3660f0dfe0bb228"
+        }
+      ]
+    },
+    {
+      "model_id": 570,
+      "folder": "Dataset570_ct_liver_segments",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset570_ct_liver_segments.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 589,
+          "sha256": "9edfbb164c84d35ec6e512ddf78afd0383bb80cbf8dcf113751c197b524a7942"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 247268411,
+          "sha256": "0b0eb71919b014266b0810246a4e658c9833f548746f37950dcb27cffcb212fd"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11447,
+          "sha256": "a31e03d93a73a3110c10ebe03309f5023facd6ae7cccc47391d17e4d0e788ca6"
+        }
+      ]
+    },
+    {
+      "model_id": 576,
+      "folder": "Dataset576_mri_liver_segments_120subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset576_mri_liver_segments_120subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 589,
+          "sha256": "4d7eac1e61e1e7884daf8ae6159e86a565f54bc6695ccd403eca60f3c61f137e"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 246596077,
+          "sha256": "f86034a7183aa6f2225e23baad27c618a66a18aaad6285f8936cd3a063559bce"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 7601,
+          "sha256": "bd42931991bacfe0b8f64ca56bb324a44c81d95d770857f6cf2f6efdd9b05ff8"
+        }
+      ]
+    },
+    {
+      "model_id": 589,
+      "folder": "Dataset589_ct_mri_liver_lesions_750subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset589_ct_mri_liver_lesions_750subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 376,
+          "sha256": "734b746c8dd80810c99bc95a1e9ec10cca1329aef3457e6d882f8204fc8b7009"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 246757997,
+          "sha256": "513091a498a258e410a8cf0ef1fa73e6cb0fe350e8458fa8707283a6d81af63f"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11247,
+          "sha256": "eda8ce779e31ed167d45bfac8389c2c7cccdace2d2adfd97e58eeb66e6dc2597"
+        }
+      ]
+    },
+    {
+      "model_id": 591,
+      "folder": "Dataset591_ct_liver_lesions_842subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset591_ct_liver_lesions_842subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres_high/dataset.json",
+          "bytes": 376,
+          "sha256": "17a5e21d8b72369f326a8a3819678f6d7089da6e0ed70f911903d6da8220bc09"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres_high/fold_0/checkpoint_final.pth",
+          "bytes": 246761278,
+          "sha256": "a9cd19c9199663152ace71a32b212b2d8846cff865f9f7654891ee71bf523194"
+        },
+        {
+          "path": "nnUNetTrainer__nnUNetPlans__3d_fullres_high/plans.json",
+          "bytes": 11462,
+          "sha256": "9812c80a650e8533e74ddb32fab2ce82631907ea12b89903642dbdfbdc5fd5ce"
+        }
+      ]
+    },
+    {
+      "model_id": 597,
+      "folder": "Dataset597_mri_body_139subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset597_mri_body_139subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 405,
+          "sha256": "e1ec01f2226774faa3d749163900b990272342e8bf6d1d9e927544f1d6df0398"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 246169389,
+          "sha256": "31634eb416c502ebd397ca47b10f72518beadbc460a7889f8a6172633367fd0f"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 7390,
+          "sha256": "805d9f0686845ad025140051fbe84f5faca4ba6afa658b13e7c7377e171a018f"
+        }
+      ]
+    },
+    {
+      "model_id": 598,
+      "folder": "Dataset598_mri_body_6mm_139subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset598_mri_body_6mm_139subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 405,
+          "sha256": "e1ec01f2226774faa3d749163900b990272342e8bf6d1d9e927544f1d6df0398"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 45320573,
+          "sha256": "10cf285119bc8a82dbd44573aa85cf02f36996f096c5e92b99c5dfccf37c35b6"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 6455,
+          "sha256": "e5243758e5d86ed2be181bcd5a837a492861cb7b9f0a2f7d377922fd7bdd1364"
+        }
+      ]
+    },
+    {
+      "model_id": 615,
+      "folder": "Dataset615_MAXIMUS",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset615_MAXIMUS.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerDiceTopK10Loss_2000epochs__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 384,
+          "sha256": "d81a35303dca8f83f9ebf1284914434af567e265f7f03ea03d7b147440f3f12a"
+        },
+        {
+          "path": "nnUNetTrainerDiceTopK10Loss_2000epochs__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 247109549,
+          "sha256": "265654e44835345e0165bc54db8b14881f1fc8b6de3c06e747fd582983e8ba1a"
+        },
+        {
+          "path": "nnUNetTrainerDiceTopK10Loss_2000epochs__nnUNetPlans__3d_fullres/fold_1/checkpoint_final.pth",
+          "bytes": 247109677,
+          "sha256": "4f4a64590f957ce2d4648f8b011a57e4693470a255360417bfd82a13f07ea34f"
+        },
+        {
+          "path": "nnUNetTrainerDiceTopK10Loss_2000epochs__nnUNetPlans__3d_fullres/fold_2/checkpoint_final.pth",
+          "bytes": 247109357,
+          "sha256": "e2d9b45999fb2fcb060a64eee337ec07be63ef887e3c1ec49df3d75f4de44dc9"
+        },
+        {
+          "path": "nnUNetTrainerDiceTopK10Loss_2000epochs__nnUNetPlans__3d_fullres/fold_3/checkpoint_final.pth",
+          "bytes": 247109613,
+          "sha256": "2c5ce16e24dd50b9ac6418cd44b962d6ca6c955fb5a28ff4dc24279779b1a4dd"
+        },
+        {
+          "path": "nnUNetTrainerDiceTopK10Loss_2000epochs__nnUNetPlans__3d_fullres/fold_4/checkpoint_final.pth",
+          "bytes": 247109101,
+          "sha256": "585b05605ae06b7f45fc8a27d3c1b26c67caca2f8e22426dcc8d6c22aee05cf3"
+        },
+        {
+          "path": "nnUNetTrainerDiceTopK10Loss_2000epochs__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11443,
+          "sha256": "1ef2163daf0aa393b784d8675c2d85706f98a76e0d9e6ff5c4158c59cba72d5d"
+        }
+      ]
+    },
+    {
+      "model_id": 756,
+      "folder": "Dataset756_mri_vertebrae_1076subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset756_mri_vertebrae_1076subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1038,
+          "sha256": "1769d6e26532cf2cf3bef9baee98c19ec3ad8948e1ea3a9a45644766f6cfd754"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 248459309,
+          "sha256": "52b1c4de77d089bfdc35936aecf1760f841ba0d8d72d10a1aa072309ea2f2120"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 7350,
+          "sha256": "09fd14259cdc3e38d20566508167d4c1d7c7cfb7a0edc713d6ba69ac602929a9"
+        }
+      ]
+    },
+    {
+      "model_id": 775,
+      "folder": "Dataset775_head_glands_cavities_492subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.3.0-weights/Dataset775_head_glands_cavities_492subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/dataset.json",
+          "bytes": 935,
+          "sha256": "db731804f24eeaf531097082f279319f333a296388918a2426483e30c647995d"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/fold_0/checkpoint_final.pth",
+          "bytes": 248039021,
+          "sha256": "8d7a9ef4ff8455b9f0c2926fa11b507c05d83ebd016e64a772fec814271767ab"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/plans.json",
+          "bytes": 11478,
+          "sha256": "cbb807f4af0fd5b8f0974e9fddeef08b9157c750d4133d98e69cbfb359789785"
+        }
+      ]
+    },
+    {
+      "model_id": 776,
+      "folder": "Dataset776_headneck_bones_vessels_492subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.3.0-weights/Dataset776_headneck_bones_vessels_492subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/dataset.json",
+          "bytes": 771,
+          "sha256": "62ca4974fa45c75796d668a8c851ea0aca135199ab4826989a0b7dc4aecd7d89"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/fold_0/checkpoint_final.pth",
+          "bytes": 247539885,
+          "sha256": "396fc2c40b5048c845bf84fdda5afaad179657a91a4a2ac89f03134bd013220d"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/plans.json",
+          "bytes": 11467,
+          "sha256": "35f01abee478bcfcd8730b4418dfbfa589e2140dec0df6238d715478702e7cc9"
+        }
+      ]
+    },
+    {
+      "model_id": 777,
+      "folder": "Dataset777_head_muscles_492subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.3.0-weights/Dataset777_head_muscles_492subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/dataset.json",
+          "bytes": 697,
+          "sha256": "a20ee11b54d51c08dad500f3d3c15d14eed7dd5ae2fe760fc10804ad43c99d84"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/fold_0/checkpoint_final.pth",
+          "bytes": 247469933,
+          "sha256": "555d0f741972cdac52140da48fa204d8ccbfcc85a0cb84a6e00ff838f5463d6d"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/plans.json",
+          "bytes": 11455,
+          "sha256": "018d30a29a4a520db2909f9b2645b82bbb6ec3a73da5104ab7b0865e769215b9"
+        }
+      ]
+    },
+    {
+      "model_id": 778,
+      "folder": "Dataset778_headneck_muscles_part1_492subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.3.0-weights/Dataset778_headneck_muscles_part1_492subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/dataset.json",
+          "bytes": 755,
+          "sha256": "740d767e52099c8889a73ceca189fb5a90f997b506e34ed42e0f3bc486fc295c"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/fold_0/checkpoint_final.pth",
+          "bytes": 247469613,
+          "sha256": "8649ba0793ad782457de7dbbeb9327a6a244b7bf1dd65d693208d50044894b70"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/plans.json",
+          "bytes": 11462,
+          "sha256": "5c4b78ab9c687c1a3624e3141f489975f2babc19099ba5bee4242e74b3c88209"
+        }
+      ]
+    },
+    {
+      "model_id": 779,
+      "folder": "Dataset779_headneck_muscles_part2_492subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.3.0-weights/Dataset779_headneck_muscles_part2_492subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/dataset.json",
+          "bytes": 764,
+          "sha256": "203f7bace94af0cf6a2ea69e86559620f3246353b575b8936306f7910bf3e539"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/fold_0/checkpoint_final.pth",
+          "bytes": 247540205,
+          "sha256": "fde73561a8b046db59315db0326257601eaccef876e8db380dde9d90702f5f11"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/plans.json",
+          "bytes": 11466,
+          "sha256": "766582854e3cdcf9e12baff5660d01996285b4880b71e98df627540e47e96d0e"
+        }
+      ]
+    },
+    {
+      "model_id": 789,
+      "folder": "Dataset789_kidney_cyst_501subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset789_kidney_cyst_501subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 465,
+          "sha256": "6a68b458701287277fa8d795ecc5bdc034f917ca3b7f3b99e094d2307d105cd0"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 246971949,
+          "sha256": "3448f04c8617cb869462c962013fa13dd443d5f15715e2765b7c62c0c6132592"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 11164,
+          "sha256": "4d1097c50f115fbfe8c4c47e8f9f235e0a20381b9e28a5806d51ea7a6f346cd8"
+        }
+      ]
+    },
+    {
+      "model_id": 803,
+      "folder": "Dataset803_TotalSegmentator_vertebrae_inner_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset803_TotalSegmentator_vertebrae_inner_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1016,
+          "sha256": "5de364212663cdeab140a7e5a2b77783223221de61da8d2a5cda792c62c9e97e"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251522333,
+          "sha256": "40c06e66a3e6929865aa7a716a9cf861236245b1418669ac273906e9c851fce1"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 10796,
+          "sha256": "9fdc170ecd1b70f4a56894a3acfc65ade8f486f1f0b9f304fd3833c993d56de3"
+        }
+      ]
+    },
+    {
+      "model_id": 831,
+      "folder": "Dataset831_TotalSegmentator_part1_organs_1830subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v3.0.0-weights/Dataset831_TotalSegmentator_part1_organs_1830subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1035,
+          "sha256": "8d9d6995fede1ed1cfb27e0ed4b9172115e95339592be84db8dd1d14b934a159"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251523357,
+          "sha256": "f2dd332eabcc47e456d88b149776b44a5e02abde7c0967574323f79fca73fcf3"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 10483,
+          "sha256": "e20ebd59369445fdc8dbee80f58deccd25c165285e97769f53f51e5175264a93"
+        }
+      ]
+    },
+    {
+      "model_id": 832,
+      "folder": "Dataset832_TotalSegmentator_part2_vertebrae_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v3.0.0-weights/Dataset832_TotalSegmentator_part2_vertebrae_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1066,
+          "sha256": "201bc9dd44a3ac8fa6723b1bbf6ce7311adc4240b7c9a878d79454ee361e203c"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251653853,
+          "sha256": "1035f0658da46737ae5cd79ae96b739fffa75a154992493eaa49ded454a01544"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 10795,
+          "sha256": "a423b8731be4777c3729f6bc4e2258a8520384615d97cb11bc079b99b20108a5"
+        }
+      ]
+    },
+    {
+      "model_id": 833,
+      "folder": "Dataset833_TotalSegmentator_part3_cardiac_1830subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v3.0.0-weights/Dataset833_TotalSegmentator_part3_cardiac_1830subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 974,
+          "sha256": "eaf13ba34abef84cd38e77425e2c89a335e5f8b27327bd97c2c54d44318312b9"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251132061,
+          "sha256": "3abf5f6f69749576c47a4a87acf467ec8d73269f806e123455979f7ac8704fd3"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 10484,
+          "sha256": "577c9100ad288dda17baf245f31efd9c864fd3ad70a9aebe262e1fee51363557"
+        }
+      ]
+    },
+    {
+      "model_id": 834,
+      "folder": "Dataset834_TotalSegmentator_part4_muscles_1830subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v3.0.0-weights/Dataset834_TotalSegmentator_part4_muscles_1830subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1028,
+          "sha256": "190f276a4125974fec65bd6aab0ae04d0fe1465fd9e3d8f72f3ed5554665bd89"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251457501,
+          "sha256": "8c4e11131f4f19a2132163859e28d83ffe27e0d2ef0492be5c07bd8f5833cc59"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 10492,
+          "sha256": "e8628c98496813285353a486a54c3fe27248d537bb32cb081c342f92c0f99bed"
+        }
+      ]
+    },
+    {
+      "model_id": 835,
+      "folder": "Dataset835_TotalSegmentator_part5_ribs_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v3.0.0-weights/Dataset835_TotalSegmentator_part5_ribs_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1039,
+          "sha256": "71228770dbcb9d303e6943dd1017b19346857b3fbc30e912dba30a704d1ac8f6"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 251653597,
+          "sha256": "a384f829995653940bf4ac923e1d3b6c6c4ca9bb4c58c5697c4fcbdf460527d4"
+        },
+        {
+          "path": "nnUNetTrainerNoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 10810,
+          "sha256": "1d7b05fef5461a8b8e2e406568b745def8edfac5eba6a885cbcef5f4a7a3e955"
+        }
+      ]
+    },
+    {
+      "model_id": 836,
+      "folder": "Dataset836_TotalSegmentator_total_3mm_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v3.0.0-weights/Dataset836_TotalSegmentator_total_3mm_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 3796,
+          "sha256": "c932242797ae48cd0a9ee0bf82b1f7f9518234f3f7478b0b2396d10497c7238b"
+        },
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 161632005,
+          "sha256": "c1839f82360fa084cf40759d9671111c8f083bdb17c4d31b5cd934ec35010975"
+        },
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 10095,
+          "sha256": "10bd20534f9aa1d72c5427b17d36651a5bd80d7e2ac014909831fb73899ad6c5"
+        }
+      ]
+    },
+    {
+      "model_id": 837,
+      "folder": "Dataset837_TotalSegmentator_total_6mm_1559subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v3.0.0-weights/Dataset837_TotalSegmentator_total_6mm_1559subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 3796,
+          "sha256": "c932242797ae48cd0a9ee0bf82b1f7f9518234f3f7478b0b2396d10497c7238b"
+        },
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 161632069,
+          "sha256": "a6690ab6631a13d096c65c62197e02fdfcc48778b7c13f4036bdc505fe58145d"
+        },
+        {
+          "path": "nnUNetTrainer_4000epochs_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 9808,
+          "sha256": "59351d0b59ea8bae3be3670d005d47fe15dba240dc898649e0dcb50f130ea61c"
+        }
+      ]
+    },
+    {
+      "model_id": 850,
+      "folder": "Dataset850_TotalSegMRI_part1_organs_1088subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset850_TotalSegMRI_part1_organs_1088subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1145,
+          "sha256": "2cea5c15018ab5c6d622c9e65692c7bedeef06e91b959c3d2f79d4d20d80ace6"
+        },
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 250949869,
+          "sha256": "8577a4c22b5cc43e9ccc5fa6203451ee4b22f54000bf16cfc1c5625439861129"
+        },
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 7361,
+          "sha256": "2f10bd794515dad704570e2eae5ea709ad9517f3af8f6b0426d0159fbe07a7a3"
+        }
+      ]
+    },
+    {
+      "model_id": 851,
+      "folder": "Dataset851_TotalSegMRI_part2_muscles_1088subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset851_TotalSegMRI_part2_muscles_1088subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 980,
+          "sha256": "ff9e0e19a366dc5e0b3812b367d0f1de6086ef6fcbb8d260d8867891c210cfd3"
+        },
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 249849517,
+          "sha256": "87d29b95c7e0db6cc402d773e58c24386ab1c40bc6d4923cd8144795bfebb2a0"
+        },
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 7363,
+          "sha256": "a0997a711bb428ef7c0192a250462e17d6cfa9ea1a5e20a063e13e946447b663"
+        }
+      ]
+    },
+    {
+      "model_id": 852,
+      "folder": "Dataset852_TotalSegMRI_total_3mm_1088subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset852_TotalSegMRI_total_3mm_1088subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1784,
+          "sha256": "bffca65d47dba5c992162f1d2d06cb6f6f3e1b5b433162c034f5d5c834fc9e05"
+        },
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 139785557,
+          "sha256": "8357596afa397d8ac128cf7121b5cc882a140f47d6b7d8740b01a9d18c037d8d"
+        },
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 6902,
+          "sha256": "7aecce88df8c6d25164a7c9995868cc82bbee03942e9be165f6a658def9984c1"
+        }
+      ]
+    },
+    {
+      "model_id": 853,
+      "folder": "Dataset853_TotalSegMRI_total_6mm_1088subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset853_TotalSegMRI_total_6mm_1088subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 1784,
+          "sha256": "bffca65d47dba5c992162f1d2d06cb6f6f3e1b5b433162c034f5d5c834fc9e05"
+        },
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 52129533,
+          "sha256": "c7115ae818bb8326528398b2981417a8f54ab1e28af8c4eb56d571f478c17f22"
+        },
+        {
+          "path": "nnUNetTrainer_2000epochs_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 6449,
+          "sha256": "2d0ec02e555561b9cee4b9a749edc2247036e7a51df08a22d643367d700af6c5"
+        }
+      ]
+    },
+    {
+      "model_id": 913,
+      "folder": "Dataset913_lung_nodules",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset913_lung_nodules.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_MOSAIC_1k_QuarterLR_NoMirroring__nnUNetPlans__3d_fullres/dataset.json",
+          "bytes": 392,
+          "sha256": "cd3ea49bbb9bb7cfd2d896e1b075c2aa7f16b8f39e1ba33b5eb4b3b1352e8543"
+        },
+        {
+          "path": "nnUNetTrainer_MOSAIC_1k_QuarterLR_NoMirroring__nnUNetPlans__3d_fullres/fold_0/checkpoint_final.pth",
+          "bytes": 819570822,
+          "sha256": "861ce52fc39f635e3e2bce264c96230ebead3b2015d96d33a96ae956ce2a9398"
+        },
+        {
+          "path": "nnUNetTrainer_MOSAIC_1k_QuarterLR_NoMirroring__nnUNetPlans__3d_fullres/plans.json",
+          "bytes": 16399,
+          "sha256": "30cf08cc22cbe958d5e56813a879c0645477cde2c48a83babe1c208619ad9e2d"
+        }
+      ]
+    },
+    {
+      "model_id": 952,
+      "folder": "Dataset952_abdominal_muscles_167subj",
+      "source_url": "https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset952_abdominal_muscles_167subj.zip",
+      "files": [
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/dataset.json",
+          "bytes": 1147,
+          "sha256": "41bcc360a255b7e5467ef36762888afadd6562613b19288b82de6c12bed209c1"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/fold_0/checkpoint_final.pth",
+          "bytes": 134275029,
+          "sha256": "67fe55feaff22ffd5ec419ac1ddbbb92904ad6561b374af57678a645511f1c2b"
+        },
+        {
+          "path": "nnUNetTrainer_DASegOrd0_NoMirroring__nnUNetPlans__3d_fullres_high/plans.json",
+          "bytes": 11341,
+          "sha256": "00ba34fd7f7675c45c633e25e1c6b7093cb987262785a9bcb323195ec63116a5"
+        }
+      ]
+    }
+  ]
+}

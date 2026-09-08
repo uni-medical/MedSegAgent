@@ -1,12 +1,13 @@
 [Unit]
-Description=MedSegAgent research segmentation Web and A2A
+Description=TotalSeg Agent Web and A2A
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/mnt/disks/bulk/huangziyan/MedSegAgent
-EnvironmentFile=/mnt/disks/bulk/huangziyan/MedSegAgent/.env
+# Adjust these paths to your checkout before installing the unit.
+WorkingDirectory=%h/MedSegAgent
+EnvironmentFile=%h/MedSegAgent/.env
 ExecStart=%h/.local/bin/uv run --frozen --no-sync medsegagent serve --host 127.0.0.1 --port 8767
 Restart=on-failure
 RestartSec=5
@@ -19,7 +20,8 @@ NoNewPrivileges=true
 PrivateTmp=true
 LimitNOFILE=4096
 MemoryMax=28G
-TasksMax=256
+# Three model processes include bounded native-library and data-loader threads.
+TasksMax=768
 CPUQuota=800%
 
 [Install]

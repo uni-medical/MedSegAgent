@@ -10,14 +10,12 @@ from types import SimpleNamespace
 import nibabel as nib
 import numpy as np
 import pytest
+from auth_helpers import ALICE, BOB
+from auth_helpers import create_test_app as create_app
 from starlette.testclient import TestClient
 
 from medsegagent import service as service_module
 from medsegagent.service import Service, ServiceError
-from medsegagent.web import create_app
-
-ALICE = {"Authorization": "Bearer " + "a" * 40}
-BOB = {"Authorization": "Bearer " + "b" * 40}
 
 
 @pytest.fixture
@@ -55,7 +53,6 @@ def complete(service, task_id):
     directory = service.root / "tasks" / task_id
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "segmentation.nii.gz").write_bytes(b"private-mask")
-    (directory / "result.json").write_text('{"targets": ["liver"]}')
     service.update(
         task_id,
         status="completed",
@@ -88,6 +85,52 @@ def test_record_contract_and_identity_isolation(service):
         assert error.value.status_code == 404
 
 
+def test_historical_measurements_are_projected_without_rewriting_record_or_mask(service):
+    from google.protobuf.json_format import MessageToDict
+
+    from medsegagent.a2a import project_task
+
+    source, _ = upload(service)
+    task = submit(service, source["id"])
+    complete(service, task["id"])
+    label = {
+        "id": 5,
+        "name": "liver",
+        "voxels": 12,
+        "volume_ml": 0.012,
+        "component_count": 3,
+        "largest_component_voxels": 10,
+        "largest_component_volume_ml": 0.01,
+    }
+    result = {
+        "schema_version": 2,
+        "component_connectivity": 26,
+        "labels": [label],
+        "volume_measurement": {
+            "source_spatial_unit": "mm",
+            "component_connectivity": 26,
+            "component_meaning": "Historical measurement",
+        },
+    }
+    service.update(task["id"], result=result)
+    stored = service.db.execute("SELECT data FROM tasks WHERE id=?", (task["id"],)).fetchone()[0]
+    mask = service.root / "tasks" / task["id"] / "segmentation.nii.gz"
+    before = mask.read_bytes()
+    record = service.get("alice", task["id"])
+    a2a = MessageToDict(project_task(service._task(task["id"]), service.public_url))
+    for public in (record["result"], a2a["metadata"]["segmentation"]):
+        assert public["schema_version"] == 2
+        assert public["labels"] == [{"id": 5, "name": "liver", "voxels": 12, "volume_ml": 0.012}]
+        assert public["volume_measurement"] == {"source_spatial_unit": "mm"}
+        assert "component" not in json.dumps(public)
+    assert service.list("alice")[0] == record
+    assert (
+        service.db.execute("SELECT data FROM tasks WHERE id=?", (task["id"],)).fetchone()[0]
+        == stored
+    )
+    assert mask.read_bytes() == before
+
+
 def test_active_source_and_terminal_result_share_retention(service, clock):
     source, path = upload(service)
     clock.value = source["expires_at"] - 1
@@ -106,7 +149,9 @@ def test_active_source_and_terminal_result_share_retention(service, clock):
     deadline = record["expires_at"]
     clock.value = deadline - 1
     assert service.upload_path("alice", source["id"]).is_file()
-    assert service.file_path("alice", task["id"], "result.json").is_file()
+    assert service.file_path("alice", task["id"], "segmentation.nii.gz").is_file()
+    with pytest.raises(ServiceError):
+        service.file_path("alice", task["id"], "result.json")
 
     clock.value = deadline
     expired = service.get("alice", task["id"])
@@ -211,7 +256,6 @@ def test_owned_upload_metadata_and_named_download_reject_expiry_immediately(tmp_
     app = create_app(
         tmp_path,
         public_url="http://localhost",
-        tokens={"alice": "a" * 40, "bob": "b" * 40},
     )
     with TestClient(app) as client:
         volume = nib.Nifti1Image(np.ones((8, 8, 8), dtype=np.int16), np.eye(4)).to_bytes()

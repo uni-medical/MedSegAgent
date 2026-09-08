@@ -1,101 +1,132 @@
-# Deployment and recovery
+# Deployment
 
-Use one uv environment, one systemd user service and one SQLite data directory per host.
-The example unit in `ops/medsegagent.service` binds loopback port 8767. Adjust its explicit
-working directory for another machine. Do not share this data directory with another worker.
+Run one service process per data directory. The app serves Web and A2A on port 8767.
 
-## Required settings
-
-Keep `.env` mode 600 and outside Git. Copy only OPENAI_BASE_URL / OPENAI_API_KEY from the
-approved provider configuration and set OPENAI_MODEL=deepseek-v4-flash. The model is also
-fixed in code. MEDSEGAGENT_TOKENS_JSON maps each principal to a distinct random token of
-at least 32 characters. Generate tokens locally; never place them in docs, URLs or logs.
-
-On NVIDIA Linux set MEDSEGAGENT_DEVICE=gpu, CUDA_VISIBLE_DEVICES to an available GPU,
-MEDSEGAGENT_PUBLIC_URL to the HTTPS origin, MEDSEGAGENT_DATA_ROOT to the private runtime
-directory and TOTALSEG_HOME_DIR to the private weight/config directory. Disable anonymous
-TotalSegmentator telemetry with send_usage_stats=false in its config.json. Limit BLAS/OpenMP
-threads when sharing the server. macOS defaults to MPS.
+## Install and configure
 
 ```bash
-uv sync --frozen --group dev
+uv sync --frozen
+cp .env.example .env
+chmod 600 .env
+```
+
+Set these values in `.env`:
+
+| Setting | Purpose |
+| --- | --- |
+| `OPENAI_BASE_URL`, `OPENAI_API_KEY` | OpenAI-compatible HTTPS provider serving `deepseek-v4-flash` |
+| `MEDSEGAGENT_PUBLIC_URL` | Public HTTPS origin, or `http://127.0.0.1:8767` locally |
+| `MEDSEGAGENT_DATA_ROOT` | Runtime directory for uploads, results and SQLite; default `runtime` |
+| `MEDSEGAGENT_DEVICE` | `mps` on Apple Silicon, `gpu` on NVIDIA Linux, or `cpu` |
+| `TOTALSEG_HOME_DIR` | Optional TotalSegmentator configuration and weight cache location |
+| `TMPDIR` | Optional existing private directory with space for NIfTI expansion and exports |
+
+The current Agent model is `deepseek-v4-flash`. Keep credentials, image data and weights
+in private storage. For a custom temporary directory, create it with mode 700 before
+starting the app. Concurrent validation and export can use about 8 GiB of temporary space.
+
+Guest access works immediately. For GitHub login, set `MEDSEGAGENT_GITHUB_CLIENT_ID`
+and `MEDSEGAGENT_GITHUB_CLIENT_SECRET` together and register this OAuth callback:
+
+```text
+<MEDSEGAGENT_PUBLIC_URL>/api/auth/github/callback
+```
+
+GitHub login uses public profile information. Guest and GitHub accounts have separate
+histories. Web sessions use HttpOnly, SameSite=Lax cookies, with Secure enabled on HTTPS.
+
+## Prepare models
+
+Prepare the models you need before inference. For CT and MR anatomy:
+
+```bash
+uv run --env-file .env python ops/prepare_weights.py --download --task total --task total_mr
+uv run medsegagent weights
+```
+
+Omit `--task` to prepare all 33 public tasks and their supported quality modes:
+
+```bash
+uv run --env-file .env python ops/prepare_weights.py --download
+```
+
+The utility isolates downloads, verifies model files against the bundled manifests and
+reuses installed models. CLI, MCP and Web can share one weight cache. The
+[third-party notices](third-party-notices.md) describe software, model and data licenses.
+To disable TotalSegmentator usage telemetry, set `send_usage_stats` to `false` in its
+`config.json`.
+
+## Start the service
+
+```bash
 uv run medsegagent doctor
+uv run medsegagent serve --host 127.0.0.1 --port 8767
+```
+
+For Linux systemd, edit the paths in [the example unit](../ops/medsegagent.service)
+to match your checkout, `.env` and uv executable, then install it:
+
+```bash
+mkdir -p ~/.config/systemd/user
 install -m 644 ops/medsegagent.service ~/.config/systemd/user/medsegagent.service
 systemctl --user daemon-reload
 systemctl --user enable --now medsegagent.service
 systemctl --user status medsegagent.service
 ```
 
-Preload weights before accepting work; the TotalSegmentator downloader uses one shared
-temporary filename, so run these commands sequentially:
+Point an HTTPS reverse proxy or tunnel at `http://127.0.0.1:8767`. Enable streaming for
+A2A responses and keep the Agent Card and `/a2a` paths accessible to API clients.
+
+## Resources and retention
+
+NVIDIA scheduling defaults to three concurrent inferences, one per eligible physical GPU.
+All visible GPUs are considered. The defaults require 8192 MiB free memory and utilization
+at most 20%; configure `MEDSEGAGENT_GPU_MIN_FREE_MIB` and
+`MEDSEGAGENT_GPU_MAX_UTILIZATION` to adjust admission. Use `MEDSEGAGENT_GPU_IDS` to
+restrict the pool by physical indices or full UUIDs. An explicit setting overrides
+`CUDA_VISIBLE_DEVICES`; otherwise its existing restriction is honored.
+
+Independent models can use different GPUs. MPS and CPU run one inference at a time.
+Processes on one host share `MEDSEGAGENT_SCHEDULER_LOCK_DIR`, which defaults to
+`~/.cache/medsegagent/scheduler`. The example service limits aggregate memory to 28 GiB,
+CPU to eight cores and tasks/threads to 768; size these for your workload.
+
+| Limit | Default |
+| --- | --- |
+| NIfTI upload / expanded volume | 500 MiB / 2 GiB |
+| Raw upload / resumable chunk | 90 MiB / 8 MiB |
+| Source storage per identity | 16 uploads or reservations, 2 GiB combined |
+| Pending tasks | 8 globally, 4 per identity |
+| Agent task timeout | 7200 seconds |
+| Model requests / work-tool calls | 24 / 64 per task |
+| Input and result retention | 24 hours |
+| Incomplete upload session | 1 hour since its last committed chunk |
+
+Source quotas cover uploaded files and pending reservations; budget separately for
+models, results and temporary files. File cleanup runs every 15 minutes. Active work
+keeps its files until it stops; expired files become inaccessible at their deadline.
+Task history and message IDs persist for recovery. Apply the same access and retention
+policy to runtime backups.
+
+Anonymous A2A uses a shared namespace; resource IDs and file URLs grant access.
+A valid Web session selects its account's namespace. See [A2A integration](a2a.md)
+for upload, recovery and identity handling.
+
+## Check and update
+
+After starting or updating the service, open the viewer and run a segmentation through
+your public origin. The integration check exercises upload, inference, streaming recovery,
+task replay and mask downloads:
 
 ```bash
-uv run totalseg_download_weights --task total_fast
-uv run totalseg_download_weights --task total_fast_mr
-uv run totalseg_download_weights --task lung_nodules
-uv run totalseg_download_weights --task liver_lesions
-uv run python ops/verify_weights.py
+uv run python ops/acceptance.py --url https://your-service.example \
+  --input /path/to/scan.nii.gz --output outputs/acceptance
 ```
 
-The manifest fixes the actual checkpoint/config bytes used in acceptance. A mismatch
-requires investigation; do not silently update expected hashes to accept changed weights.
-CLI and Web can use the same private cache. No weights are stored in Git.
+Check active tasks before restarting. Completed tasks and message IDs survive a restart;
+interrupted inference is marked failed, while queued work can resume within its deadline.
+Retry failed work with a new message ID. Preserve `KillMode=mixed` in the example unit
+so the application records shutdown before terminating its inference processes.
 
-Only the service's public login shell, static viewer assets, Agent Card and health/readiness
-are unauthenticated. Every upload, task and download requires identity. Web sessions are
-HttpOnly/SameSite=Strict and Secure on HTTPS; A2A requires explicit Bearer. Cookies are
-never accepted as A2A authentication. No query-string tokens, public data mounts or CORS.
-
-The named Cloudflare tunnel should map only the new hostname to `http://127.0.0.1:8767`.
-Preserve all other ingress rules and the final 404 fallback. A remotely managed tunnel can
-receive its updated ingress configuration without restarting the connector. The application
-handles Web identity protection and A2A Bearer separately; an Access login redirect must not
-be placed in front of the public Agent Card or A2A paths. Verify each path through HTTPS.
-
-Cloudflare Free currently allows 100 MB request bodies; this application chooses 90 MiB.
-The server enforces the same limit with or without Content-Length. NIfTI expansion is bounded
-to 2 GiB. Four concurrent uploads globally and one per identity are allowed, with 16 retained
-uploads / 512 MiB per identity. Queue capacity is 8 globally / 2 per identity. One local
-inference runs at a time, protected by a cross-process device lock. Overall server task timeout
-is 7200 seconds including queue/routing/inference; LLM selection has a 90-second total limit.
-
-## Real acceptance
-
-`readyz` checks the process, LLM configuration presence and SQLite only. Run the real canary:
-
-```bash
-uv run python ops/acceptance.py --url https://medseg.huangziyan97.com \
-  --input /path/to/deidentified-research-ct.nii.gz --output outputs/acceptance/public
-```
-
-This exercises public Card, authentication refusal, upload, real model send and stream,
-deliberate stream disconnect, GetTask, idempotency, identity isolation and actual mask
-download/geometry/nonempty voxels. Run real browser upload/overlay/label/opacity/download,
-refresh, failure and mobile checks as well. Do not substitute synthetic tests for GPU evidence.
-
-Restart only after inspecting active tasks. Completed Tasks and original message IDs survive
-restart. Interrupted routing/inference gets an explicit failed state; retry requires a new
-messageId. Queued work can resume within its original time limit. Cancel terminates the whole
-inference process group. The unit uses `KillMode=mixed`: systemd first sends SIGTERM
-only to the main `uv` process, which forwards it to Python. The ASGI lifespan marks
-the service closed before canceling inference, so a restart is recorded as
-`SERVER_RESTART`. Sending TERM to every process simultaneously with `control-group`
-can instead let the inference process exit first and be misclassified as
-`INFERENCE_FAILED`. Remaining processes still receive SIGKILL if the main process
-exits or the 40-second stop timeout expires. Do not use `KillMode=process` or disable
-the final kill. This shutdown order relies on the verified uv signal forwarding and
-must be rechecked if the process launcher changes. See the official
-[systemd kill semantics](https://www.freedesktop.org/software/systemd/man/latest/systemd.kill.html)
-and [uv signal handling](https://docs.astral.sh/uv/concepts/projects/run/#signal-handling).
-
-Input/result files are removed after the 24-hour retention window (cleanup runs every 15
-minutes), except inputs currently referenced by active work. Unregistered upload directories
-left by a crash are removed on the next exclusive service start. Task audit/idempotency records
-persist, with expired files explicitly marked. Operators can inspect private run state/logs;
-HTTP errors expose only bounded, redacted explanations. Backups must receive the same access
-protection and retention policy as runtime data.
-
-For releases: local checks and real canary → explicit branch commit/push → server fast-forward
-to the exact commit → uv sync → service restart → public real-task acceptance. Record all
-three Git SHAs and the active interpreter. Do not include `.env`, weight caches, sample data,
-results, screenshots or logs in the public branch. No PR, main merge or force push is needed.
+For source changes, run the [development checks](validation.md), update the host to the
+tested commit, run `uv sync --frozen`, restart the service and repeat the integration check.

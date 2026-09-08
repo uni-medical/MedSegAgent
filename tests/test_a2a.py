@@ -9,10 +9,10 @@ import pytest
 from a2a.types import AgentCard, StreamResponse, Task
 from google.protobuf.json_format import ParseDict
 from starlette.applications import Starlette
-from starlette.exceptions import HTTPException
 from starlette.testclient import TestClient
 
 from medsegagent.a2a import project_task, routes
+from medsegagent.service import PUBLIC_A2A_PRINCIPAL
 
 
 class FakeService:
@@ -86,17 +86,15 @@ def fixture():
     service = FakeService()
 
     def auth(request):
-        token = request.headers.get("authorization")
-        if token not in {"Bearer alice", "Bearer bob"}:
-            raise HTTPException(401)
-        return token.split()[1]
+        principal = request.cookies.get("test_identity")
+        return principal if principal in {"alice", "bob"} else None
 
     client = TestClient(Starlette(routes=routes(service, auth)))
     return service, client
 
 
 def headers(principal="alice"):
-    return {"Authorization": f"Bearer {principal}", "A2A-Version": "1.0"}
+    return {"Cookie": f"test_identity={principal}", "A2A-Version": "1.0"}
 
 
 def request(message_id="one", **configuration):
@@ -133,7 +131,7 @@ def test_status_messages_have_unique_ids_for_distinct_phase_content():
     assert len({message.message_id for message in messages}) == len(messages)
 
 
-def test_public_card_uses_v1_sdk_schema_and_declares_file_boundary(fixture):
+def test_public_card_uses_v1_sdk_schema_and_declares_one_segmentation_skill(fixture):
     _, client = fixture
     response = client.get("/.well-known/agent-card.json")
     assert response.status_code == 200
@@ -141,18 +139,22 @@ def test_public_card_uses_v1_sdk_schema_and_declares_file_boundary(fixture):
     assert card.supported_interfaces[0].protocol_version == "1.0"
     assert card.supported_interfaces[0].protocol_binding == "HTTP+JSON"
     assert card.capabilities.streaming and not card.capabilities.push_notifications
-    assert card.security_schemes["bearerAuth"].http_auth_security_scheme.scheme == "bearer"
-    assert "base64" in card.description and "Research" in card.description
+    assert not card.security_schemes and not card.security_requirements
+    assert "opaque IDs" in card.description and "GitHub" in card.description
+    assert len(card.skills) == 1
     assert "kind" not in response.text
 
 
 @pytest.mark.parametrize("path", ["/a2a/v1/message:send", "/a2a/v1/message:stream"])
-def test_auth_and_version_required_before_admission(fixture, path):
+def test_version_is_required_but_credentials_are_not(fixture, path):
     service, client = fixture
-    assert client.post(path, json=request()).status_code == 401
-    response = client.post(path, json=request(), headers={"Authorization": "Bearer alice"})
+    response = client.post(path, json=request())
     assert response.status_code == 400 and reason(response) == "VERSION_NOT_SUPPORTED"
     assert not service.calls
+    service.complete_after_get = True
+    response = client.post(path, json=request(), headers={"A2A-Version": "1.0"})
+    assert response.status_code == 200
+    assert service.calls[0]["principal"] == PUBLIC_A2A_PRINCIPAL
 
 
 def test_submit_get_owner_isolation_and_same_id_forwarded(fixture):
@@ -201,12 +203,13 @@ def test_file_uri_ssrf_and_path_confusion_rejected_before_admission(fixture, url
     assert not service.calls
 
 
-def test_same_service_url_is_an_id_reference_not_a_fetch(fixture):
+@pytest.mark.parametrize("prefix", ["api", "a2a"])
+def test_same_service_url_is_an_id_reference_not_a_fetch(fixture, prefix):
     service, client = fixture
     payload = request()
     payload["message"]["parts"][1:] = [
         {
-            "url": "https://medseg.example.org/api/uploads/upload-1/file",
+            "url": f"https://medseg.example.org/{prefix}/uploads/upload-1/file",
             "mediaType": "application/gzip",
         },
         {"data": {"modality": "MR"}},
@@ -225,7 +228,6 @@ def test_same_service_url_is_an_id_reference_not_a_fetch(fixture):
         {"data": {"upload_id": "upload-1", "modality": "ct"}},
         {"data": {"upload_id": "upload-1", "modality": ["CT"]}},
         {"data": []},
-        {"data": {"upload_id": "upload-1"}},
         {"data": {"upload_id": "upload-1", "modality": "CT"}, "metadata": {"secret": "value"}},
     ],
 )
@@ -279,22 +281,41 @@ def test_sse_is_canonical_and_emits_artifacts_before_terminal_status(fixture):
     artifacts = [
         event["artifactUpdate"]["artifact"] for event in events if "artifactUpdate" in event
     ]
-    assert len(artifacts) == 3
+    assert len(artifacts) == 2
     assert artifacts[-1]["parts"][0]["url"].endswith("/files/segmentation.nii.gz")
     assert "/private" not in response.text and "must-not-leak" not in response.text
     task_id = events[0]["task"]["id"]
     recovered = client.get(f"/a2a/v1/tasks/{task_id}", headers=headers()).json()
     assert recovered["artifacts"] == artifacts
+    assert (
+        events[-1]["statusUpdate"]["metadata"]["segmentation"]
+        == recovered["metadata"]["segmentation"]
+    )
 
 
-def test_json_only_and_blocking_send_obeys_output_and_wait_contract(fixture):
+def test_mask_only_and_blocking_send_obeys_output_and_wait_contract(fixture):
     service, client = fixture
     service.complete_after_get = True
-    payload = request(returnImmediately=False, acceptedOutputModes=["application/json"])
+    payload = request(returnImmediately=False, acceptedOutputModes=["application/gzip"])
     response = client.post("/a2a/v1/message:send", json=payload, headers=headers())
     task = response.json()["task"]
     assert task["status"]["state"] == "TASK_STATE_COMPLETED"
-    assert [artifact["artifactId"] for artifact in task["artifacts"]] == ["result-json"]
+    assert len(task["artifacts"]) == 1
+    assert task["artifacts"][0]["artifactId"].startswith("file-")
+    assert "segmentation" in task["metadata"]
+
+
+def test_retired_json_artifact_is_not_advertised_or_negotiated(fixture):
+    service, client = fixture
+    card = client.get("/.well-known/agent-card.json").json()
+    assert "application/json" not in card["defaultOutputModes"]
+    response = client.post(
+        "/a2a/v1/message:send",
+        json=request(acceptedOutputModes=["application/json"]),
+        headers=headers(),
+    )
+    assert response.status_code == 400 and reason(response) == "CONTENT_TYPE_NOT_SUPPORTED"
+    assert not service.calls
 
 
 def test_cancellation_owner_terminal_and_replay_contract(fixture):
@@ -362,7 +383,7 @@ def test_service_error_valueerror_subclasses_preserve_http_boundary(
     if expected_status == 429:
         assert response.headers["retry-after"] == "5"
     if expected_status == 401:
-        assert response.headers["www-authenticate"] == "Bearer"
+        assert "www-authenticate" not in response.headers
 
 
 def test_failed_task_preserves_state_without_private_error_projection(fixture):
@@ -406,16 +427,26 @@ def test_real_shared_service_upload_idempotency_owner_and_restart(tmp_path, monk
     from medsegagent.web import create_app
 
     monkeypatch.setattr(Service, "launch", lambda self, task_id: None)
-    alice = {"Authorization": "Bearer " + "a" * 32, "A2A-Version": "1.0"}
-    bob = {"Authorization": "Bearer " + "b" * 32, "A2A-Version": "1.0"}
-    tokens = {"alice": "a" * 32, "bob": "b" * 32}
+    from medsegagent.auth import SESSION_COOKIE, AuthStore
+
     volume = nib.Nifti1Image(np.ones((4, 5, 6), dtype=np.int16), np.eye(4)).to_bytes()
 
     def app():
-        return create_app(tmp_path, "https://medseg.example.org", tokens=tokens)
+        return create_app(tmp_path, "https://medseg.example.org")
 
-    with TestClient(app()) as client:
-        assert client.post("/a2a/v1/message:send", json=request()).status_code == 401
+    application = app()
+    with TestClient(application) as client:
+        store = AuthStore(application.state.service.db, "https://medseg.example.org")
+        sessions = [store.create_guest(), store.create_guest()]
+        alice, bob = [
+            {
+                "Cookie": f"{SESSION_COOKIE}={session.token}",
+                "A2A-Version": "1.0",
+                "Origin": "https://medseg.example.org",
+            }
+            for session in sessions
+        ]
+        assert client.post("/a2a/v1/message:send", json=request()).status_code == 400
         uploaded = client.post(
             "/api/uploads", content=volume, headers={**alice, "X-Filename": "synthetic.nii"}
         )
@@ -464,10 +495,15 @@ def test_shared_lesion_results_preserve_detection_semantics_without_raw_paths(
     detection_status = "no_target_detected" if empty else "target_detected"
     private_marker = "private-filtering-audit-must-not-leak"
     values = np.zeros((4, 5, 6), dtype=np.uint8)
-    values.ravel()[:nonzero_voxels] = 2
+    values.ravel()[:nonzero_voxels] = 1
 
-    async def select(*args, **kwargs):
-        return agent.Selection("segment_" + task_name, task_name, [task_name])
+    async def select(text, modality, execution, **kwargs):
+        await execution.call("segment", {"targets": [task_name]})
+        return {
+            "status": "completed",
+            "summary": "Requested lesion segmentation finished",
+            "unresolved": [],
+        }
 
     async def segment(**kwargs):
         run = Path(kwargs["output_dir"]) / "unique-run"
@@ -480,7 +516,20 @@ def test_shared_lesion_results_preserve_detection_semantics_without_raw_paths(
             "task": task_name,
             "targets": [task_name],
             "speed": "standard",
-            "labels": [] if empty else [{"id": 2, "name": task_name, "voxels": 2}],
+            "schema_version": 3,
+            "volume_measurement": {"spatial_unit": "mm"},
+            "normalization_seconds": 0.02,
+            "labels": [
+                {
+                    "id": 1,
+                    "source_id": 2 if task_name == "lung_nodules" else 1,
+                    "name": task_name,
+                    "color": "#ff0000",
+                    "voxels": nonzero_voxels,
+                    "volume_mm3": float(nonzero_voxels),
+                    "volume_ml": nonzero_voxels / 1000,
+                }
+            ],
             "nonzero_voxels": nonzero_voxels,
             "detection_status": detection_status,
             "no_target_detected": empty,
@@ -489,16 +538,25 @@ def test_shared_lesion_results_preserve_detection_semantics_without_raw_paths(
             "warning": f"{private_marker}: {raw_mask}",
         }
 
-    monkeypatch.setattr(agent, "select_tool", select)
+    monkeypatch.setattr(agent, "run_agent", select)
     monkeypatch.setattr(core, "segment", segment)
-    token = "a" * 40
-    auth = {"Authorization": "Bearer " + token, "A2A-Version": "1.0"}
+    from medsegagent.auth import SESSION_COOKIE, AuthStore
+
     volume = nib.Nifti1Image(np.ones((4, 5, 6), dtype=np.int16), np.eye(4)).to_bytes()
 
     def app():
-        return create_app(tmp_path, "https://medseg.example.org", tokens={"alice": token})
+        return create_app(tmp_path, "https://medseg.example.org")
 
-    with TestClient(app()) as client:
+    application = app()
+    with TestClient(application) as client:
+        session = AuthStore(
+            application.state.service.db, "https://medseg.example.org"
+        ).create_guest()
+        auth = {
+            "Cookie": f"{SESSION_COOKIE}={session.token}",
+            "A2A-Version": "1.0",
+            "Origin": "https://medseg.example.org",
+        }
         upload = client.post(
             "/api/uploads", content=volume, headers={**auth, "X-Filename": "synthetic.nii"}
         )
@@ -511,21 +569,37 @@ def test_shared_lesion_results_preserve_detection_semantics_without_raw_paths(
         task = sent.json()["task"]
         assert task["status"]["state"] == "TASK_STATE_COMPLETED"
         task_id = task["id"]
-        result = next(
-            a["parts"][0]["data"] for a in task["artifacts"] if a["artifactId"] == "result-json"
-        )
+        result = task["metadata"]["segmentation"]
+        assert all(a["artifactId"] != "result-json" for a in task["artifacts"])
         assert result["detection_status"] == detection_status
         assert result["no_target_detected"] is empty
         assert result["nonzero_voxels"] == nonzero_voxels
-        assert result["speed"] == "standard"
+        assert not {"speed", "tool", "device", "model"} & result.keys()
+        assert result["task"] == task_name
+        assert result["quality"] == "standard"
+        assert result["schema_version"] == 5
+        assert result["labels"][0]["id"] == 1
+        assert result["labels"][0]["color"] == "#ff0000"
+        assert set(result["labels"][0]) == {
+            "id",
+            "source_id",
+            "name",
+            "color",
+            "voxels",
+            "volume_mm3",
+            "volume_ml",
+        }
+        assert result["labels"][0]["voxels"] == nonzero_voxels
+        assert result["outputs"][0]["labels"][0]["name"] == task_name
         assert ("does not rule out disease" in result["warning"]) is empty
         summary = next(a for a in task["artifacts"] if a["artifactId"] == "summary")
         assert ("does not rule out disease" in summary["parts"][0]["text"]) is empty
 
         web = client.get(f"/api/tasks/{task_id}", headers=auth)
         downloaded = client.get(f"/api/tasks/{task_id}/files/result.json", headers=auth)
-        assert downloaded.status_code == 200
-        for public in (web.json()["result"], downloaded.json()):
+        assert downloaded.status_code == 404
+        assert not (tmp_path / "tasks" / task_id / "result.json").exists()
+        for public in (web.json()["result"], result):
             assert public["no_target_detected"] is empty
             assert public["detection_status"] == detection_status
             assert public["nonzero_voxels"] == nonzero_voxels
@@ -535,7 +609,8 @@ def test_shared_lesion_results_preserve_detection_semantics_without_raw_paths(
             assert private_marker not in serialized
             assert "segmentation.raw" not in serialized
             assert "filtering" not in serialized
-        mask = client.get(f"/api/tasks/{task_id}/files/segmentation.nii.gz", headers=auth)
+        overlay = next(file for file in web.json()["files"] if file["kind"] == "overlay")
+        mask = client.get(overlay["url"], headers=auth)
         assert mask.status_code == 200
         image = nib.Nifti1Image.from_bytes(gzip.decompress(mask.content))
         assert np.count_nonzero(np.asanyarray(image.dataobj)) == nonzero_voxels
@@ -549,3 +624,56 @@ def test_shared_lesion_results_preserve_detection_semantics_without_raw_paths(
         recovered = client.get(f"/a2a/v1/tasks/{task_id}", headers=auth)
         assert recovered.status_code == 200
         assert recovered.json()["artifacts"] == task["artifacts"]
+
+
+def test_omitted_modality_reaches_the_agent_for_local_detection(fixture):
+    service, client = fixture
+    payload = request()
+    payload["message"]["parts"][0]["text"] = "请分割肝脏，先判断影像模态。"
+    payload["message"]["parts"][1] = {"data": {"upload_id": "upload-1"}}
+    response = client.post("/a2a/v1/message:send", json=payload, headers=headers())
+    assert response.status_code == 200, response.text
+    assert service.calls[0]["modality"] is None
+
+
+def test_anonymous_namespace_shares_ids_but_cannot_read_session_owned_tasks(fixture):
+    service, client = fixture
+    public_headers = {"A2A-Version": "1.0"}
+    first = client.post("/a2a/v1/message:send", json=request(), headers=public_headers).json()[
+        "task"
+    ]
+    assert service.calls[-1]["principal"] == PUBLIC_A2A_PRINCIPAL
+    copied = client.post(
+        "/a2a/v1/message:send",
+        json=request(),
+        headers={**public_headers, "Authorization": "Bearer obsolete-token"},
+    ).json()["task"]
+    assert copied["id"] == first["id"]
+    assert client.get("/a2a/v1/tasks/" + first["id"], headers=public_headers).status_code == 200
+    assert client.get("/a2a/v1/tasks", headers=public_headers).status_code == 400
+    private = client.post("/a2a/v1/message:send", json=request(), headers=headers()).json()["task"]
+    assert private["id"] != first["id"]
+    assert client.get("/a2a/v1/tasks/" + private["id"], headers=public_headers).status_code == 404
+    assert client.get("/a2a/v1/tasks/" + first["id"], headers=headers()).status_code == 404
+
+
+def test_routes_without_identity_resolver_are_public_by_default():
+    service = FakeService()
+    with TestClient(Starlette(routes=routes(service))) as client:
+        response = client.post(
+            "/a2a/v1/message:send", json=request(), headers={"A2A-Version": "1.0"}
+        )
+        assert response.status_code == 200
+        assert service.calls[0]["principal"] == PUBLIC_A2A_PRINCIPAL
+
+
+@pytest.mark.parametrize("prefix", ["api", "a2a"])
+def test_artifact_projection_accepts_only_this_task_same_origin_file_namespace(prefix):
+    service = FakeService()
+    service.rows["task-one"] = {"id": "task-one", "context_id": "context-one", "status": "queued"}
+    service.complete("task-one")
+    row = service.rows["task-one"]
+    row["files"][0]["url"] = f"/{prefix}/tasks/task-one/files/segmentation.nii.gz"
+    assert len(project_task(row, service.public_url).artifacts) == 2
+    row["files"][0]["url"] = f"/{prefix}/tasks/other-task/files/segmentation.nii.gz"
+    assert len(project_task(row, service.public_url).artifacts) == 1
