@@ -547,3 +547,23 @@ test("leaving the page saves a new slice before the debounce timer runs", async 
   await b.windowEvent("pagehide");
   assert.equal(storedView().frac[2], 3.5 / 20);
 });
+
+test("manual windowing shows a custom preset and reset restores automatic windowing", async (t) => {
+  const b = browser(t);
+  await b.loaded();
+  const volume = b.viewer.volumes[0];
+  assert.equal(b.element("window-preset").value, "auto");
+
+  // Continuous NiiVue windowing changes the volume without an intensity callback.
+  volume.cal_min = -40;
+  volume.cal_max = 80;
+  await b.element("niivue-canvas").dispatch("pointerup");
+  assert.equal(b.element("window-preset").value, "custom");
+  assert.equal(volume.cal_min, -40);
+  assert.equal(volume.cal_max, 80);
+
+  await b.element("reset-view").dispatch("click");
+  assert.equal(b.element("window-preset").value, "auto");
+  assert.equal(volume.cal_min, volume.robust_min);
+  assert.equal(volume.cal_max, volume.robust_max);
+});

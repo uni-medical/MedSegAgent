@@ -76,7 +76,7 @@ class Page(HTMLParser):
                 self.assets.append(attrs[key][len('/static/'):])
 p = Page(); p.feed((root / 'index.html').read_text())
 assert len(p.ids) == len(set(p.ids)), 'duplicate HTML IDs'
-refs = set(re.findall(r"\$\('([^']+)'\)", (root / 'app.js').read_text()))
+refs = set(re.findall(r'\$\("([^"]+)"\)', (root / 'app.js').read_text()))
 assert refs <= set(p.ids), refs - set(p.ids)
 assert all((root / asset).is_file() for asset in p.assets)
 bundle = (root / 'vendor/niivue-0.69.0.umd.js').read_bytes()

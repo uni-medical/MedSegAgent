@@ -165,7 +165,7 @@ Corrections verified against the actual 0.69.0 bundle and browser:
 - Unavailable/corrupt browser storage falls back to visible overlays. Failed image
   downloads offer retry while authenticated result downloads remain available.
 
-`uv run pytest -q` passed 150 Python tests; `node tests/browser_state.cjs` passed eight
+`uv run pytest -q` passed 150 Python tests; `node tests/browser_state.cjs` passed nine
 state regressions. The latter runs the unmodified browser client with an in-memory DOM
 and viewer, and does not substitute for WebGL rendering checks. Python lint/format checks
 for `src`, `tests`, and `ops` passed, as did JavaScript syntax and static ID checks.
@@ -186,3 +186,15 @@ Private reports and screenshots: `outputs/acceptance/ui-*-20260908.json` and
 `output/playwright/ui-*`. They are excluded from Git. Browser session storage contains
 only bounded per-task viewer preferences, never tokens or image buffers; logout clears
 these preferences. Image bytes remain local to the inference service and browser viewer.
+
+Public verification of the revised workspace submitted the same FLARE22 case without
+`modality`: task `9e5be3b5-eef7-4c82-990f-0cb368ac157c` completed on pjoffice GPU in
+**33.63 s** inference time (41.59 s persisted task duration). The 512 × 512 × 71
+mask preserved affine and shape, contained 1,091,802 foreground voxels, matched its
+published SHA-256, and messageId replay returned the same task. The public result
+records `modality_source=text`, `modality=CT`, and `deepseek-v4-flash`.
+
+Actual pointer acceptance also caught a NiiVue event gap: continuous windowing changes
+intensity limits without firing `onIntensityChange`. The UI now compares those limits
+with the selected preset on pointer release/save, showing “手动调整” after a manual change.
+Local real-browser rotation, right-drag windowing and reset passed after this correction.

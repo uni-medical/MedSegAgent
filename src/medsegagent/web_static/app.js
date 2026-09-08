@@ -666,9 +666,29 @@
     clearTimeout(state.viewerSave);
     if (!state.restoring) state.viewerSave = setTimeout(saveView, 150);
   }
+  function syncWindowPreset() {
+    const src = state.viewer?.volumes[0];
+    if (!src || state.restoring) return;
+    const presets = {
+      auto: [src.robust_min, src.robust_max],
+      soft: [-160, 240],
+      lung: [-1350, 150],
+      bone: [-500, 1500],
+    };
+    const expected = presets[$("window-preset").value];
+    if (
+      expected &&
+      expected.every(Number.isFinite) &&
+      (Math.abs(src.cal_min - expected[0]) > 0.001 ||
+        Math.abs(src.cal_max - expected[1]) > 0.001)
+    )
+      $("window-preset").value = "custom";
+  }
+
   function saveView() {
     const v = state.viewer;
     if (!state.viewerKey || !v?.volumes[0] || state.restoring) return;
+    syncWindowPreset();
     try {
       sessionStorage.setItem(
         viewStorageKey(state.viewerKey),
@@ -1295,7 +1315,10 @@
     renderHistory();
     updateSubmit();
   });
-  $("niivue-canvas").addEventListener("pointerup", scheduleSaveView);
+  $("niivue-canvas").addEventListener("pointerup", () => {
+    syncWindowPreset();
+    scheduleSaveView();
+  });
   $("niivue-canvas").addEventListener("wheel", scheduleSaveView, {
     passive: true,
   });
