@@ -102,7 +102,7 @@
     CAPACITY_EXCEEDED: "当前任务较多，请等待已有任务完成后再提交。",
     FILE_NOT_FOUND: "影像或结果已过期，请重新上传。",
     INVALID_FILE: "影像不是完整、有效的 3D NIfTI，请检查文件后重试。",
-    UNSUPPORTED_REQUEST: "当前不支持这项分割需求，未开始分割。请查看能力范围。",
+    UNSUPPORTED_REQUEST: "当前不支持这项分割需求，未开始分割。",
     MODALITY_REQUIRED: "请在请求中说明影像是 CT 还是 MR。",
     MODALITY_CONFLICT: "请求中的 CT / MR 与所选影像不一致，请修改后重试。",
   };
@@ -519,19 +519,6 @@
         $(container).append(card);
       }
     }
-    const text = (value) =>
-      Array.isArray(value)
-        ? value.filter((item) => typeof item === "string").join("；")
-        : typeof value === "string"
-          ? value
-          : "";
-    $("capability-summary").textContent = text(config.capabilities?.summary);
-    $("capability-limits").textContent = text(config.capabilities?.limits);
-    $("capability-summary").hidden = !$("capability-summary").textContent;
-    $("capability-limits").hidden = !$("capability-limits").textContent;
-    $("capabilities").hidden =
-      !$("capability-summary").textContent &&
-      !$("capability-limits").textContent;
   }
 
   function renderExampleContext() {

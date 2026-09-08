@@ -818,7 +818,6 @@ test("examples load source images and suggestion buttons only fill the request",
     "/api/examples/ct/preview",
   );
   assert.equal(b.element("example-switch").hidden, true);
-  assert.match(b.element("capability-summary").textContent, /CT 和 MR/);
   const credits = b.element("example-cards").children[0].children[1].children;
   assert.equal(credits[0].href, "https://example.org/data");
   assert.equal(credits[2].href, "/api/examples/ct/license");
@@ -982,7 +981,10 @@ test("request failures stay readable and record metadata hides implementation na
     );
     assert.doesNotMatch(b.element("request-meta").textContent, /total_mr/);
     if (code === "UNSUPPORTED_REQUEST")
-      assert.match(b.element("task-error").textContent, /未开始分割.*能力范围/);
+      assert.equal(
+        b.element("task-error").textContent,
+        "当前不支持这项分割需求，未开始分割。",
+      );
     else assert.match(b.element("task-error").textContent, /不一致/);
   }
 });
