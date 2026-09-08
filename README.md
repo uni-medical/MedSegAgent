@@ -1,5 +1,8 @@
 # MedSegAgent: A Universal and Scalable Multi-Agent System for Instructive Medical Image Segmentation
 
+> **TotalSeg Agent** — A TotalSegmentator-powered agent for natural-language CT/MR segmentation, with an interactive web viewer.
+> [Try it online](https://medseg.huangziyan97.com) · [Code: `totalseg-agent`](https://github.com/uni-medical/MedSegAgent/tree/totalseg-agent)
+
 This work has been accepted by the *IEEE Journal of Biomedical and Health Informatics (JBHI)*. Paper: [IEEE Xplore](https://ieeexplore.ieee.org/document/11455620) | [PDF](MedSegAgent_JBHI_2026.pdf).
 
 <p align="center">
