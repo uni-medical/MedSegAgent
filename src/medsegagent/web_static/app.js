@@ -174,7 +174,6 @@
   }
 
   function setDraft(upload = null, text = "") {
-    $("workspace").dataset.stage = upload ? "view" : "compose";
     state.upload = upload;
     state.selected = null;
     state.renderedRecord = null;
@@ -211,7 +210,7 @@
     history.replaceState({}, "", url);
     renderDownloads(upload);
     renderHistory();
-    setContext(upload && !text.trim() ? "results" : "request");
+    setContext("request");
     updateSubmit();
   }
 
@@ -324,7 +323,6 @@
     state.pendingRequest = null;
     state.renderedRecord = null;
     $("history-search").value = "";
-    $("workspace").dataset.stage = "compose";
     $("workspace").hidden = true;
     $("logout").hidden = true;
     $("task-list").replaceChildren();
@@ -581,7 +579,6 @@
   }
 
   async function selectTask(id) {
-    $("workspace").dataset.stage = "view";
     const epoch = state.epoch;
     const upload = state.uploadXHR;
     state.uploadXHR = null;
@@ -1520,6 +1517,10 @@
     showError("connection-note", "");
   }
   $("new-task").addEventListener("click", newTask);
+  $("choose-image").addEventListener("click", () => {
+    newTask();
+    $("file").click();
+  });
   for (const name of ["request", "results"]) {
     $("tab-" + name).addEventListener("click", () => setContext(name));
     $("tab-" + name).addEventListener("keydown", (event) => {

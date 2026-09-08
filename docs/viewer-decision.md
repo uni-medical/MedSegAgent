@@ -107,15 +107,7 @@ engineering acceptance record for real rendering and pointer/touch checks.
 
 ### Desktop workspace and record semantics (2026-09-08)
 
-Before upload, a single centered request form groups the file input, text and submit action.
-The empty viewer and result tabs are hidden. Upload validation success or selecting a
-record reveals the image workspace; the same form moves to the side through CSS without
-recreating its controls. Upload failure retains the text and shows the error in place.
-An image may be uploaded and viewed with no request text: this opens display controls
-and the original download. Inference starts only after explicit submission of a text
-request; text is not a prerequisite for viewing.
-
-For loaded images and records, desktop uses a 254–278 px record sidebar, a flexible image canvas,
+Desktop is the primary layout: a 254–278 px record sidebar, a flexible image canvas,
 and a 320–348 px context panel. The image name is the page identity. Request text,
 progress/errors and reuse sit together in the request tab; display, labels and downloads
 sit together in the results tab. Completed records open results directly, without a
