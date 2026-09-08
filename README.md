@@ -31,7 +31,8 @@ with `CUDA_VISIBLE_DEVICES`. All environments use `uv.lock`.
 
 - **CLI:** `medsegagent run`; `route` tests actual function calling without an image.
 - **MCP:** `uv run medsegagent-mcp` over stdio, with the four local tools below.
-- **Web:** NIfTI upload, natural language, durable progress, NiiVue 3D/slice overlays,
+- **Web:** NIfTI upload and a text request such as “分割这份 CT 中的肝脏” or
+  “分割磁共振中的肝脏”; durable progress, NiiVue 3D/slice overlays,
   label visibility, opacity and authenticated downloads.
 - **A2A 1.0:** public `/.well-known/agent-card.json`, authenticated HTTP+JSON at `/a2a/v1`.
   See [the integration contract](docs/a2a.md).
@@ -51,9 +52,13 @@ one durable SQLite task store; it does not implement another inference pipeline.
 
 TotalSegmentator is pinned to 2.18.0. Both base tasks use the Apache-2.0 fast models.
 An explicit empty or invalid target list fails; omit targets in the local tool only when
-requesting all structures. NIfTI cannot reliably establish modality: callers must declare
-CT or MR. The two specialized CT models use their standard resolution and local model-based
-organ cropping. Their tools return only the requested lesion label; the private native
+requesting all structures. NIfTI cannot reliably establish modality: Web users state CT or MR
+in the request text. One function call selects the tool, and the server verifies its modality
+against the explicit CT/MR words in the text. Missing or ambiguous modality returns
+`MODALITY_REQUIRED` before contacting the provider or starting inference.
+CLI and A2A retain explicit modality parameters; existing Web API callers
+may also supply `modality`. The two specialized CT models use their standard resolution
+and local model-based organ cropping. Their tools return only the requested lesion label; the private native
 output remains available for audit. Empty masks return `no_target_detected`, which does
 not exclude disease. MR lesions, arbitrary tumors, spatial prompts and diagnosis are
 unsupported. Each request must fit one tool; unsupported or ambiguous requests are refused.

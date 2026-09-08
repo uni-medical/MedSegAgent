@@ -88,3 +88,18 @@ PY
 Browser acceptance must additionally exercise a real server and authenticated task. The useful sequence is: login; upload a known NIfTI; submit natural language; inspect progress; inspect original and mask in slices and 3D; hide an individual label and all labels; change opacity; download both artifacts; refresh at a task URL; inspect failure and cancellation; reject an upload over the configured cap; logout; verify the task/file endpoints reject an unauthenticated session. Repeat at desktop and mobile widths and inspect canvas screenshots, not just HTTP responses or the presence of a canvas element.
 
 Independent frontend check on 2026-09-07 used a temporary, local synthetic fixture service (not committed, not a model inference): a 64 × 64 × 48 NIfTI with 2 × 2 × 3 mm spacing and two asymmetric label regions. Chromium rendered source intensities, both colored overlays and 3D with hardware WebGL2 at 1440 × 1000 and a 390 × 844 mobile viewport. Refresh restored the task and its overlays; hiding all labels removed the colors; a file one byte over the fixture's 4 MiB cap was rejected before upload; a persisted failed task displayed its public error. Browser local/session storage remained empty and the HttpOnly cookie was unreadable through `document.cookie`. After replacing an invalid initial color-map name, the verified reload produced no JavaScript errors or NiiVue warnings. This fixture check establishes frontend behavior only; real inference, production authentication, retention, restart and public-endpoint evidence belong in the deployment acceptance record.
+
+### Layout and lifecycle update (2026-09-08)
+
+The current UI uses `setCustomLayout` with four normalized half-width/half-height
+rectangles instead of NiiVue's aspect-ratio-dependent AUTO layout. Custom layouts are
+cleared when selecting a single slice or 3D view. All planes share one instance's
+crosshair; DOM sliders use `dimsRAS` and `(sliceIndex + 0.5) / dimension` coordinates.
+
+Images are fetched with same-origin authentication, AbortController and a bounded
+network timeout, then decoded with `NVImage.loadFromUrl({url: arrayBuffer, name})` and
+added to the viewer. Old volumes are removed explicitly; buffers are not recorded as
+URL-backed document options. Optional, bounded `sessionStorage` entries now remember
+view settings per task; they are removed at logout. No token or image buffer is stored.
+`node tests/browser_state.cjs` covers application state regressions; see the dated
+engineering acceptance record for real rendering and pointer/touch checks.

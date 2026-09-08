@@ -289,6 +289,7 @@ class Service:
             "upload_id": upload_id,
             "text": text,
             "modality": modality,
+            "modality_source": "text" if modality is None else "parameter",
             "status": "queued",
             "progress": "Waiting for inference slot",
             "error": None,
@@ -332,6 +333,7 @@ class Service:
                     status="running",
                     progress="Running local segmentation",
                     selection=asdict(selected),
+                    modality=selected.modality,
                 )
                 parent = self.root / "tasks" / task_id
                 result = await core.segment(
@@ -416,8 +418,10 @@ class Service:
             self.update(
                 task_id,
                 status="failed",
-                progress="Tool selection failed",
-                error={"code": "ROUTING_FAILED", "message": str(exc)},
+                progress="请补充影像模态"
+                if exc.code == "MODALITY_REQUIRED"
+                else "Tool selection failed",
+                error={"code": exc.code, "message": str(exc)},
             )
         except Exception:  # noqa: BLE001 - project a generic public error and persist failure.
             # Provider bodies, subprocess output, paths and credentials are never HTTP errors.

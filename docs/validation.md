@@ -137,3 +137,52 @@ device emulation, not testing on a physical phone. Screenshots and full evidence
 tools, including crop dependencies, checkpoint/config SHA256, source URL and license.
 `uv run python ops/verify_weights.py` checks local bytes without downloading. The final
 release record adds this manifest and validation evidence without changing inference code.
+
+## Imaging workspace revision, 2026-09-08
+
+The Web form now takes the image and request text without a modality radio group.
+An explicit CT/MR word in the request is checked locally; one provider tool call then
+selects and validates the segmentation target. Missing or conflicting modality words
+produce `MODALITY_REQUIRED` without a provider/inference call. The image and text can
+be reused for a corrected request. Existing explicit CLI/MCP/A2A modality inputs remain
+compatible. Four real provider routes passed (CT anatomy, magnetic resonance/MRI anatomy,
+CT lung nodules); three absent/conflicting modality cases were rejected before the provider.
+
+The viewer uses one pinned NiiVue instance and an explicit equal four-pane layout:
+axial upper left, sagittal upper right, coronal lower left, and 3D lower right. Slice
+sliders follow RAS voxel centers and share the crosshair. Labels, opacity, window presets,
+and downloads occupy the adjacent panel on desktop; single-plane views remain available.
+
+Corrections verified against the actual 0.69.0 bundle and browser:
+
+- A displayed → slow-loading B → A cannot leave B under A's title/downloads.
+- Superseded loads and logout abort authenticated image downloads. Replacing volumes
+  releases previous image references instead of retaining them in NiiVue's URL cache.
+- Reset restores position, window, 2D zoom/pan and the 3D camera without calling the
+  pointer-event-dependent `resetBriCon()` with a null event.
+- Per-task view preferences survive refresh. `pagehide` saves the final interaction
+  immediately; a mobile test exposed a lost-slice race with debounce alone.
+- Unavailable/corrupt browser storage falls back to visible overlays. Failed image
+  downloads offer retry while authenticated result downloads remain available.
+
+`uv run pytest -q` passed 150 Python tests; `node tests/browser_state.cjs` passed eight
+state regressions. The latter runs the unmodified browser client with an in-memory DOM
+and viewer, and does not substitute for WebGL rendering checks. Python lint/format checks
+for `src`, `tests`, and `ops` passed, as did JavaScript syntax and static ID checks.
+
+A real Web request, with **no modality field**, segmented FLARE22 case 0014 on Mac MPS:
+`ee696bd4-ef4c-4a84-ad37-a527f1eb2455`, inference **14.8 s**. Source plus three colored
+labels were visually inspected in the four panes. Actual Chromium interaction checks
+covered click/keyboard slices, window presets, opacity, hidden labels, single 3D, zoom,
+reset, refresh, delayed A/B/A switching, and matching downloads. A 91 MiB file was refused
+before transmission; a corrupt NIfTI was refused by the real server. Injected HTTP 503
+verified viewer failure/retry without changing the inference result.
+
+Pixel 7 Chromium emulation (412 × 839, touch, mobile UA, DPR 2.625) passed touch opacity,
+labels, slices, 3D, reset and immediate-refresh recovery, with no horizontal overflow.
+This is browser emulation, not a physical handset or mobile Safari test.
+
+Private reports and screenshots: `outputs/acceptance/ui-*-20260908.json` and
+`output/playwright/ui-*`. They are excluded from Git. Browser session storage contains
+only bounded per-task viewer preferences, never tokens or image buffers; logout clears
+these preferences. Image bytes remain local to the inference service and browser viewer.

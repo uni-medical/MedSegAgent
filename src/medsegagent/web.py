@@ -152,6 +152,7 @@ def create_app(root: Path | None = None, public_url: str | None = None, tokens=N
                 "retention_hours": service.retention_seconds // 3600,
                 "tools": list(agent.TOOLS),
                 "modalities": ["CT", "MR"],
+                "modality_input": "request_text",
                 "model": agent.MODEL,
                 "warning": "Research use only. No clinical validation.",
             }

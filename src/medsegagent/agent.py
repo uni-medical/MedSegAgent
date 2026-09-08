@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 from dataclasses import dataclass
 
 import httpx
@@ -25,6 +26,30 @@ DESCRIPTIONS = {
     "lung_nodules": "CT lung nodules only. No malignancy classification or general lung tumor claim.",
     "liver_lesions": "CT liver lesions only. No lesion subtype or malignancy classification.",
 }
+MODALITY_WORDS = {
+    "CT": ("CT", "computed tomography", "计算机断层扫描", "计算机断层成像"),
+    "MR": (
+        "MR",
+        "MRI",
+        "magnetic resonance",
+        "magnetic resonance imaging",
+        "磁共振",
+        "核磁",
+        "核磁共振",
+    ),
+}
+
+
+def text_modalities(text: str) -> set[str]:
+    """Recognize explicit modality words, never guess from organs or image data."""
+    return {
+        modality
+        for modality, words in MODALITY_WORDS.items()
+        if any(
+            re.search(r"(?<![a-z])" + re.escape(word) + r"(?![a-z])", text, re.IGNORECASE)
+            for word in words
+        )
+    }
 
 
 def allowed_targets(task: str) -> set[str]:
@@ -37,6 +62,10 @@ def allowed_targets(task: str) -> set[str]:
 class RoutingError(ValueError):
     """An invalid request, unavailable provider, or unusable tool selection."""
 
+    def __init__(self, message: str, code: str = "ROUTING_FAILED"):
+        super().__init__(message)
+        self.code = code
+
 
 @dataclass(frozen=True)
 class Selection:
@@ -44,6 +73,10 @@ class Selection:
     task: str
     targets: list[str]
     model: str = MODEL
+
+    @property
+    def modality(self) -> str:
+        return TOOLS[self.tool][1]
 
 
 def tool_schema() -> list[dict]:
@@ -72,9 +105,9 @@ def tool_schema() -> list[dict]:
     ]
 
 
-def provider_payload(text: str, modality: str) -> dict:
-    if modality not in {"CT", "MR"}:
-        raise RoutingError("Modality must be CT or MR; it cannot be inferred from NIfTI.")
+def provider_payload(text: str, modality: str | None = None) -> dict:
+    if modality is not None and (not isinstance(modality, str) or modality not in {"CT", "MR"}):
+        raise RoutingError("Modality must be CT or MR, or omitted and stated in the request.")
     if not isinstance(text, str) or not text.strip() or len(text) > 4000:
         raise RoutingError("Provide a segmentation request of 1–4000 characters.")
     return {
@@ -90,6 +123,12 @@ def provider_payload(text: str, modality: str) -> dict:
                     "Do not call any tool if satisfying the entire request requires more than one tool. "
                     "Never execute just part of a request. "
                     "Lesion tools support only CT lung nodules or CT liver lesions, not diagnosis."
+                    + (
+                        " Without a modality parameter, use only the modality stated in the user's "
+                        "text; never guess it."
+                        if modality is None
+                        else ""
+                    )
                 ),
             },
             {
@@ -105,8 +144,14 @@ def provider_payload(text: str, modality: str) -> dict:
     }
 
 
-async def select_tool(text: str, modality: str, *, transport=None) -> Selection:
+async def select_tool(text: str, modality: str | None = None, *, transport=None) -> Selection:
     payload = provider_payload(text, modality)
+    mentioned = text_modalities(text) if modality is None else {modality}
+    if len(mentioned) != 1:
+        raise RoutingError(
+            "请在描述中注明这份影像是 CT 还是 MR，例如“分割这份 CT 中的肝脏”或“分割磁共振中的肝脏”。",
+            code="MODALITY_REQUIRED",
+        )
     base = os.environ.get("OPENAI_BASE_URL", "").rstrip("/")
     key = os.environ.get("OPENAI_API_KEY", "")
     if not base.startswith("https://") or not key:
@@ -139,7 +184,7 @@ async def select_tool(text: str, modality: str, *, transport=None) -> Selection:
             raise RoutingError("Specify one supported segmentation request and modality.")
         function = calls[0]["function"]
         name = function["name"]
-        if name not in TOOLS or TOOLS[name][1] != modality:
+        if name not in TOOLS or TOOLS[name][1] not in mentioned:
             raise RoutingError("The selected tool does not match the declared modality.")
         arguments = json.loads(function["arguments"])
         if not isinstance(arguments, dict) or set(arguments) != {"targets"}:
