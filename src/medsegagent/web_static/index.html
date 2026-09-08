@@ -14,7 +14,7 @@
   </head>
   <body>
     <a class="skip-link" href="#request">跳到分割请求</a>
-    <main id="workspace" hidden>
+    <main id="workspace" data-stage="compose" hidden>
       <aside class="sidebar" aria-label="分割记录导航">
         <a class="brand" href="/" aria-label="MedSegAgent 首页"
           ><img src="/static/logo.svg" width="34" height="34" alt="" /><span
@@ -22,7 +22,7 @@
           ></a
         >
         <button type="button" id="new-task" class="new-task">
-          <span aria-hidden="true">＋</span>新建分割
+          <span aria-hidden="true">＋</span>打开影像
         </button>
         <section class="history" aria-labelledby="history-heading">
           <div class="section-heading">
@@ -187,10 +187,7 @@
               />
             </svg>
             <h3 id="empty-title">从一张影像开始</h3>
-            <p>上传 3D 影像，用一句话描述分割目标。</p>
-            <button type="button" id="choose-image" class="primary">
-              选择 NIfTI 影像
-            </button>
+            <p>可从左侧新建分割，或打开其他记录。</p>
           </div>
           <div
             id="viewer-indicator"
@@ -208,15 +205,18 @@
           <span id="location">点击定位 · 滚轮切片 · 右键调窗</span
           ><span>放射学方向 R / L</span>
         </div>
-
+      </section>
+      <aside class="context-panel" aria-label="分割请求与影像操作">
+        <header class="draft-heading">
+          <h1>打开影像</h1>
+          <p>上传即可查看三切面与 3D，按需发起分割。</p>
+        </header>
         <p
           class="connection-note"
           id="connection-note"
           role="status"
           hidden
         ></p>
-      </section>
-      <aside class="context-panel" aria-label="当前影像操作">
         <div class="context-tabs" role="tablist" aria-label="影像操作">
           <button
             type="button"
@@ -287,7 +287,7 @@
               </div>
               <p class="file-meta" id="file-meta" hidden></p>
               <label for="instruction" class="field-label"
-                >需要分割什么？</label
+                >分割目标（可选）</label
               >
               <textarea
                 id="instruction"
@@ -297,8 +297,7 @@
                 required
               ></textarea>
               <p class="input-note">
-                用文字说明 CT 或 MR 和目标，Agent
-                会选择工具。影像不会发送给语言模型。
+                如需分割，请用文字说明 CT 或 MR 和目标。影像不会发送给语言模型。
               </p>
               <button id="submit" class="primary" type="submit" disabled>
                 开始分割
