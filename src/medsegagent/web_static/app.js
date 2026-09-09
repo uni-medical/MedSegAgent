@@ -1826,17 +1826,24 @@
               "Partial results are available. The task has not completed fully.",
             )
           : complete
-            ? inputOK && resultOK
-              ? ""
-              : resultOK
-                ? t(
-                    "原图不可用，仍可下载分割结果",
-                    "The source image is unavailable. Segmentation results can still be downloaded.",
-                  )
-                : t(
-                    "分割文件已到期或已清理",
-                    "Segmentation files have expired or been removed",
-                  )
+            ? [
+                typeof task.result?.summary === "string"
+                  ? task.result.summary.trim()
+                  : "",
+                inputOK && resultOK
+                  ? ""
+                  : resultOK
+                    ? t(
+                        "原图不可用，仍可下载分割结果",
+                        "The source image is unavailable. Segmentation results can still be downloaded.",
+                      )
+                    : t(
+                        "分割文件已到期或已清理",
+                        "Segmentation files have expired or been removed",
+                      ),
+              ]
+                .filter(Boolean)
+                .join("\n")
             : {
                 queued: t("等待推理资源", "Waiting for inference resources"),
                 routing: t(

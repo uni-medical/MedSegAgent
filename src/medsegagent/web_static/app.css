@@ -1060,6 +1060,8 @@ textarea::placeholder {
   color: var(--muted);
   line-height: 1.7;
   margin-top: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .task-timing {
   display: flex;
