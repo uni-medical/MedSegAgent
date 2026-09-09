@@ -1,6 +1,6 @@
-# MIA-Omni
+# MiOmni
 
-An agent workspace for medical imaging, built on MedSegAgent. MIA-Omni brings
+An agent workspace for medical imaging, built on MedSegAgent. MiOmni brings
 specialized models and interactive tools into one workflow, starting with
 [TotalSegmentator](https://github.com/wasserth/TotalSegmentator) CT/MR segmentation
 and [nnInteractive](https://github.com/MIC-DKFZ/nnInteractive) point-and-box editing.
@@ -29,7 +29,7 @@ and [nnInteractive](https://github.com/MIC-DKFZ/nnInteractive) point-and-box edi
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
 ```bash
-git clone --branch mia-omni https://github.com/uni-medical/MedSegAgent.git
+git clone --branch miomni https://github.com/uni-medical/MedSegAgent.git
 cd MedSegAgent
 uv sync --frozen
 cp .env.example .env
@@ -70,7 +70,7 @@ See [Agent workflow](docs/autonomous-segmentation.md),
 
 ## About
 
-`mia-omni` is an independent development branch. The public demo continues to run
+`miomni` is an independent development branch. The public demo continues to run
 [totalseg-agent](https://github.com/uni-medical/MedSegAgent/tree/totalseg-agent),
 without this branch's extensions. The MedSegAgent paper and original experiments
 are on [main](https://github.com/uni-medical/MedSegAgent/tree/main).

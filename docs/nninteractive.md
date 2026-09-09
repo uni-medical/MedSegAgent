@@ -1,11 +1,11 @@
 # nnInteractive 接入与验收
 
-本版本属于 **MIA-Omni**（简称 MIA）的独立开发线。产品目标是统一医学影像的理解、
+本版本属于 **MiOmni**（Medical Imaging + Omni）的独立开发线。产品目标是统一医学影像的理解、
 模型调用、交互修正、测量与报告；当前实现以 nnInteractive 区域交互为起点。
 
-开发分支为 `mia-omni`，仅同步到现有 MedSegAgent GitHub 仓库的同名分支。
+开发分支为 `miomni`，仅同步到现有 MedSegAgent GitHub 仓库的同名分支。
 服务器及现有公网服务继续使用 `totalseg-agent` 发布线；该分支不混入本版本的
-nnInteractive / MedGemma 接入代码，不从 MIA-Omni 开发分支更新现有服务。
+nnInteractive / MedGemma 接入代码，不从 MiOmni 开发分支更新现有服务。
 两条分支独立维护，不自动合并或切换部署。
 
 这个版本在现有 NiiVue 查看器中增加“区域交互”：前景点、背景点、单层框、
