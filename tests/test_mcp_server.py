@@ -7,7 +7,7 @@ import pytest
 from mcp.server.mcpserver import Context
 from mcp.server.mcpserver.exceptions import ToolError, UnexpectedToolError
 
-from medsegagent import core, mcp_server
+from medsegagent import catalog, core, mcp_server
 
 
 def test_mcp_surface_contains_supported_tools():
@@ -27,7 +27,10 @@ def test_mcp_surface_contains_supported_tools():
     assert set(segment["required"]) == {"input_path", "targets"}
     assert "ctx" not in segment["properties"]
     assert "enum" not in segment["properties"]["targets"]["items"]
-    assert schemas["get_capabilities"]["properties"]["task"]
+    choices = schemas["get_capabilities"]["properties"]["task"]["anyOf"]
+    assert next(row["enum"] for row in choices if "enum" in row) == list(
+        catalog.public_task_names()
+    )
     assert segment["properties"]["targets"]["minItems"] == 1
 
 
@@ -103,6 +106,16 @@ def test_mcp_catalog_needs_no_input_or_session():
     result = asyncio.run(mcp_server.get_capabilities(task="total_v3"))
     assert result["ok"] and result["capabilities"]["task"] == "total_v3"
     assert any(row["name"] == "liver" for row in result["capabilities"]["labels"])
+
+
+def test_mcp_catalog_hides_unavailable_models_and_policy_details():
+    result = asyncio.run(mcp_server.get_capabilities(query="heart"))
+    assert all(
+        row["task"] in catalog.public_task_names() for row in result["capabilities"]["tasks"]
+    )
+    assert "excluded_task_counts" not in result["capabilities"]
+    with pytest.raises(ToolError, match="^Unsupported segmentation task\\.$"):
+        asyncio.run(mcp_server.get_capabilities(task="heartchambers_highres"))
 
 
 @pytest.mark.parametrize("producer", ["total", ["total", "total_v3"]])

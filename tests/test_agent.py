@@ -169,7 +169,7 @@ def test_schema_discovers_labels_on_demand_and_constrains_public_producers():
     assert "get_capabilities" in ct["segment"]["description"]
     assert (
         "heartchambers_highres"
-        in ct["get_capabilities"]["parameters"]["properties"]["task"]["enum"]
+        not in ct["get_capabilities"]["parameters"]["properties"]["task"]["enum"]
     )
     assert (
         "heartchambers_highres"
@@ -221,20 +221,26 @@ def test_preview_can_query_labels_then_select_a_producer_without_image_execution
     if query is not None:
         assert feedback["capabilities"]["matches"] == ["liver"]
         assert feedback["capabilities"]["labels"] == [
-            {"id": 5, "name": "liver", "auxiliary": False}
+            {
+                "id": 5,
+                "name": "liver",
+                "auxiliary": False,
+                "display_name_zh": "肝脏",
+                "display_name_en": "Liver",
+            }
         ]
     else:
         assert len(feedback["capabilities"]["labels"]) == 117
 
 
-def test_catalog_feedback_keeps_controlled_descriptions_labels_and_usage_terms_only():
+def test_catalog_feedback_keeps_controlled_labels_and_acquisition_requirements_only():
     feedback = agent.safe_capabilities(
         {
             "ok": True,
             "status": "completed",
             "process_log": "/private/log",
             "capabilities": {
-                "task": "synthetic_task",
+                "task": "total",
                 "description": "Use CT/MR metadata.",
                 "usage_license": "CC-BY-NC-4.0",
                 "requirements": ["TOF MRI only"],
@@ -244,7 +250,7 @@ def test_catalog_feedback_keeps_controlled_descriptions_labels_and_usage_terms_o
                 "models_by_speed": {"standard": [12]},
                 "weight_readiness": {
                     "standard": {
-                        "task": "synthetic_task",
+                        "task": "total",
                         "quality": "standard",
                         "ready": False,
                         "model_ids": [12, 13],
@@ -254,7 +260,7 @@ def test_catalog_feedback_keeps_controlled_descriptions_labels_and_usage_terms_o
                 },
                 "roi_weight_readiness": {
                     "standard": {
-                        "task": "synthetic_task",
+                        "task": "total",
                         "quality": "standard",
                         "ready": False,
                         "model_ids": [12, 13, 14],
@@ -272,7 +278,7 @@ def test_catalog_feedback_keeps_controlled_descriptions_labels_and_usage_terms_o
     assert feedback["capabilities"]["models_by_speed"] == {"standard": [12]}
     assert feedback["capabilities"]["weight_readiness"] == {
         "standard": {
-            "task": "synthetic_task",
+            "task": "total",
             "quality": "standard",
             "ready": False,
             "model_ids": [12, 13],
@@ -282,7 +288,7 @@ def test_catalog_feedback_keeps_controlled_descriptions_labels_and_usage_terms_o
     assert feedback["capabilities"]["labels"] == [{"id": 1, "name": "region", "auxiliary": False}]
     assert feedback["capabilities"]["roi_weight_readiness"] == {
         "standard": {
-            "task": "synthetic_task",
+            "task": "total",
             "quality": "standard",
             "ready": False,
             "model_ids": [12, 13, 14],
@@ -292,15 +298,16 @@ def test_catalog_feedback_keeps_controlled_descriptions_labels_and_usage_terms_o
     assert not any(value in json.dumps(feedback) for value in ("PRIVATE", "SECRET", "/private"))
 
 
-def test_default_catalog_feedback_keeps_exclusions_and_noncommercial_terms():
+def test_default_catalog_feedback_omits_policy_but_keeps_acquisition_requirements():
     response = agent.safe_capabilities(
         {"ok": True, "status": "completed", "capabilities": catalog.get_capabilities()}
     )
     directory = response["capabilities"]
-    assert directory["excluded_task_counts"] == {"license_gated": 18, "experimental": 2}
-    assert all(row["public_service_supported"] for row in directory["tasks"])
+    assert "excluded_task_counts" not in directory
+    assert {row["task"] for row in directory["tasks"]} == set(catalog.public_task_names())
+    assert all("public_service_supported" not in row for row in directory["tasks"])
     brain = next(row for row in directory["tasks"] if row["task"] == "brain_aneurysm")
-    assert brain["usage_license"] == "CC-BY-NC-4.0"
+    assert "usage_license" not in brain
     assert brain["requirements"]
 
 

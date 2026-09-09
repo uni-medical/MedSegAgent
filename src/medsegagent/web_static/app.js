@@ -466,49 +466,7 @@
   }
 
   function labelDisplayName(name, id) {
-    if (locale() === "en") {
-      const english = {
-        kidney_left: "Left kidney",
-        kidney_right: "Right kidney",
-        lung_left: "Left lung",
-        lung_right: "Right lung",
-        lung_upper_lobe_left: "Left upper lung lobe",
-        lung_lower_lobe_left: "Left lower lung lobe",
-        lung_upper_lobe_right: "Right upper lung lobe",
-        lung_middle_lobe_right: "Right middle lung lobe",
-        lung_lower_lobe_right: "Right lower lung lobe",
-      }[name];
-      if (english) return english;
-      if (typeof name === "string" && /^[a-z][a-z0-9_]*$/.test(name)) {
-        const label = name.replaceAll("_", " ");
-        return label.charAt(0).toUpperCase() + label.slice(1);
-      }
-      return name || String(id);
-    }
-    return (
-      {
-        liver: "肝脏",
-        kidney_left: "左肾",
-        kidney_right: "右肾",
-        spleen: "脾脏",
-        pancreas: "胰腺",
-        lungs: "双肺",
-        lung_left: "左肺",
-        lung_right: "右肺",
-        lung_upper_lobe_left: "左肺上叶",
-        lung_lower_lobe_left: "左肺下叶",
-        lung_upper_lobe_right: "右肺上叶",
-        lung_middle_lobe_right: "右肺中叶",
-        lung_lower_lobe_right: "右肺下叶",
-        lung_nodules: "肺结节",
-        liver_lesions: "肝病灶",
-        aorta: "主动脉",
-        gallbladder: "胆囊",
-        stomach: "胃",
-      }[name] ||
-      name ||
-      String(id)
-    );
+    return window.MedSegLabels?.displayName(name, id, locale()) || name || String(id);
   }
 
   function renderFileMetadata(upload) {
@@ -2607,7 +2565,7 @@
       const name = document.createElement("span");
       name.className = "label-name";
       bindText(name, () => labelDisplayName(label.name, label.id));
-      bindAttr(name, "title", () => label.name || "");
+      bindAttr(name, "title", () => labelDisplayName(label.name, label.id));
       const detail = document.createElement("span");
       detail.className = "label-details";
       const count = document.createElement("span");
@@ -2630,7 +2588,7 @@
       );
       bindAttr(wrap, "title", () =>
         [
-          `${labelDisplayName(label.name, label.id)} (${label.name}) · ${t("标签", "Label")} ${number(label.id)}`,
+          `${labelDisplayName(label.name, label.id)} · ${t("标签", "Label")} ${number(label.id)}`,
           Number.isFinite(label.voxels)
             ? t(
                 `${label.voxels.toLocaleString(locale())} 体素`,

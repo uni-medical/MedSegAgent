@@ -78,3 +78,49 @@ def test_feedback_over_budget_fails_explicitly_without_partial_regions():
     assert "regions" not in observed
     collection_limit = agent.safe_feedback({"ok": True, "regions": [{}] * 1025})
     assert collection_limit["code"] == "INVALID_TOOL_FEEDBACK"
+
+
+def test_native_feedback_uses_canonical_names_without_changing_region_identity():
+    source = {
+        "ok": True,
+        "regions": [
+            {
+                "region_id": "vein",
+                "target": "pulmonary_vein",
+                "task": "total",
+                "display_name_zh": "肺动脉",
+                "voxels": 100,
+            },
+            {"region_id": "heart", "target": "heart", "task": "total", "voxels": 200},
+            {"region_id": "custom", "target": "heart", "task": "composition", "voxels": 30},
+        ],
+    }
+    observed = agent.safe_feedback(source)
+    vein, heart, composed = observed["regions"]
+    assert vein["display_name_zh"] == "肺静脉"
+    assert vein["display_name_en"] == "Pulmonary vein"
+    assert heart["display_name_zh"] == "心脏整体"
+    assert vein["target"] == "pulmonary_vein" and vein["region_id"] == "vein"
+    assert heart["target"] == "heart" and heart["voxels"] == 200
+    assert "display_name_zh" not in composed
+    assert source["regions"][0]["display_name_zh"] == "肺动脉"
+
+
+def test_catalog_projection_hides_disabled_models_and_preserves_canonical_names():
+    observed = agent.safe_capabilities(
+        {"ok": True, "capabilities": catalog.get_capabilities(query="heart")}
+    )
+    serialized = json.dumps(observed)
+    assert "heartchambers_highres" not in serialized
+    assert "LICENSE_GATED" not in serialized
+    details = agent.safe_capabilities(
+        {"ok": True, "capabilities": catalog.get_capabilities(task="total", query="pulmonary_vein")}
+    )
+    label = details["capabilities"]["labels"][0]
+    assert label["name"] == "pulmonary_vein"
+    assert label["display_name_zh"] == "肺静脉"
+    hidden = agent.safe_capabilities(
+        {"ok": True, "capabilities": catalog.get_capabilities(task="heartchambers_highres")}
+    )
+    assert hidden["code"] == "INVALID_CATALOG_QUERY"
+    assert "capabilities" not in hidden

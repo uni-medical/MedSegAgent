@@ -602,6 +602,11 @@ function browser(t, options = {}) {
   };
 
   const sandbox = vm.createContext(context);
+  vm.runInContext(
+    fs.readFileSync(path.join(staticRoot, "label_names.js"), "utf8"),
+    sandbox,
+    { filename: "label_names.js" },
+  );
   if (!options.omitI18n)
     vm.runInContext(
       fs.readFileSync(path.join(staticRoot, "i18n.js"), "utf8"),
@@ -2923,6 +2928,52 @@ test("language switching preserves loaded volumes, label visibility, and user co
   await b.language("zh-CN");
   assert.match(b.element("labels").children[0].textContent, /肝脏/);
   assert.equal(b.element("labels").children[0].children[0].checked, false);
+});
+
+test("cardiac labels and downloads switch language while their identities stay unchanged", async (t) => {
+  const cardiac = [
+    ["heart", "心脏整体", "Whole heart"],
+    ["aorta", "主动脉", "Aorta"],
+    ["pulmonary_vein", "肺静脉", "Pulmonary vein"],
+    ["atrial_appendage_left", "左心耳", "Left atrial appendage"],
+    ["superior_vena_cava", "上腔静脉", "Superior vena cava"],
+    ["inferior_vena_cava", "下腔静脉", "Inferior vena cava"],
+  ];
+  const a = task("A");
+  a.result.labels = cardiac.map(([name], index) => ({
+    id: index + 1, name, voxels: 10, volume_ml: index + 0.5,
+  }));
+  a.files = [a.files[0], ...cardiac.map(([name], index) => ({
+    kind: "label", label_id: index + 1, label_name: name,
+    name: `${index + 1}_${name}.nii.gz`,
+    url: `/api/tasks/A/files/${index + 1}_${name}.nii.gz`,
+  }))];
+  const original = JSON.stringify(a);
+  const b = browser(t, { tasks: [a] });
+  await b.loaded();
+  const volumes = [...b.viewer.volumes];
+  const urls = b.element("download-labels").children.map((item) => item.href);
+  const firstCheckbox = b.element("labels").children[0].children[0];
+  firstCheckbox.checked = false;
+  await firstCheckbox.dispatch("change");
+  const map = JSON.stringify(volumes[1].labelMap);
+  for (const [locale, column] of [["zh-CN", 1], ["en", 2], ["zh-CN", 1]]) {
+    await b.language(locale);
+    for (const [index, translations] of cardiac.entries()) {
+      const row = b.element("labels").children[index];
+      const name = row.children[2].children[0];
+      assert.equal(name.textContent, translations[column]);
+      assert.equal(name.title, translations[column]);
+      assert.equal(row.dataset.name, translations[0]);
+      assert.equal(row.children[0].dataset.label, String(index + 1));
+      assert.ok(b.element("download-labels").children[index].textContent.includes(translations[column]));
+    }
+    assert.equal(firstCheckbox.checked, false);
+    assert.deepEqual(b.viewer.volumes, volumes);
+    assert.equal(JSON.stringify(volumes[1].labelMap), map);
+    assert.deepEqual(b.element("download-labels").children.map((item) => item.href), urls);
+    assert.equal(JSON.stringify(a), original);
+  }
 });
 
 test("an already visible task error follows language changes", async (t) => {

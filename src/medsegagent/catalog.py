@@ -182,7 +182,58 @@ def _query_matches(index: dict[str, dict], terms: list[str]) -> list[str]:
 def get_capabilities(
     modality: str | None = None, task: str | None = None, query: str | None = None
 ) -> dict:
-    """Small default directory, explicit labels on demand, and all matching producers."""
+    """Administrative registry, including unavailable producers for explicit queries."""
+    return _get_capabilities(modality, task, query, available_only=False)
+
+
+def project_agent_capabilities(value: dict) -> dict:
+    """Keep service-supported producers and omit deployment-policy diagnostics."""
+    available = set(public_task_names())
+    if not isinstance(value, dict) or (
+        "task" in value and (not isinstance(value["task"], str) or value["task"] not in available)
+    ):
+        raise CatalogError("Unsupported segmentation task.")
+    administrative = {
+        "availability",
+        "availability_reason",
+        "license_required",
+        "usage_license",
+        "license_policy",
+        "public_service_supported",
+        "excluded_task_counts",
+    }
+
+    def summary(row):
+        return {key: item for key, item in row.items() if key not in administrative}
+
+    result = summary(value)
+    if "tasks" in value:
+        if not isinstance(value["tasks"], list):
+            raise CatalogError("Invalid segmentation directory.")
+        result["tasks"] = [
+            summary(row)
+            for row in value["tasks"]
+            if isinstance(row, dict)
+            and isinstance(row.get("task"), str)
+            and row["task"] in available
+        ]
+    return result
+
+
+def get_agent_capabilities(
+    modality: str | None = None, task: str | None = None, query: str | None = None
+) -> dict:
+    """Discover supported service capabilities without revealing excluded models.
+
+    Local weight readiness remains a separate observation: a supported task may
+    still need preparation before inference. Clinical input requirements remain.
+    """
+    return project_agent_capabilities(_get_capabilities(modality, task, query, available_only=True))
+
+
+def _get_capabilities(
+    modality: str | None, task: str | None, query: str | None, *, available_only: bool
+) -> dict:
     from totalsegmentator.registry import package_version
 
     if modality is not None:
@@ -193,6 +244,8 @@ def get_capabilities(
         if not isinstance(task, str) or task not in TASK_SPECS:
             raise CatalogError("Unsupported segmentation task.")
         spec = TASK_SPECS[task]
+        if available_only and not spec.public_service_supported:
+            raise CatalogError("Unsupported segmentation task.")
         if modality is not None and spec.modality != modality:
             raise CatalogError("The task is unsupported for the declared modality.")
         public = public_native_targets(task)
@@ -248,7 +301,10 @@ def get_capabilities(
             }
         return result
     relevant = [
-        name for name, spec in TASK_SPECS.items() if modality is None or spec.modality == modality
+        name
+        for name, spec in TASK_SPECS.items()
+        if (modality is None or spec.modality == modality)
+        and (not available_only or spec.public_service_supported)
     ]
     excluded = Counter(
         TASK_SPECS[name].license_policy

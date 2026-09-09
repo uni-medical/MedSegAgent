@@ -64,15 +64,23 @@ def test_capability_discovery_is_read_only_and_never_counts_as_output(tmp_path):
     result = asyncio.run(execution.call("get_capabilities", {}))
     assert result["ok"]
     assert len(result["capabilities"]["tasks"]) == len(PUBLIC_TASKS) == 33
-    assert result["capabilities"]["excluded_task_counts"] == {
-        "license_gated": 18,
-        "experimental": 2,
-    }
+    assert "excluded_task_counts" not in result["capabilities"]
     assert execution.modality is None and execution._frozen is None
     assert not execution.has_outputs and not execution.is_complete
     detail = asyncio.run(execution.call("get_capabilities", {"task": "lung_nodules"}))
     assert detail["ok"]
     assert execution.unresolved_failures == []
+
+
+@pytest.mark.parametrize("task", DISABLED_TASKS)
+def test_unavailable_capability_lookup_returns_no_model_details(tmp_path, task):
+    execution = TaskExecution(tmp_path / "missing.nii.gz", output_dir=tmp_path / "out")
+    result = asyncio.run(execution.call("get_capabilities", {"task": task}))
+    assert not result["ok"] and result["code"] == "INVALID_ARGUMENTS"
+    assert "capabilities" not in result
+    assert task not in json.dumps(result)
+    assert "LICENSE" not in json.dumps(result)
+    assert execution._frozen is None and not execution.has_outputs
 
 
 def test_producers_and_qualities_with_the_same_target_keep_distinct_outputs(tmp_path, monkeypatch):

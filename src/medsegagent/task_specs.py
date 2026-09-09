@@ -29,7 +29,7 @@ _EXPERIMENTAL = {
 _LEGACY_TOOLS = {"total": "segment_ct", "total_mr": "segment_mr"}
 _DEFAULT_TARGETS = {"lung_nodules": ("lung_nodules",), "liver_lesions": ("liver_lesions",)}
 _REQUIREMENTS = {
-    "brain_aneurysm": ("TOF MRI only.", "Noncommercial use; preserve CC-BY-NC-4.0 attribution."),
+    "brain_aneurysm": ("TOF MRI only.",),
     "abdominal_muscles": ("Segments muscles only within T4-L4.",),
     "tissue_types_mr": (
         "For DIXON, upstream recommends fat images for fat and water images for muscle.",
@@ -42,7 +42,7 @@ _DESCRIPTIONS = {
     "lung_nodules": "CT lung nodules; the native lung label is auxiliary anatomy.",
     "liver_lesions": "CT liver lesions; does not classify lesion subtype or malignancy.",
     "liver_lesions_mr": "MR liver lesions; does not classify lesion subtype or malignancy.",
-    "brain_aneurysm": "Brain aneurysm segmentation on TOF MRI only, under CC-BY-NC-4.0.",
+    "brain_aneurysm": "Brain aneurysm segmentation on TOF MRI only.",
     "vertebrae_pp_refined": "Per-vertebra CT bodies, refined using a second vertebral-body mask.",
     "teeth": "CT/CBCT dental structures; first crops with the craniofacial model.",
     "abdominal_muscles": "CT muscle segmentation restricted to the T4-L4 region.",

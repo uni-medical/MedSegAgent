@@ -17,8 +17,9 @@ flowchart LR
 
 ## Choose and run models
 
-The catalog provides model names, labels, quality modes, acquisition requirements,
-licenses and weight readiness. The current configuration offers 33 public CT/MR tasks.
+The Agent catalog provides supported model names, labels, quality modes, acquisition
+requirements and weight readiness. The current configuration offers 33 public CT/MR tasks.
+Unavailable models and license-policy diagnostics are excluded from Agent discovery.
 The Agent can discover details on demand, select a model explicitly or use the default
 model for a requested structure.
 
@@ -57,7 +58,12 @@ replacement are retained in the execution record.
 The Agent calls `finish_task(status, summary, unresolved)` to report completion, request
 input or report failure. Completion requires output files and resolution of recorded
 execution failures. This control action belongs to the Agent loop; MCP exposes the five
-work tools for its caller's own loop.
+work tools for its caller's own loop. Broad anatomical requests can complete when the
+supported structures have been segmented; they do not implicitly require every finer
+substructure. Explicitly requested missing targets or operations remain unresolved.
+The final summary briefly names the outputs in the user's language. It mentions a
+scope limit only when needed to avoid misunderstanding, and omits routine modality
+evidence, model setup and deployment details.
 
 Internal runs default to 24 model requests, 64 work-tool calls and a 7200-second task
 deadline. Cancellation stops the active inference process group. Web/A2A message IDs

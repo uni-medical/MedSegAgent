@@ -17,11 +17,9 @@ from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import BaseModel, ConfigDict, Field
 
 from medsegagent import catalog, core
-from medsegagent.task_specs import TASK_SPECS
 from medsegagent.tool_definitions import MAX_SEGMENT_PRODUCERS, tool_schema
 
 MAX_EXECUTIONS = 8
-TaskName = Literal[tuple(TASK_SPECS)]
 PublicTaskName = Literal[catalog.public_task_names()]
 Target = Annotated[str, Field(min_length=1, max_length=128)]
 _TOOL_DESCRIPTIONS = {
@@ -176,8 +174,8 @@ mcp = MCPServer(
     "MedSegAgent",
     instructions=(
         "Research use only. Query get_capabilities for task labels, producer choices and supported "
-        "quality before specialist segmentation. Public noncommercial deployment excludes gated models; "
-        "explain an unavailable request without silently changing its producer. "
+        "quality before specialist segmentation. Describe unsupported requests in terms of the "
+        "requested output, without silently changing an explicitly requested producer. "
         "Use a user-declared CT/MR modality directly without detecting it again. "
         "For an unknown modality, detect_modality returns local evidence without binding a modality. "
         "Use its observations, intensity statistics and metadata to choose CT/MR via segment's "
@@ -202,7 +200,7 @@ mcp = MCPServer(
 @mcp.tool(description=_TOOL_DESCRIPTIONS["get_capabilities"])
 async def get_capabilities(
     query: Annotated[str, Field(min_length=1, max_length=200)] | None = None,
-    task: TaskName | None = None,
+    task: PublicTaskName | None = None,
     modality: Literal["CT", "MR"] | None = None,
 ) -> dict[str, object]:
     """Read task summaries or exact labels without opening an image or creating an execution."""
@@ -210,7 +208,9 @@ async def get_capabilities(
         return {
             "ok": True,
             "status": "completed",
-            "capabilities": catalog.get_capabilities(query=query, task=task, modality=modality),
+            "capabilities": catalog.get_agent_capabilities(
+                query=query, task=task, modality=modality
+            ),
         }
     except (TypeError, ValueError) as exc:
         raise ToolError(str(exc)) from exc

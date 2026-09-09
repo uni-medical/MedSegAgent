@@ -220,12 +220,12 @@ def test_compositions_retain_source_license_and_sequence_requirements(tmp_path, 
                     "total_mr",
                     "brain_aneurysm",
                 }
-    # Native Agent and MCP feedback associate policy once with each artifact, while
-    # every region retains its artifact ID. Paths remain private to the local export.
+    # Licensing stays in the published artifact provenance; the Agent needs only
+    # acquisition requirements and opaque artifact references to use the results.
     observed = agent.safe_feedback(execution.snapshot())
     assert observed["artifacts"]
     aneurysm = next(row for row in observed["artifacts"] if row["task"] == "brain_aneurysm")
-    assert aneurysm["usage_license"] == "CC-BY-NC-4.0"
+    assert "usage_license" not in aneurysm
     assert "TOF MRI only." in aneurysm["requirements"]
     assert str(tmp_path) not in json.dumps(observed)
     result = publish(publisher, execution, task_id)

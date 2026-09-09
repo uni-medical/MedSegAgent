@@ -291,7 +291,7 @@ class TaskExecution:
                     if set(arguments) - {"modality", "task", "query"}:
                         raise _Fault("INVALID_ARGUMENTS")
                     try:
-                        response = {"capabilities": catalog.get_capabilities(**arguments)}
+                        response = {"capabilities": catalog.get_agent_capabilities(**arguments)}
                     except (catalog.CatalogError, TypeError, ValueError):
                         raise _Fault("INVALID_ARGUMENTS") from None
                 elif name == "detect_modality":

@@ -1,0 +1,1410 @@
+{
+  "abdominal_cavity": {
+    "en": "Abdominal cavity",
+    "zh": "腹腔"
+  },
+  "adrenal_gland_left": {
+    "en": "Left adrenal gland",
+    "zh": "左肾上腺"
+  },
+  "adrenal_gland_right": {
+    "en": "Right adrenal gland",
+    "zh": "右肾上腺"
+  },
+  "anterior_scalene_left": {
+    "en": "Left anterior scalene",
+    "zh": "左前斜角肌"
+  },
+  "anterior_scalene_right": {
+    "en": "Right anterior scalene",
+    "zh": "右前斜角肌"
+  },
+  "aorta": {
+    "en": "Aorta",
+    "zh": "主动脉"
+  },
+  "atrial_appendage_left": {
+    "en": "Left atrial appendage",
+    "zh": "左心耳"
+  },
+  "auditory_canal_left": {
+    "en": "Left auditory canal",
+    "zh": "左耳道"
+  },
+  "auditory_canal_right": {
+    "en": "Right auditory canal",
+    "zh": "右耳道"
+  },
+  "autochthon_left": {
+    "en": "Left intrinsic back muscles",
+    "zh": "左背固有肌"
+  },
+  "autochthon_right": {
+    "en": "Right intrinsic back muscles",
+    "zh": "右背固有肌"
+  },
+  "body_extremities": {
+    "en": "Extremities",
+    "zh": "四肢"
+  },
+  "body_trunc": {
+    "en": "Trunk",
+    "zh": "躯干"
+  },
+  "brachiocephalic_trunk": {
+    "en": "Brachiocephalic trunk",
+    "zh": "头臂干"
+  },
+  "brachiocephalic_vein_left": {
+    "en": "Left brachiocephalic vein",
+    "zh": "左头臂静脉"
+  },
+  "brachiocephalic_vein_right": {
+    "en": "Right brachiocephalic vein",
+    "zh": "右头臂静脉"
+  },
+  "brain": {
+    "en": "Brain",
+    "zh": "脑"
+  },
+  "brain_aneurysm": {
+    "en": "Brain aneurysm",
+    "zh": "脑动脉瘤"
+  },
+  "breast": {
+    "en": "Breast",
+    "zh": "乳房"
+  },
+  "bridge": {
+    "en": "Dental bridge",
+    "zh": "牙桥"
+  },
+  "clavicula_left": {
+    "en": "Left clavicle",
+    "zh": "左锁骨"
+  },
+  "clavicula_right": {
+    "en": "Right clavicle",
+    "zh": "右锁骨"
+  },
+  "colon": {
+    "en": "Colon",
+    "zh": "结肠"
+  },
+  "common_carotid_artery_left": {
+    "en": "Left common carotid artery",
+    "zh": "左颈总动脉"
+  },
+  "common_carotid_artery_right": {
+    "en": "Right common carotid artery",
+    "zh": "右颈总动脉"
+  },
+  "costal_cartilages": {
+    "en": "Costal cartilages",
+    "zh": "肋软骨"
+  },
+  "cricoid_cartilage": {
+    "en": "Cricoid cartilage",
+    "zh": "环状软骨"
+  },
+  "crown": {
+    "en": "Dental crown",
+    "zh": "修复牙冠"
+  },
+  "digastric_left": {
+    "en": "Left digastric muscle",
+    "zh": "左二腹肌"
+  },
+  "digastric_right": {
+    "en": "Right digastric muscle",
+    "zh": "右二腹肌"
+  },
+  "duodenum": {
+    "en": "Duodenum",
+    "zh": "十二指肠"
+  },
+  "erector_spinae_left": {
+    "en": "Left erector spinae",
+    "zh": "左竖脊肌"
+  },
+  "erector_spinae_right": {
+    "en": "Right erector spinae",
+    "zh": "右竖脊肌"
+  },
+  "esophagus": {
+    "en": "Esophagus",
+    "zh": "食管"
+  },
+  "external_oblique_left": {
+    "en": "Left external oblique",
+    "zh": "左腹外斜肌"
+  },
+  "external_oblique_right": {
+    "en": "Right external oblique",
+    "zh": "右腹外斜肌"
+  },
+  "eye_left": {
+    "en": "Left eye",
+    "zh": "左眼"
+  },
+  "eye_lens_left": {
+    "en": "Left eye lens",
+    "zh": "左眼晶状体"
+  },
+  "eye_lens_right": {
+    "en": "Right eye lens",
+    "zh": "右眼晶状体"
+  },
+  "eye_right": {
+    "en": "Right eye",
+    "zh": "右眼"
+  },
+  "eyeball_left": {
+    "en": "Left eyeball",
+    "zh": "左眼球"
+  },
+  "eyeball_right": {
+    "en": "Right eyeball",
+    "zh": "右眼球"
+  },
+  "femur_left": {
+    "en": "Left femur",
+    "zh": "左股骨"
+  },
+  "femur_right": {
+    "en": "Right femur",
+    "zh": "右股骨"
+  },
+  "fourth_ventricle": {
+    "en": "Fourth ventricle",
+    "zh": "第四脑室"
+  },
+  "gallbladder": {
+    "en": "Gallbladder",
+    "zh": "胆囊"
+  },
+  "gluteus_maximus_left": {
+    "en": "Left gluteus maximus",
+    "zh": "左臀大肌"
+  },
+  "gluteus_maximus_right": {
+    "en": "Right gluteus maximus",
+    "zh": "右臀大肌"
+  },
+  "gluteus_medius_left": {
+    "en": "Left gluteus medius",
+    "zh": "左臀中肌"
+  },
+  "gluteus_medius_right": {
+    "en": "Right gluteus medius",
+    "zh": "右臀中肌"
+  },
+  "gluteus_minimus_left": {
+    "en": "Left gluteus minimus",
+    "zh": "左臀小肌"
+  },
+  "gluteus_minimus_right": {
+    "en": "Right gluteus minimus",
+    "zh": "右臀小肌"
+  },
+  "hard_palate": {
+    "en": "Hard palate",
+    "zh": "硬腭"
+  },
+  "head": {
+    "en": "Head",
+    "zh": "头部"
+  },
+  "heart": {
+    "en": "Whole heart",
+    "zh": "心脏整体"
+  },
+  "hip_implant": {
+    "en": "Hip implant",
+    "zh": "髋关节植入物"
+  },
+  "hip_left": {
+    "en": "Left hip bone",
+    "zh": "左髋骨"
+  },
+  "hip_right": {
+    "en": "Right hip bone",
+    "zh": "右髋骨"
+  },
+  "humerus_left": {
+    "en": "Left humerus",
+    "zh": "左肱骨"
+  },
+  "humerus_right": {
+    "en": "Right humerus",
+    "zh": "右肱骨"
+  },
+  "hyoid": {
+    "en": "Hyoid bone",
+    "zh": "舌骨"
+  },
+  "hypopharynx": {
+    "en": "Hypopharynx",
+    "zh": "下咽"
+  },
+  "iliac_artery_left": {
+    "en": "Left iliac artery",
+    "zh": "左髂动脉"
+  },
+  "iliac_artery_right": {
+    "en": "Right iliac artery",
+    "zh": "右髂动脉"
+  },
+  "iliac_vena_left": {
+    "en": "Left iliac vein",
+    "zh": "左髂静脉"
+  },
+  "iliac_vena_right": {
+    "en": "Right iliac vein",
+    "zh": "右髂静脉"
+  },
+  "iliopsoas_left": {
+    "en": "Left iliopsoas",
+    "zh": "左髂腰肌"
+  },
+  "iliopsoas_right": {
+    "en": "Right iliopsoas",
+    "zh": "右髂腰肌"
+  },
+  "implant": {
+    "en": "Dental implant",
+    "zh": "牙种植体"
+  },
+  "inferior_oblique_muscle_left": {
+    "en": "Left inferior oblique eye muscle",
+    "zh": "左眼下斜肌"
+  },
+  "inferior_oblique_muscle_right": {
+    "en": "Right inferior oblique eye muscle",
+    "zh": "右眼下斜肌"
+  },
+  "inferior_pharyngeal_constrictor": {
+    "en": "Inferior pharyngeal constrictor",
+    "zh": "咽下缩肌"
+  },
+  "inferior_rectus_muscle_left": {
+    "en": "Left inferior rectus eye muscle",
+    "zh": "左眼下直肌"
+  },
+  "inferior_rectus_muscle_right": {
+    "en": "Right inferior rectus eye muscle",
+    "zh": "右眼下直肌"
+  },
+  "inferior_vena_cava": {
+    "en": "Inferior vena cava",
+    "zh": "下腔静脉"
+  },
+  "internal_carotid_artery_left": {
+    "en": "Left internal carotid artery",
+    "zh": "左颈内动脉"
+  },
+  "internal_carotid_artery_right": {
+    "en": "Right internal carotid artery",
+    "zh": "右颈内动脉"
+  },
+  "internal_jugular_vein_left": {
+    "en": "Left internal jugular vein",
+    "zh": "左颈内静脉"
+  },
+  "internal_jugular_vein_right": {
+    "en": "Right internal jugular vein",
+    "zh": "右颈内静脉"
+  },
+  "internal_oblique_left": {
+    "en": "Left internal oblique",
+    "zh": "左腹内斜肌"
+  },
+  "internal_oblique_right": {
+    "en": "Right internal oblique",
+    "zh": "右腹内斜肌"
+  },
+  "intervertebral_discs": {
+    "en": "Intervertebral discs",
+    "zh": "椎间盘"
+  },
+  "intracerebral_hemorrhage": {
+    "en": "Intracerebral hemorrhage",
+    "zh": "脑内出血"
+  },
+  "kidney_cyst_left": {
+    "en": "Left kidney cyst",
+    "zh": "左肾囊肿"
+  },
+  "kidney_cyst_right": {
+    "en": "Right kidney cyst",
+    "zh": "右肾囊肿"
+  },
+  "kidney_left": {
+    "en": "Left kidney",
+    "zh": "左肾"
+  },
+  "kidney_right": {
+    "en": "Right kidney",
+    "zh": "右肾"
+  },
+  "larynx_air": {
+    "en": "Laryngeal air space",
+    "zh": "喉腔"
+  },
+  "lateral_pterygoid_left": {
+    "en": "Left lateral pterygoid",
+    "zh": "左翼外肌"
+  },
+  "lateral_pterygoid_right": {
+    "en": "Right lateral pterygoid",
+    "zh": "右翼外肌"
+  },
+  "lateral_rectus_muscle_left": {
+    "en": "Left lateral rectus eye muscle",
+    "zh": "左眼外直肌"
+  },
+  "lateral_rectus_muscle_right": {
+    "en": "Right lateral rectus eye muscle",
+    "zh": "右眼外直肌"
+  },
+  "latissimus_dorsi_left": {
+    "en": "Left latissimus dorsi",
+    "zh": "左背阔肌"
+  },
+  "latissimus_dorsi_right": {
+    "en": "Right latissimus dorsi",
+    "zh": "右背阔肌"
+  },
+  "left_inferior_alveolar_canal": {
+    "en": "Left inferior alveolar canal",
+    "zh": "左下牙槽管"
+  },
+  "left_mandibular_incisive_canal_fdi103": {
+    "en": "Left mandibular incisive canal",
+    "zh": "左下颌切牙管"
+  },
+  "left_maxillary_sinus": {
+    "en": "Left maxillary sinus",
+    "zh": "左上颌窦"
+  },
+  "levator_palpebrae_superioris_left": {
+    "en": "Left levator palpebrae superioris",
+    "zh": "左上睑提肌"
+  },
+  "levator_palpebrae_superioris_right": {
+    "en": "Right levator palpebrae superioris",
+    "zh": "右上睑提肌"
+  },
+  "levator_scapulae_left": {
+    "en": "Left levator scapulae",
+    "zh": "左肩胛提肌"
+  },
+  "levator_scapulae_right": {
+    "en": "Right levator scapulae",
+    "zh": "右肩胛提肌"
+  },
+  "lingual_canal": {
+    "en": "Lingual canal",
+    "zh": "舌侧管"
+  },
+  "liver": {
+    "en": "Liver",
+    "zh": "肝脏"
+  },
+  "liver_lesions": {
+    "en": "Liver lesions",
+    "zh": "肝病灶"
+  },
+  "liver_segment_1": {
+    "en": "Liver segment 1",
+    "zh": "肝第 1 段"
+  },
+  "liver_segment_2": {
+    "en": "Liver segment 2",
+    "zh": "肝第 2 段"
+  },
+  "liver_segment_3": {
+    "en": "Liver segment 3",
+    "zh": "肝第 3 段"
+  },
+  "liver_segment_4": {
+    "en": "Liver segment 4",
+    "zh": "肝第 4 段"
+  },
+  "liver_segment_5": {
+    "en": "Liver segment 5",
+    "zh": "肝第 5 段"
+  },
+  "liver_segment_6": {
+    "en": "Liver segment 6",
+    "zh": "肝第 6 段"
+  },
+  "liver_segment_7": {
+    "en": "Liver segment 7",
+    "zh": "肝第 7 段"
+  },
+  "liver_segment_8": {
+    "en": "Liver segment 8",
+    "zh": "肝第 8 段"
+  },
+  "liver_tumor": {
+    "en": "Liver tumor",
+    "zh": "肝肿瘤"
+  },
+  "liver_vessels": {
+    "en": "Liver vessels",
+    "zh": "肝血管"
+  },
+  "lower_jawbone": {
+    "en": "Mandible",
+    "zh": "下颌骨"
+  },
+  "lower_left_canine_fdi33": {
+    "en": "Lower left canine (33)",
+    "zh": "左下尖牙（33）"
+  },
+  "lower_left_canine_pulp_fdi133": {
+    "en": "Lower left canine pulp (33)",
+    "zh": "左下尖牙牙髓（33）"
+  },
+  "lower_left_central_incisor_fdi31": {
+    "en": "Lower left central incisor (31)",
+    "zh": "左下中切牙（31）"
+  },
+  "lower_left_central_incisor_pulp_fdi131": {
+    "en": "Lower left central incisor pulp (31)",
+    "zh": "左下中切牙牙髓（31）"
+  },
+  "lower_left_first_molar_fdi36": {
+    "en": "Lower left first molar (36)",
+    "zh": "左下第一磨牙（36）"
+  },
+  "lower_left_first_molar_pulp_fdi136": {
+    "en": "Lower left first molar pulp (36)",
+    "zh": "左下第一磨牙牙髓（36）"
+  },
+  "lower_left_first_premolar_fdi34": {
+    "en": "Lower left first premolar (34)",
+    "zh": "左下第一前磨牙（34）"
+  },
+  "lower_left_first_premolar_pulp_fdi134": {
+    "en": "Lower left first premolar pulp (34)",
+    "zh": "左下第一前磨牙牙髓（34）"
+  },
+  "lower_left_lateral_incisor_fdi32": {
+    "en": "Lower left lateral incisor (32)",
+    "zh": "左下侧切牙（32）"
+  },
+  "lower_left_lateral_incisor_pulp_fdi132": {
+    "en": "Lower left lateral incisor pulp (32)",
+    "zh": "左下侧切牙牙髓（32）"
+  },
+  "lower_left_second_molar_fdi37": {
+    "en": "Lower left second molar (37)",
+    "zh": "左下第二磨牙（37）"
+  },
+  "lower_left_second_molar_pulp_fdi137": {
+    "en": "Lower left second molar pulp (37)",
+    "zh": "左下第二磨牙牙髓（37）"
+  },
+  "lower_left_second_premolar_fdi35": {
+    "en": "Lower left second premolar (35)",
+    "zh": "左下第二前磨牙（35）"
+  },
+  "lower_left_second_premolar_pulp_fdi135": {
+    "en": "Lower left second premolar pulp (35)",
+    "zh": "左下第二前磨牙牙髓（35）"
+  },
+  "lower_left_third_molar_fdi38": {
+    "en": "Lower left third molar (38)",
+    "zh": "左下第三磨牙（38）"
+  },
+  "lower_left_third_molar_pulp_fdi138": {
+    "en": "Lower left third molar pulp (38)",
+    "zh": "左下第三磨牙牙髓（38）"
+  },
+  "lower_right_canine_fdi43": {
+    "en": "Lower right canine (43)",
+    "zh": "右下尖牙（43）"
+  },
+  "lower_right_canine_pulp_fdi143": {
+    "en": "Lower right canine pulp (43)",
+    "zh": "右下尖牙牙髓（43）"
+  },
+  "lower_right_central_incisor_fdi41": {
+    "en": "Lower right central incisor (41)",
+    "zh": "右下中切牙（41）"
+  },
+  "lower_right_central_incisor_pulp_fdi141": {
+    "en": "Lower right central incisor pulp (41)",
+    "zh": "右下中切牙牙髓（41）"
+  },
+  "lower_right_first_molar_fdi46": {
+    "en": "Lower right first molar (46)",
+    "zh": "右下第一磨牙（46）"
+  },
+  "lower_right_first_molar_pulp_fdi146": {
+    "en": "Lower right first molar pulp (46)",
+    "zh": "右下第一磨牙牙髓（46）"
+  },
+  "lower_right_first_premolar_fdi44": {
+    "en": "Lower right first premolar (44)",
+    "zh": "右下第一前磨牙（44）"
+  },
+  "lower_right_first_premolar_pulp_fdi144": {
+    "en": "Lower right first premolar pulp (44)",
+    "zh": "右下第一前磨牙牙髓（44）"
+  },
+  "lower_right_lateral_incisor_fdi42": {
+    "en": "Lower right lateral incisor (42)",
+    "zh": "右下侧切牙（42）"
+  },
+  "lower_right_lateral_incisor_pulp_fdi142": {
+    "en": "Lower right lateral incisor pulp (42)",
+    "zh": "右下侧切牙牙髓（42）"
+  },
+  "lower_right_second_molar_fdi47": {
+    "en": "Lower right second molar (47)",
+    "zh": "右下第二磨牙（47）"
+  },
+  "lower_right_second_molar_pulp_fdi147": {
+    "en": "Lower right second molar pulp (47)",
+    "zh": "右下第二磨牙牙髓（47）"
+  },
+  "lower_right_second_premolar_fdi45": {
+    "en": "Lower right second premolar (45)",
+    "zh": "右下第二前磨牙（45）"
+  },
+  "lower_right_second_premolar_pulp_fdi145": {
+    "en": "Lower right second premolar pulp (45)",
+    "zh": "右下第二前磨牙牙髓（45）"
+  },
+  "lower_right_third_molar_fdi48": {
+    "en": "Lower right third molar (48)",
+    "zh": "右下第三磨牙（48）"
+  },
+  "lower_right_third_molar_pulp_fdi148": {
+    "en": "Lower right third molar pulp (48)",
+    "zh": "右下第三磨牙牙髓（48）"
+  },
+  "lung": {
+    "en": "Lung",
+    "zh": "肺"
+  },
+  "lung_airways": {
+    "en": "Lung airways",
+    "zh": "肺气道"
+  },
+  "lung_airways_wall": {
+    "en": "Lung airway walls",
+    "zh": "肺气道壁"
+  },
+  "lung_arteries": {
+    "en": "Pulmonary arteries",
+    "zh": "肺动脉"
+  },
+  "lung_left": {
+    "en": "Left lung",
+    "zh": "左肺"
+  },
+  "lung_lower_lobe_left": {
+    "en": "Left lower lung lobe",
+    "zh": "左肺下叶"
+  },
+  "lung_lower_lobe_right": {
+    "en": "Right lower lung lobe",
+    "zh": "右肺下叶"
+  },
+  "lung_middle_lobe_right": {
+    "en": "Right middle lung lobe",
+    "zh": "右肺中叶"
+  },
+  "lung_nodules": {
+    "en": "Lung nodules",
+    "zh": "肺结节"
+  },
+  "lung_pleural": {
+    "en": "Lung and pleural region",
+    "zh": "肺与胸膜区域"
+  },
+  "lung_right": {
+    "en": "Right lung",
+    "zh": "右肺"
+  },
+  "lung_trachea_bronchia": {
+    "en": "Trachea and bronchi",
+    "zh": "气管与支气管"
+  },
+  "lung_upper_lobe_left": {
+    "en": "Left upper lung lobe",
+    "zh": "左肺上叶"
+  },
+  "lung_upper_lobe_right": {
+    "en": "Right upper lung lobe",
+    "zh": "右肺上叶"
+  },
+  "lung_veins": {
+    "en": "Pulmonary veins",
+    "zh": "肺静脉"
+  },
+  "lung_vessels": {
+    "en": "Lung vessels",
+    "zh": "肺血管"
+  },
+  "lungs": {
+    "en": "Lungs",
+    "zh": "双肺"
+  },
+  "mandible": {
+    "en": "Mandible",
+    "zh": "下颌骨"
+  },
+  "masseter_left": {
+    "en": "Left masseter",
+    "zh": "左咬肌"
+  },
+  "masseter_right": {
+    "en": "Right masseter",
+    "zh": "右咬肌"
+  },
+  "medial_pterygoid_left": {
+    "en": "Left medial pterygoid",
+    "zh": "左翼内肌"
+  },
+  "medial_pterygoid_right": {
+    "en": "Right medial pterygoid",
+    "zh": "右翼内肌"
+  },
+  "medial_rectus_muscle_left": {
+    "en": "Left medial rectus eye muscle",
+    "zh": "左眼内直肌"
+  },
+  "medial_rectus_muscle_right": {
+    "en": "Right medial rectus eye muscle",
+    "zh": "右眼内直肌"
+  },
+  "mediastinum": {
+    "en": "Mediastinum",
+    "zh": "纵隔"
+  },
+  "middle_pharyngeal_constrictor": {
+    "en": "Middle pharyngeal constrictor",
+    "zh": "咽中缩肌"
+  },
+  "middle_scalene_left": {
+    "en": "Left middle scalene",
+    "zh": "左中斜角肌"
+  },
+  "middle_scalene_right": {
+    "en": "Right middle scalene",
+    "zh": "右中斜角肌"
+  },
+  "nasal_cavity_left": {
+    "en": "Left nasal cavity",
+    "zh": "左鼻腔"
+  },
+  "nasal_cavity_right": {
+    "en": "Right nasal cavity",
+    "zh": "右鼻腔"
+  },
+  "nasopharynx": {
+    "en": "Nasopharynx",
+    "zh": "鼻咽"
+  },
+  "optic_nerve_left": {
+    "en": "Left optic nerve",
+    "zh": "左视神经"
+  },
+  "optic_nerve_right": {
+    "en": "Right optic nerve",
+    "zh": "右视神经"
+  },
+  "oropharynx": {
+    "en": "Oropharynx",
+    "zh": "口咽"
+  },
+  "pancreas": {
+    "en": "Pancreas",
+    "zh": "胰腺"
+  },
+  "parotid_gland_left": {
+    "en": "Left parotid gland",
+    "zh": "左腮腺"
+  },
+  "parotid_gland_right": {
+    "en": "Right parotid gland",
+    "zh": "右腮腺"
+  },
+  "pectoralis_major_left": {
+    "en": "Left pectoralis major",
+    "zh": "左胸大肌"
+  },
+  "pectoralis_major_right": {
+    "en": "Right pectoralis major",
+    "zh": "右胸大肌"
+  },
+  "pericardial_effusion": {
+    "en": "Pericardial effusion",
+    "zh": "心包积液"
+  },
+  "pericardium": {
+    "en": "Pericardium",
+    "zh": "心包"
+  },
+  "pharynx": {
+    "en": "Pharynx",
+    "zh": "咽"
+  },
+  "platysma_left": {
+    "en": "Left platysma",
+    "zh": "左颈阔肌"
+  },
+  "platysma_right": {
+    "en": "Right platysma",
+    "zh": "右颈阔肌"
+  },
+  "pleural_effusion": {
+    "en": "Pleural effusion",
+    "zh": "胸腔积液"
+  },
+  "portal_vein_and_splenic_vein": {
+    "en": "Portal and splenic veins",
+    "zh": "门静脉与脾静脉"
+  },
+  "posterior_scalene_left": {
+    "en": "Left posterior scalene",
+    "zh": "左后斜角肌"
+  },
+  "posterior_scalene_right": {
+    "en": "Right posterior scalene",
+    "zh": "右后斜角肌"
+  },
+  "prevertebral_left": {
+    "en": "Left prevertebral muscles",
+    "zh": "左椎前肌"
+  },
+  "prevertebral_right": {
+    "en": "Right prevertebral muscles",
+    "zh": "右椎前肌"
+  },
+  "prostate": {
+    "en": "Prostate",
+    "zh": "前列腺"
+  },
+  "psoas_major_left": {
+    "en": "Left psoas major",
+    "zh": "左腰大肌"
+  },
+  "psoas_major_right": {
+    "en": "Right psoas major",
+    "zh": "右腰大肌"
+  },
+  "pulmonary_vein": {
+    "en": "Pulmonary vein",
+    "zh": "肺静脉"
+  },
+  "quadratus_lumborum_left": {
+    "en": "Left quadratus lumborum",
+    "zh": "左腰方肌"
+  },
+  "quadratus_lumborum_right": {
+    "en": "Right quadratus lumborum",
+    "zh": "右腰方肌"
+  },
+  "rectus_abdominis_left": {
+    "en": "Left rectus abdominis",
+    "zh": "左腹直肌"
+  },
+  "rectus_abdominis_right": {
+    "en": "Right rectus abdominis",
+    "zh": "右腹直肌"
+  },
+  "rib_left_1": {
+    "en": "Left rib 1",
+    "zh": "左第 1 肋"
+  },
+  "rib_left_10": {
+    "en": "Left rib 10",
+    "zh": "左第 10 肋"
+  },
+  "rib_left_11": {
+    "en": "Left rib 11",
+    "zh": "左第 11 肋"
+  },
+  "rib_left_12": {
+    "en": "Left rib 12",
+    "zh": "左第 12 肋"
+  },
+  "rib_left_2": {
+    "en": "Left rib 2",
+    "zh": "左第 2 肋"
+  },
+  "rib_left_3": {
+    "en": "Left rib 3",
+    "zh": "左第 3 肋"
+  },
+  "rib_left_4": {
+    "en": "Left rib 4",
+    "zh": "左第 4 肋"
+  },
+  "rib_left_5": {
+    "en": "Left rib 5",
+    "zh": "左第 5 肋"
+  },
+  "rib_left_6": {
+    "en": "Left rib 6",
+    "zh": "左第 6 肋"
+  },
+  "rib_left_7": {
+    "en": "Left rib 7",
+    "zh": "左第 7 肋"
+  },
+  "rib_left_8": {
+    "en": "Left rib 8",
+    "zh": "左第 8 肋"
+  },
+  "rib_left_9": {
+    "en": "Left rib 9",
+    "zh": "左第 9 肋"
+  },
+  "rib_right_1": {
+    "en": "Right rib 1",
+    "zh": "右第 1 肋"
+  },
+  "rib_right_10": {
+    "en": "Right rib 10",
+    "zh": "右第 10 肋"
+  },
+  "rib_right_11": {
+    "en": "Right rib 11",
+    "zh": "右第 11 肋"
+  },
+  "rib_right_12": {
+    "en": "Right rib 12",
+    "zh": "右第 12 肋"
+  },
+  "rib_right_2": {
+    "en": "Right rib 2",
+    "zh": "右第 2 肋"
+  },
+  "rib_right_3": {
+    "en": "Right rib 3",
+    "zh": "右第 3 肋"
+  },
+  "rib_right_4": {
+    "en": "Right rib 4",
+    "zh": "右第 4 肋"
+  },
+  "rib_right_5": {
+    "en": "Right rib 5",
+    "zh": "右第 5 肋"
+  },
+  "rib_right_6": {
+    "en": "Right rib 6",
+    "zh": "右第 6 肋"
+  },
+  "rib_right_7": {
+    "en": "Right rib 7",
+    "zh": "右第 7 肋"
+  },
+  "rib_right_8": {
+    "en": "Right rib 8",
+    "zh": "右第 8 肋"
+  },
+  "rib_right_9": {
+    "en": "Right rib 9",
+    "zh": "右第 9 肋"
+  },
+  "right_inferior_alveolar_canal": {
+    "en": "Right inferior alveolar canal",
+    "zh": "右下牙槽管"
+  },
+  "right_mandibular_incisive_canal_fdi104": {
+    "en": "Right mandibular incisive canal",
+    "zh": "右下颌切牙管"
+  },
+  "right_maxillary_sinus": {
+    "en": "Right maxillary sinus",
+    "zh": "右上颌窦"
+  },
+  "sacrum": {
+    "en": "Sacrum",
+    "zh": "骶骨"
+  },
+  "scapula_left": {
+    "en": "Left scapula",
+    "zh": "左肩胛骨"
+  },
+  "scapula_right": {
+    "en": "Right scapula",
+    "zh": "右肩胛骨"
+  },
+  "serratus_anterior_left": {
+    "en": "Left serratus anterior",
+    "zh": "左前锯肌"
+  },
+  "serratus_anterior_right": {
+    "en": "Right serratus anterior",
+    "zh": "右前锯肌"
+  },
+  "sinus_frontal": {
+    "en": "Frontal sinus",
+    "zh": "额窦"
+  },
+  "sinus_maxillary": {
+    "en": "Maxillary sinus",
+    "zh": "上颌窦"
+  },
+  "skull": {
+    "en": "Skull",
+    "zh": "颅骨"
+  },
+  "small_bowel": {
+    "en": "Small bowel",
+    "zh": "小肠"
+  },
+  "soft_palate": {
+    "en": "Soft palate",
+    "zh": "软腭"
+  },
+  "spinal_cord": {
+    "en": "Spinal cord",
+    "zh": "脊髓"
+  },
+  "spleen": {
+    "en": "Spleen",
+    "zh": "脾脏"
+  },
+  "sterno_thyroid_left": {
+    "en": "Left sternothyroid",
+    "zh": "左胸骨甲状肌"
+  },
+  "sterno_thyroid_right": {
+    "en": "Right sternothyroid",
+    "zh": "右胸骨甲状肌"
+  },
+  "sternocleidomastoid_left": {
+    "en": "Left sternocleidomastoid",
+    "zh": "左胸锁乳突肌"
+  },
+  "sternocleidomastoid_right": {
+    "en": "Right sternocleidomastoid",
+    "zh": "右胸锁乳突肌"
+  },
+  "sternum": {
+    "en": "Sternum",
+    "zh": "胸骨"
+  },
+  "stomach": {
+    "en": "Stomach",
+    "zh": "胃"
+  },
+  "styloid_process_left": {
+    "en": "Left styloid process",
+    "zh": "左茎突"
+  },
+  "styloid_process_right": {
+    "en": "Right styloid process",
+    "zh": "右茎突"
+  },
+  "subclavian_artery_left": {
+    "en": "Left subclavian artery",
+    "zh": "左锁骨下动脉"
+  },
+  "subclavian_artery_right": {
+    "en": "Right subclavian artery",
+    "zh": "右锁骨下动脉"
+  },
+  "submandibular_gland_left": {
+    "en": "Left submandibular gland",
+    "zh": "左下颌下腺"
+  },
+  "submandibular_gland_right": {
+    "en": "Right submandibular gland",
+    "zh": "右下颌下腺"
+  },
+  "superior_oblique_muscle_left": {
+    "en": "Left superior oblique eye muscle",
+    "zh": "左眼上斜肌"
+  },
+  "superior_oblique_muscle_right": {
+    "en": "Right superior oblique eye muscle",
+    "zh": "右眼上斜肌"
+  },
+  "superior_pharyngeal_constrictor": {
+    "en": "Superior pharyngeal constrictor",
+    "zh": "咽上缩肌"
+  },
+  "superior_rectus_muscle_left": {
+    "en": "Left superior rectus eye muscle",
+    "zh": "左眼上直肌"
+  },
+  "superior_rectus_muscle_right": {
+    "en": "Right superior rectus eye muscle",
+    "zh": "右眼上直肌"
+  },
+  "superior_vena_cava": {
+    "en": "Superior vena cava",
+    "zh": "上腔静脉"
+  },
+  "teeth_lower": {
+    "en": "Lower teeth",
+    "zh": "下颌牙列"
+  },
+  "teeth_upper": {
+    "en": "Upper teeth",
+    "zh": "上颌牙列"
+  },
+  "temporalis_left": {
+    "en": "Left temporalis",
+    "zh": "左颞肌"
+  },
+  "temporalis_right": {
+    "en": "Right temporalis",
+    "zh": "右颞肌"
+  },
+  "third_ventricle": {
+    "en": "Third ventricle",
+    "zh": "第三脑室"
+  },
+  "thoracic_cavity": {
+    "en": "Thoracic cavity",
+    "zh": "胸腔"
+  },
+  "thyrohyoid_left": {
+    "en": "Left thyrohyoid",
+    "zh": "左甲状舌骨肌"
+  },
+  "thyrohyoid_right": {
+    "en": "Right thyrohyoid",
+    "zh": "右甲状舌骨肌"
+  },
+  "thyroid_cartilage": {
+    "en": "Thyroid cartilage",
+    "zh": "甲状软骨"
+  },
+  "thyroid_gland": {
+    "en": "Thyroid gland",
+    "zh": "甲状腺"
+  },
+  "tongue": {
+    "en": "Tongue",
+    "zh": "舌"
+  },
+  "trachea": {
+    "en": "Trachea",
+    "zh": "气管"
+  },
+  "transversospinalis_left": {
+    "en": "Left transversospinalis",
+    "zh": "左横突棘肌"
+  },
+  "transversospinalis_right": {
+    "en": "Right transversospinalis",
+    "zh": "右横突棘肌"
+  },
+  "trapezius_left": {
+    "en": "Left trapezius",
+    "zh": "左斜方肌"
+  },
+  "trapezius_right": {
+    "en": "Right trapezius",
+    "zh": "右斜方肌"
+  },
+  "upper_jawbone": {
+    "en": "Maxilla",
+    "zh": "上颌骨"
+  },
+  "upper_left_canine_fdi23": {
+    "en": "Upper left canine (23)",
+    "zh": "左上尖牙（23）"
+  },
+  "upper_left_canine_pulp_fdi123": {
+    "en": "Upper left canine pulp (23)",
+    "zh": "左上尖牙牙髓（23）"
+  },
+  "upper_left_central_incisor_fdi21": {
+    "en": "Upper left central incisor (21)",
+    "zh": "左上中切牙（21）"
+  },
+  "upper_left_central_incisor_pulp_fdi121": {
+    "en": "Upper left central incisor pulp (21)",
+    "zh": "左上中切牙牙髓（21）"
+  },
+  "upper_left_first_molar_fdi26": {
+    "en": "Upper left first molar (26)",
+    "zh": "左上第一磨牙（26）"
+  },
+  "upper_left_first_molar_pulp_fdi126": {
+    "en": "Upper left first molar pulp (26)",
+    "zh": "左上第一磨牙牙髓（26）"
+  },
+  "upper_left_first_premolar_fdi24": {
+    "en": "Upper left first premolar (24)",
+    "zh": "左上第一前磨牙（24）"
+  },
+  "upper_left_first_premolar_pulp_fdi124": {
+    "en": "Upper left first premolar pulp (24)",
+    "zh": "左上第一前磨牙牙髓（24）"
+  },
+  "upper_left_lateral_incisor_fdi22": {
+    "en": "Upper left lateral incisor (22)",
+    "zh": "左上侧切牙（22）"
+  },
+  "upper_left_lateral_incisor_pulp_fdi122": {
+    "en": "Upper left lateral incisor pulp (22)",
+    "zh": "左上侧切牙牙髓（22）"
+  },
+  "upper_left_second_molar_fdi27": {
+    "en": "Upper left second molar (27)",
+    "zh": "左上第二磨牙（27）"
+  },
+  "upper_left_second_molar_pulp_fdi127": {
+    "en": "Upper left second molar pulp (27)",
+    "zh": "左上第二磨牙牙髓（27）"
+  },
+  "upper_left_second_premolar_fdi25": {
+    "en": "Upper left second premolar (25)",
+    "zh": "左上第二前磨牙（25）"
+  },
+  "upper_left_second_premolar_pulp_fdi125": {
+    "en": "Upper left second premolar pulp (25)",
+    "zh": "左上第二前磨牙牙髓（25）"
+  },
+  "upper_left_third_molar_fdi28": {
+    "en": "Upper left third molar (28)",
+    "zh": "左上第三磨牙（28）"
+  },
+  "upper_left_third_molar_pulp_fdi128": {
+    "en": "Upper left third molar pulp (28)",
+    "zh": "左上第三磨牙牙髓（28）"
+  },
+  "upper_right_canine_fdi13": {
+    "en": "Upper right canine (13)",
+    "zh": "右上尖牙（13）"
+  },
+  "upper_right_canine_pulp_fdi113": {
+    "en": "Upper right canine pulp (13)",
+    "zh": "右上尖牙牙髓（13）"
+  },
+  "upper_right_central_incisor_fdi11": {
+    "en": "Upper right central incisor (11)",
+    "zh": "右上中切牙（11）"
+  },
+  "upper_right_central_incisor_pulp_fdi111": {
+    "en": "Upper right central incisor pulp (11)",
+    "zh": "右上中切牙牙髓（11）"
+  },
+  "upper_right_first_molar_fdi16": {
+    "en": "Upper right first molar (16)",
+    "zh": "右上第一磨牙（16）"
+  },
+  "upper_right_first_molar_pulp_fdi116": {
+    "en": "Upper right first molar pulp (16)",
+    "zh": "右上第一磨牙牙髓（16）"
+  },
+  "upper_right_first_premolar_fdi14": {
+    "en": "Upper right first premolar (14)",
+    "zh": "右上第一前磨牙（14）"
+  },
+  "upper_right_first_premolar_pulp_fdi114": {
+    "en": "Upper right first premolar pulp (14)",
+    "zh": "右上第一前磨牙牙髓（14）"
+  },
+  "upper_right_lateral_incisor_fdi12": {
+    "en": "Upper right lateral incisor (12)",
+    "zh": "右上侧切牙（12）"
+  },
+  "upper_right_lateral_incisor_pulp_fdi112": {
+    "en": "Upper right lateral incisor pulp (12)",
+    "zh": "右上侧切牙牙髓（12）"
+  },
+  "upper_right_second_molar_fdi17": {
+    "en": "Upper right second molar (17)",
+    "zh": "右上第二磨牙（17）"
+  },
+  "upper_right_second_molar_pulp_fdi117": {
+    "en": "Upper right second molar pulp (17)",
+    "zh": "右上第二磨牙牙髓（17）"
+  },
+  "upper_right_second_premolar_fdi15": {
+    "en": "Upper right second premolar (15)",
+    "zh": "右上第二前磨牙（15）"
+  },
+  "upper_right_second_premolar_pulp_fdi115": {
+    "en": "Upper right second premolar pulp (15)",
+    "zh": "右上第二前磨牙牙髓（15）"
+  },
+  "upper_right_third_molar_fdi18": {
+    "en": "Upper right third molar (18)",
+    "zh": "右上第三磨牙（18）"
+  },
+  "upper_right_third_molar_pulp_fdi118": {
+    "en": "Upper right third molar pulp (18)",
+    "zh": "右上第三磨牙牙髓（18）"
+  },
+  "urinary_bladder": {
+    "en": "Urinary bladder",
+    "zh": "膀胱"
+  },
+  "ventricle_body_left": {
+    "en": "Left lateral ventricle body",
+    "zh": "左侧脑室体部"
+  },
+  "ventricle_body_right": {
+    "en": "Right lateral ventricle body",
+    "zh": "右侧脑室体部"
+  },
+  "ventricle_frontal_horn_left": {
+    "en": "Left lateral ventricle frontal horn",
+    "zh": "左侧脑室前角"
+  },
+  "ventricle_frontal_horn_right": {
+    "en": "Right lateral ventricle frontal horn",
+    "zh": "右侧脑室前角"
+  },
+  "ventricle_occipital_horn_left": {
+    "en": "Left lateral ventricle occipital horn",
+    "zh": "左侧脑室后角"
+  },
+  "ventricle_occipital_horn_right": {
+    "en": "Right lateral ventricle occipital horn",
+    "zh": "右侧脑室后角"
+  },
+  "ventricle_temporal_horn_left": {
+    "en": "Left lateral ventricle temporal horn",
+    "zh": "左侧脑室下角"
+  },
+  "ventricle_temporal_horn_right": {
+    "en": "Right lateral ventricle temporal horn",
+    "zh": "右侧脑室下角"
+  },
+  "ventricle_trigone_left": {
+    "en": "Left lateral ventricle trigone",
+    "zh": "左侧脑室三角区"
+  },
+  "ventricle_trigone_right": {
+    "en": "Right lateral ventricle trigone",
+    "zh": "右侧脑室三角区"
+  },
+  "vertebrae": {
+    "en": "Vertebrae",
+    "zh": "椎骨"
+  },
+  "vertebrae_C1": {
+    "en": "Cervical vertebra C1",
+    "zh": "第 1 颈椎"
+  },
+  "vertebrae_C2": {
+    "en": "Cervical vertebra C2",
+    "zh": "第 2 颈椎"
+  },
+  "vertebrae_C3": {
+    "en": "Cervical vertebra C3",
+    "zh": "第 3 颈椎"
+  },
+  "vertebrae_C4": {
+    "en": "Cervical vertebra C4",
+    "zh": "第 4 颈椎"
+  },
+  "vertebrae_C5": {
+    "en": "Cervical vertebra C5",
+    "zh": "第 5 颈椎"
+  },
+  "vertebrae_C6": {
+    "en": "Cervical vertebra C6",
+    "zh": "第 6 颈椎"
+  },
+  "vertebrae_C7": {
+    "en": "Cervical vertebra C7",
+    "zh": "第 7 颈椎"
+  },
+  "vertebrae_L1": {
+    "en": "Lumbar vertebra L1",
+    "zh": "第 1 腰椎"
+  },
+  "vertebrae_L2": {
+    "en": "Lumbar vertebra L2",
+    "zh": "第 2 腰椎"
+  },
+  "vertebrae_L3": {
+    "en": "Lumbar vertebra L3",
+    "zh": "第 3 腰椎"
+  },
+  "vertebrae_L4": {
+    "en": "Lumbar vertebra L4",
+    "zh": "第 4 腰椎"
+  },
+  "vertebrae_L5": {
+    "en": "Lumbar vertebra L5",
+    "zh": "第 5 腰椎"
+  },
+  "vertebrae_L6": {
+    "en": "Lumbar vertebra L6",
+    "zh": "第 6 腰椎"
+  },
+  "vertebrae_S1": {
+    "en": "Sacral vertebra S1",
+    "zh": "第 1 骶椎"
+  },
+  "vertebrae_T1": {
+    "en": "Thoracic vertebra T1",
+    "zh": "第 1 胸椎"
+  },
+  "vertebrae_T10": {
+    "en": "Thoracic vertebra T10",
+    "zh": "第 10 胸椎"
+  },
+  "vertebrae_T11": {
+    "en": "Thoracic vertebra T11",
+    "zh": "第 11 胸椎"
+  },
+  "vertebrae_T12": {
+    "en": "Thoracic vertebra T12",
+    "zh": "第 12 胸椎"
+  },
+  "vertebrae_T2": {
+    "en": "Thoracic vertebra T2",
+    "zh": "第 2 胸椎"
+  },
+  "vertebrae_T3": {
+    "en": "Thoracic vertebra T3",
+    "zh": "第 3 胸椎"
+  },
+  "vertebrae_T4": {
+    "en": "Thoracic vertebra T4",
+    "zh": "第 4 胸椎"
+  },
+  "vertebrae_T5": {
+    "en": "Thoracic vertebra T5",
+    "zh": "第 5 胸椎"
+  },
+  "vertebrae_T6": {
+    "en": "Thoracic vertebra T6",
+    "zh": "第 6 胸椎"
+  },
+  "vertebrae_T7": {
+    "en": "Thoracic vertebra T7",
+    "zh": "第 7 胸椎"
+  },
+  "vertebrae_T8": {
+    "en": "Thoracic vertebra T8",
+    "zh": "第 8 胸椎"
+  },
+  "vertebrae_T9": {
+    "en": "Thoracic vertebra T9",
+    "zh": "第 9 胸椎"
+  },
+  "vertebrae_body": {
+    "en": "Vertebral bodies",
+    "zh": "椎体"
+  },
+  "zygomatic_arch_left": {
+    "en": "Left zygomatic arch",
+    "zh": "左颧弓"
+  },
+  "zygomatic_arch_right": {
+    "en": "Right zygomatic arch",
+    "zh": "右颧弓"
+  }
+}

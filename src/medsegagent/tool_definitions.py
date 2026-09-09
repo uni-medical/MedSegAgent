@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from medsegagent import catalog
-from medsegagent.task_specs import TASK_SPECS
 
 MAX_SEGMENT_PRODUCERS = 8
 
@@ -14,7 +13,6 @@ WORK_TOOLS = frozenset(
 
 def tool_schema(modality: str | None = None) -> list[dict]:
     modalities = [modality] if modality is not None else ["CT", "MR"]
-    tasks = [task for task, spec in TASK_SPECS.items() if spec.modality in modalities]
     public_tasks = list(catalog.public_task_names(modality))
     region_ids = {
         "type": "array",
@@ -42,18 +40,21 @@ def tool_schema(modality: str | None = None) -> list[dict]:
     return [
         function(
             "get_capabilities",
-            "Read the installed segmentation catalog without inference. With no query, list "
+            "Read supported service segmentation capabilities without inference. With no query, list "
             "task summaries. Search an anatomical target or task name with query; inspect an "
-            "exact task for native labels, supported speeds, prerequisites, availability and "
-            "local weight readiness. "
-            "Choose a producer before requesting specialist or overlapping labels. Registered "
-            "tasks outside this public, noncommercial deployment are unavailable; explain the limitation "
-            "without requesting a private license or silently replacing the producer. "
+            "exact task without query to read its full label list for broad anatomy requests. "
+            "Search matches literal English label/task terms, not semantic synonyms: use one "
+            "term at a time; multiple terms require joint coverage. If a search is empty, read "
+            "the relevant task's full labels instead of repeatedly guessing synonyms. Inspect an "
+            "exact task for native labels, supported speeds, input prerequisites and local "
+            "weight readiness. Readiness is a separate observation; listed capabilities may "
+            "still need local preparation before inference. "
+            "Choose a producer before requesting specialist or overlapping labels. "
             "Returned label IDs belong to its native "
             "model, not the normalized output masks.",
             {
                 "query": {"type": "string", "minLength": 1, "maxLength": 200},
-                "task": {"type": "string", "enum": tasks},
+                "task": {"type": "string", "enum": public_tasks},
                 "modality": {"type": "string", "enum": modalities},
             },
             [],

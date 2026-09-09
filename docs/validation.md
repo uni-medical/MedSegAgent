@@ -9,6 +9,7 @@ uv sync --frozen --group dev
 uv run --frozen pytest
 uv run --frozen ruff check src tests ops
 node tests/browser_state.cjs
+uv run --frozen python ops/generate_label_names.py --check
 git diff --check
 ```
 
@@ -16,6 +17,11 @@ The Python suite covers Agent execution, tool schemas, image handling, model rea
 GPU scheduling, cancellation, records, uploads, authentication, MCP and A2A.
 The Node suite exercises the browser client's state transitions with an in-memory DOM,
 HTTP transport and viewer.
+
+Anatomical display names have one source, `src/medsegagent/label_names.json`, shared
+with Agent feedback. After editing it, run `uv run python ops/generate_label_names.py`
+and commit the generated browser dictionary alongside the JSON. Coverage tests compare
+both consumers with every currently supported catalog label.
 
 ## Browser checks
 

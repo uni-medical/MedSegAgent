@@ -13,10 +13,10 @@ The internal Agent and MCP share five work operations. The Agent also has a
 
 ## Discover capabilities
 
-`get_capabilities()` lists the 33 available tasks: 27 CT and 6 MR. The pinned
-TotalSegmentator 2.18.0 registry has 53 definitions in total. Explicit searches also
-report the 18 license-gated and two experimental definitions with their availability.
-The `brain_aneurysm` model uses CC-BY-NC-4.0 and requires noncommercial TOF MRI use.
+`get_capabilities()` exposes the 33 service-supported tasks: 27 CT and 6 MR. Search,
+exact task queries and tool schemas use the same allowed set. Excluded models and
+deployment-policy diagnostics stay outside Agent and MCP discovery. The CLI `catalog`
+command retains the full upstream registry for administration.
 
 ```json
 {"query": "lung", "modality": "CT"}
@@ -31,7 +31,7 @@ label takes precedence over matches to its individual words.
 ```
 
 An explicit task returns exact labels and IDs, auxiliary labels, supported quality
-modes, default quality, ROI support, dependencies, prerequisites, license and availability.
+modes, default quality, ROI support, dependencies and acquisition prerequisites.
 A `query` narrows its labels to the requested structures. Explicit task details also
 check local `weight_readiness` by quality and `roi_weight_readiness` for ROI dependencies.
 Inference checks the files needed by the chosen action again before running.
