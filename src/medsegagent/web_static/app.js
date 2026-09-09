@@ -2,6 +2,26 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
+  // Keep the Chinese workspace usable if the optional language script fails to load.
+  const i18n = window.MedSegI18n || {
+    language: "zh-CN",
+    t: (zh) => zh,
+    bindText: (element, render) => {
+      element.textContent = render();
+    },
+    bindAttr: (element, attribute, render) => {
+      element.setAttribute(attribute, render());
+    },
+    onChange: () => {},
+  };
+  const { t, bindText, bindAttr } = i18n;
+  const locale = () => i18n.language;
+  const number = (value, digits = 0) =>
+    Number(value).toLocaleString(locale(), {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+      useGrouping: false,
+    });
   const terminal = new Set([
     "completed",
     "succeeded",
@@ -93,8 +113,8 @@
     !terminal.has(statusOf(task)) && statusOf(task) !== "input_required";
   const size = (bytes) =>
     bytes >= 1073741824
-      ? `${(bytes / 1073741824).toFixed(1)} GiB`
-      : `${(bytes / 1048576).toFixed(1)} MiB`;
+      ? `${number(bytes / 1073741824, 1)} GiB`
+      : `${number(bytes / 1048576, 1)} MiB`;
   const errorNames = {
     CANCELED: "任务已取消，可使用此影像重新提交。",
     SERVER_RESTART: "服务重启中断了此任务，可使用此影像重新提交。",
@@ -107,19 +127,136 @@
     MODALITY_REQUIRED: "请在请求中说明影像是 CT 还是 MR。",
     MODALITY_CONFLICT: "请求中的 CT / MR 与所选影像不一致，请修改后重试。",
   };
-  const errorMessage = (value) =>
-    value?.code && errorNames[value.code]
-      ? errorNames[value.code]
-      : typeof value === "string"
-        ? value
-        : Array.isArray(value)
-          ? value.map((x) => x.msg || "请求参数不正确").join("；")
-          : value?.message ||
-            value?.detail ||
-            value?.code ||
-            "请求未完成，请重试。";
+  const messageTranslations = {
+    等待处理: "Awaiting processing",
+    排队中: "Queued",
+    等待补充信息: "Awaiting clarification",
+    正在分割: "Segmenting",
+    理解需求: "Understanding request",
+    校验影像: "Validating image",
+    整理分割掩膜: "Preparing segmentation masks",
+    分割完成: "Segmentation complete",
+    任务失败: "Task failed",
+    任务已取消: "Task canceled",
+    请求被拒绝: "Request rejected",
+    正在取消: "Canceling",
+    "任务已取消，可使用此影像重新提交。":
+      "Task canceled. You can submit another request with this image.",
+    "服务重启中断了此任务，可使用此影像重新提交。":
+      "A server restart interrupted this task. You can submit another request with this image.",
+    "任务处理超时，请稍后重试或使用更小的影像。":
+      "The task timed out. Try again later or use a smaller image.",
+    "分割模型运行失败，请检查影像与分割目标后重试。":
+      "The segmentation model failed. Check the image and requested targets, then try again.",
+    "当前任务较多，请等待已有任务完成后再提交。":
+      "The service is busy. Wait for an existing task to finish before submitting.",
+    "影像或结果已过期，请重新上传。":
+      "The image or results have expired. Please upload the image again.",
+    "影像不是完整、有效的 3D NIfTI，请检查文件后重试。":
+      "The image is not a complete, valid 3D NIfTI file. Check the file and try again.",
+    "当前不支持这项分割需求，未开始分割。":
+      "This segmentation request is not supported. Segmentation has not started.",
+    "请在请求中说明影像是 CT 还是 MR。":
+      "Specify whether the image is CT or MR in your request.",
+    "请求中的 CT / MR 与所选影像不一致，请修改后重试。":
+      "The CT / MR modality in your request does not match the selected image. Revise your request and try again.",
+    请求参数不正确: "Invalid request parameters",
+    "请求未完成，请重试。":
+      "The request could not be completed. Please try again.",
+    分割结果: "Segmentation result",
+    "示例影像不可用，请重试。":
+      "The example image is unavailable. Please try again.",
+    "连接超时。任务可能仍在运行，请刷新任务记录确认。":
+      "The connection timed out. The task may still be running; refresh the task history to check.",
+    "无法连接服务器，连接恢复后会继续读取任务。":
+      "Unable to connect to the server. Task updates will resume when the connection is restored.",
+    "会话已过期，请重新连接。": "Your session has expired. Please reconnect.",
+    "服务器未提供上传大小限制，请检查服务配置。":
+      "The server did not provide an upload size limit. Check the service configuration.",
+    "请选择 .nii 或 .nii.gz 格式的 3D 影像。":
+      "Choose a 3D image in .nii or .nii.gz format.",
+    "文件为空，请选择完整的 NIfTI 影像。":
+      "The file is empty. Choose a complete NIfTI image.",
+    "上传连接中断，请重新选择影像。":
+      "The upload connection was interrupted. Please select the image again.",
+    "上传超时，请检查网络后重试。":
+      "The upload timed out. Check your connection and try again.",
+    "上传连接中断，请检查网络后重新选择影像。":
+      "The upload connection was interrupted. Check your connection and select the image again.",
+    "上传超时，请检查网络后重新选择影像。":
+      "The upload timed out. Check your connection and select the image again.",
+    "服务器未提供分块上传配置，请刷新后重试。":
+      "The server did not provide the chunked upload configuration. Refresh and try again.",
+    "上传会话返回无效，请重新选择影像。":
+      "The upload session response is invalid. Please select the image again.",
+    "上传进度校验失败，请重新选择影像。":
+      "Upload progress could not be verified. Please select the image again.",
+    "影像校验未完成，请重新选择影像。":
+      "Image validation did not complete. Please select the image again.",
+    "无法读取任务，请刷新任务记录后重试。":
+      "Unable to load the task. Refresh the task history and try again.",
+    "任务未完成，请查看错误信息后新建任务重试。":
+      "The task did not complete. Review the error and start a new task to retry.",
+    "原始影像不可用，请重新上传。":
+      "The source image is unavailable. Please upload it again.",
+    "查看器脚本未能加载，请刷新页面。":
+      "The viewer script failed to load. Please refresh the page.",
+    "当前浏览器无法初始化 WebGL2，请启用硬件加速。":
+      "This browser could not initialize WebGL2. Please enable hardware acceleration.",
+    "请输入有效数字，窗宽必须大于 0；当前显示未改变。":
+      "Enter valid numbers with a window width greater than 0. The display has not changed.",
+    "影像文件已过期或不可访问，请重新上传。":
+      "The image has expired or cannot be accessed. Please upload it again.",
+    "载入超时，请检查网络后重试。":
+      "Loading timed out. Check your connection and try again.",
+    "分割标签信息不可用，请刷新任务后重试。":
+      "Segmentation label information is unavailable. Refresh the task and try again.",
+    影像: "Image",
+    "暂时无法建立游客会话，请重新连接。":
+      "Unable to start a guest session at the moment. Please reconnect.",
+    "请一次上传一张 3D 影像。": "Upload one 3D image at a time.",
+    "请填写需要分割的目标。": "Enter the targets you want to segment.",
+    "浏览器显存不足或图形上下文已丢失。任务仍保存在服务器，请刷新页面或使用更小的影像。":
+      "The browser ran out of graphics memory or lost its graphics context. Your task remains on the server. Refresh the page or use a smaller image.",
+    "GitHub 登录未完成，请重试。":
+      "GitHub sign-in did not complete. Please try again.",
+  };
+  function localizeMessage(value) {
+    if (typeof value !== "string") return value;
+    if (Object.hasOwn(messageTranslations, value))
+      return t(value, messageTranslations[value]);
+    const failure = value.match(/^(请求失败|上传失败|影像读取失败) \((\d+)\)$/);
+    if (failure) {
+      const name = {
+        请求失败: "Request failed",
+        上传失败: "Upload failed",
+        影像读取失败: "Image loading failed",
+      }[failure[1]];
+      return t(value, `${name} (${failure[2]})`);
+    }
+    return value;
+  }
+  function errorMessage(value) {
+    if (typeof value === "function") return errorMessage(value());
+    if (value?.uiValue !== undefined) return errorMessage(value.uiValue);
+    if (value?.code && errorNames[value.code])
+      return localizeMessage(errorNames[value.code]);
+    if (typeof value === "string") return localizeMessage(value);
+    if (Array.isArray(value))
+      return value
+        .map((item) => localizeMessage(item.msg || "请求参数不正确"))
+        .join(t("；", "; "));
+    return localizeMessage(
+      value?.message || value?.detail || value?.code || "请求未完成，请重试。",
+    );
+  }
+  function uiError(value) {
+    const error = new Error(errorMessage(value));
+    error.uiValue = value;
+    return error;
+  }
   const showError = (id, value) => {
-    $(id).textContent = value ? errorMessage(value) : "";
+    bindText($(id), () => (value ? errorMessage(value) : ""));
     $(id).hidden = !value;
   };
   const taskURL = (id) => `/api/tasks/${encodeURIComponent(id)}`;
@@ -132,7 +269,11 @@
       state.submitting ||
       !!state.exampleRequest ||
       !state.ready;
-    $("submit").textContent = state.submitting ? "正在提交…" : "开始分割";
+    bindText($("submit"), () =>
+      state.submitting
+        ? t("正在提交…", "Submitting…")
+        : t("开始分割", "Start segmentation"),
+    );
     for (const id of [
       "choose-image",
       "file",
@@ -160,7 +301,7 @@
     );
     return Number.isNaN(date.valueOf())
       ? ""
-      : date.toLocaleString("zh-CN", {
+      : date.toLocaleString(locale(), {
           month: "2-digit",
           day: "2-digit",
           hour: "2-digit",
@@ -204,13 +345,15 @@
       link.className = "file-download";
       link.href = `${taskURL(task.id)}/files/${encodeURIComponent(file.name)}`;
       link.setAttribute("download", file.name);
-      link.title = file.name;
+      bindAttr(link, "title", () => file.name);
       const name = document.createElement("span");
-      name.textContent = file.label_id
-        ? `${file.label_id}. ${labelDisplayName(file.label_name, file.label_id)}`
-        : file.display_name || output.name;
+      bindText(name, () =>
+        file.label_id
+          ? `${file.label_id}. ${labelDisplayName(file.label_name, file.label_id)}`
+          : file.display_name || output.name,
+      );
       const format = document.createElement("span");
-      format.textContent = "NIfTI";
+      bindText(format, () => "NIfTI");
       link.append(name, format);
       $("download-labels").append(link);
     }
@@ -241,7 +384,9 @@
               ...task.result,
               id: "legacy",
               legacy: true,
-              name: "分割结果",
+              get name() {
+                return t("分割结果", "Segmentation result");
+              },
               files: task.files || [],
               maskURL: `${taskURL(task.id)}/files/segmentation.nii.gz`,
             },
@@ -263,22 +408,29 @@
       const targets = Array.isArray(output.targets)
         ? output.targets
         : output.labels.map((label) => label.name);
-      const name =
+      const outputName = () =>
         output.name && !/\.nii(?:\.gz)?$/i.test(output.name)
           ? labelDisplayName(output.name)
           : targets.length
             ? targets
                 .slice(0, 2)
                 .map((target) => labelDisplayName(target))
-                .join("、") +
-              (targets.length > 2 ? `等 ${targets.length} 项` : "")
-            : `结果 ${index + 1}`;
+                .join(t("、", ", ")) +
+              (targets.length > 2
+                ? t(
+                    `等 ${targets.length} 项`,
+                    ` and ${targets.length - 2} more`,
+                  )
+                : "")
+            : t(`结果 ${index + 1}`, `Result ${index + 1}`);
       return [
         {
           ...output,
           files,
           id: String(output.id || `output-${index}`),
-          name,
+          get name() {
+            return outputName();
+          },
           maskURL: file.url,
         },
       ];
@@ -307,13 +459,32 @@
     for (const output of outputs) {
       const option = document.createElement("option");
       option.value = output.id;
-      option.textContent = output.name;
+      bindText(option, () => output.name);
       $("result-output").append(option);
     }
     $("result-output").value = selected?.id || "";
   }
 
   function labelDisplayName(name, id) {
+    if (locale() === "en") {
+      const english = {
+        kidney_left: "Left kidney",
+        kidney_right: "Right kidney",
+        lung_left: "Left lung",
+        lung_right: "Right lung",
+        lung_upper_lobe_left: "Left upper lung lobe",
+        lung_lower_lobe_left: "Left lower lung lobe",
+        lung_upper_lobe_right: "Right upper lung lobe",
+        lung_middle_lobe_right: "Right middle lung lobe",
+        lung_lower_lobe_right: "Right lower lung lobe",
+      }[name];
+      if (english) return english;
+      if (typeof name === "string" && /^[a-z][a-z0-9_]*$/.test(name)) {
+        const label = name.replaceAll("_", " ");
+        return label.charAt(0).toUpperCase() + label.slice(1);
+      }
+      return name || String(id);
+    }
     return (
       {
         liver: "肝脏",
@@ -341,13 +512,15 @@
   }
 
   function renderFileMetadata(upload) {
-    $("file-size").textContent = Number.isFinite(upload?.size)
-      ? size(upload.size)
-      : "—";
-    $("file-shape").textContent = upload?.shape?.join(" × ") || "—";
-    $("file-spacing").textContent = upload?.spacing
-      ? `${upload.spacing.map((x) => Number(x).toFixed(2)).join(" × ")} mm`
-      : "—";
+    bindText($("file-size"), () =>
+      Number.isFinite(upload?.size) ? size(upload.size) : "—",
+    );
+    bindText($("file-shape"), () => upload?.shape?.join(" × ") || "—");
+    bindText($("file-spacing"), () =>
+      upload?.spacing
+        ? `${upload.spacing.map((x) => number(x, 2)).join(" × ")} mm`
+        : "—",
+    );
     $("file-meta").hidden = !upload;
   }
 
@@ -362,13 +535,24 @@
     $("task-status").hidden = true;
     $("reuse-image").hidden = true;
     $("instruction").value = text;
-    $("file-name").textContent = upload?.name || "选择或拖入 NIfTI";
-    $("viewer-heading").textContent = upload?.name || "新建分割";
-    $("viewer-name").textContent = upload?.shape
-      ? `${upload.shape.join(" × ")} · ${size(upload.size || 0)}`
-      : "";
+    bindText(
+      $("file-name"),
+      () =>
+        upload?.name || t("选择或拖入 NIfTI", "Choose or drop a NIfTI file"),
+    );
+    bindText(
+      $("viewer-heading"),
+      () => upload?.name || t("新建分割", "New segmentation"),
+    );
+    bindText($("viewer-name"), () =>
+      upload?.shape
+        ? `${upload.shape.join(" × ")} · ${size(upload.size || 0)}`
+        : "",
+    );
     $("viewer-name").hidden = !$("viewer-name").textContent;
-    $("empty-title").textContent = "从一张影像开始";
+    bindText($("empty-title"), () =>
+      t("从一张影像开始", "Start with an image"),
+    );
     renderFileMetadata(upload);
     $("upload-progress").hidden = true;
     upload
@@ -415,8 +599,12 @@
     link.href = url.href;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = attribution.label;
-    link.title = attribution.license || "";
+    bindText(link, () =>
+      attribution.label === "Wasserthal 等"
+        ? t(attribution.label, "Wasserthal et al.")
+        : attribution.label,
+    );
+    bindAttr(link, "title", () => attribution.license || "");
     return link;
   }
 
@@ -439,7 +627,7 @@
           const link = document.createElement("a");
           link.href = notice.pathname;
           link.setAttribute("download", "");
-          link.textContent = "许可说明";
+          bindText(link, () => t("许可说明", "License notice"));
           links.push(link);
         }
       } catch {
@@ -450,13 +638,72 @@
     for (const [index, link] of links.entries()) {
       if (index) {
         const separator = document.createElement("span");
-        separator.textContent = " · ";
+        bindText(separator, () => " · ");
         container.append(separator);
       }
       container.append(link);
     }
     container.hidden = !links.length;
     return links.length > 0;
+  }
+
+  const exampleEnglish = {
+    "liver-ct": {
+      title: "Abdominal CT",
+      description: "View and segment the liver and abdominal organs in 3D.",
+      prompts: {
+        "分割这份 CT 中的肝脏。": {
+          label: "Liver",
+          text: "Segment the liver in this CT scan.",
+        },
+        "分割这份 CT 中的肝脏病灶。": {
+          label: "Liver lesions",
+          text: "Segment the liver lesions in this CT scan.",
+        },
+      },
+    },
+    "chest-ct": {
+      title: "Chest CT",
+      description:
+        "A lightweight image with 2.5 mm spacing and a full field of view.",
+      prompts: {
+        "分割这份胸部 CT 中的肺部。": {
+          label: "Lungs",
+          text: "Segment the lungs in this chest CT scan.",
+        },
+        "分割这份胸部 CT 中的肺结节。": {
+          label: "Lung nodules",
+          text: "Segment the lung nodules in this chest CT scan.",
+        },
+      },
+    },
+    "abdomen-mr": {
+      title: "Partial abdominal MRI",
+      description:
+        "A cropped sample with 3 mm spacing for exploring MR organ segmentation.",
+      prompts: {
+        "分割这份 MRI 中可见的左肾和右肾。": {
+          label: "Left and right kidneys",
+          text: "Segment the visible left and right kidneys in this MRI scan.",
+        },
+        "分割这份 MRI 中可见的肝脏和脾脏。": {
+          label: "Liver and spleen",
+          text: "Segment the visible liver and spleen in this MRI scan.",
+        },
+      },
+    },
+  };
+  function exampleText(example, field) {
+    const original = example[field] || (field === "title" ? example.id : "");
+    return t(original, exampleEnglish[example.id]?.[field] || original);
+  }
+  function examplePrompt(example, prompt, field) {
+    const original =
+      field === "label" ? prompt.label || prompt.text : prompt.text;
+    return t(
+      original,
+      exampleEnglish[example.id]?.prompts?.[prompt.text]?.[field] || original,
+    );
   }
 
   function renderExamples(config) {
@@ -493,7 +740,7 @@
         button.className = "example-button";
         button.type = "button";
         button.dataset.example = example.id;
-        button.title = example.description || "";
+        bindAttr(button, "title", () => exampleText(example, "description"));
         const preview = document.createElement("img");
         preview.className = "example-preview";
         preview.src = example.preview_url;
@@ -506,15 +753,17 @@
         caption.className = "example-caption";
         const title = document.createElement("span");
         title.className = "example-title";
-        title.textContent = example.title || example.id;
+        bindText(title, () => exampleText(example, "title"));
         const details = document.createElement("span");
         details.className = "example-size";
-        details.textContent = [
-          example.modality,
-          Number.isFinite(example.size_bytes) ? size(example.size_bytes) : "",
-        ]
-          .filter(Boolean)
-          .join(" · ");
+        bindText(details, () =>
+          [
+            example.modality,
+            Number.isFinite(example.size_bytes) ? size(example.size_bytes) : "",
+          ]
+            .filter(Boolean)
+            .join(" · "),
+        );
         caption.append(title, details);
         button.append(preview, caption);
         button.addEventListener("click", () => loadExample(example));
@@ -543,10 +792,10 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "example-prompt";
-      button.textContent = prompt.label || prompt.text;
+      bindText(button, () => examplePrompt(example, prompt, "label"));
       button.addEventListener("click", () => {
         if (state.upload?.example_id !== example.id || state.submitting) return;
-        $("instruction").value = prompt.text;
+        $("instruction").value = examplePrompt(example, prompt, "text");
         state.pendingRequest = null;
         $("instruction").focus();
         updateSubmit();
@@ -604,7 +853,7 @@
       $("example-switch").open = false;
     } catch (err) {
       if (epoch === state.epoch && state.exampleRequest === request) {
-        showError("form-error", err.message);
+        showError("form-error", err);
         $("viewer-indicator").hidden = true;
       }
     } finally {
@@ -643,13 +892,11 @@
           !controller.signal.aborted
         )
           lockWorkspace();
-        const err = new Error(
-          errorMessage(
-            data.detail ||
-              data.error ||
-              data.message ||
-              `请求失败 (${response.status})`,
-          ),
+        const err = uiError(
+          data.detail ||
+            data.error ||
+            data.message ||
+            `请求失败 (${response.status})`,
         );
         err.status = response.status;
         throw err;
@@ -686,9 +933,16 @@
     $("viewer-empty").hidden = false;
     $("result-panel").hidden = true;
     $("result-empty").hidden = false;
-    $("result-empty").textContent = "尚无分割结果";
+    bindText($("result-empty"), () =>
+      t("尚无分割结果", "No segmentation results yet"),
+    );
     enableWindowControls(false);
-    $("location").textContent = "点击定位 · 滚轮切片 · 右键调窗";
+    bindText($("location"), () =>
+      t(
+        "点击定位 · 滚轮切片 · 右键调窗",
+        "Click to locate · Scroll to change slice · Right-drag to adjust window",
+      ),
+    );
     $("niivue-canvas").style.visibility = "hidden";
     $("viewer-indicator").hidden = true;
     $("retry-viewer").hidden = true;
@@ -753,8 +1007,8 @@
     $("history-search").value = "";
     $("logout").hidden = true;
     $("github-login").hidden = false;
-    $("account-name").textContent = "未登录";
-    $("account-name").removeAttribute("title");
+    bindText($("account-name"), () => t("未登录", "Not signed in"));
+    bindAttr($("account-name"), "title", () => "");
     $("task-list").replaceChildren();
     renderHistory();
     $("labels").replaceChildren();
@@ -762,9 +1016,9 @@
     $("request").hidden = false;
     $("instruction").value = "";
     $("record-request").hidden = true;
-    $("request-text").textContent = "";
-    $("request-meta").textContent = "";
-    $("viewer-heading").textContent = "新建分割";
+    bindText($("request-text"), () => "");
+    bindText($("request-meta"), () => "");
+    bindText($("viewer-heading"), () => t("新建分割", "New segmentation"));
     $("downloads").hidden = true;
     $("download-source").removeAttribute("href");
     $("download-source").hidden = true;
@@ -778,11 +1032,13 @@
     ])
       showError(id, "");
     setContext("request");
-    $("file-name").textContent = "选择或拖入 NIfTI";
+    bindText($("file-name"), () =>
+      t("选择或拖入 NIfTI", "Choose or drop a NIfTI file"),
+    );
     $("file-meta").hidden = true;
     $("upload-progress").hidden = true;
     $("task-status").hidden = true;
-    $("viewer-name").textContent = "";
+    bindText($("viewer-name"), () => "");
     $("viewer-name").hidden = true;
     $("reuse-image").hidden = true;
     $("drop-zone").classList.remove("has-file");
@@ -801,17 +1057,27 @@
     );
     if (session.github_enabled === true) {
       $("github-login").href = "/api/auth/github/start";
-      $("github-login").title = "登录后进入个人账号，游客记录不会转入";
+      bindAttr($("github-login"), "title", () =>
+        t(
+          "登录后进入个人账号，游客记录不会转入",
+          "Sign in to your personal account. Guest history will not be transferred.",
+        ),
+      );
     } else {
       $("github-login").removeAttribute("href");
-      $("github-login").title = "GitHub 登录暂未开放";
+      bindAttr($("github-login"), "title", () =>
+        t("GitHub 登录暂未开放", "GitHub sign-in is currently unavailable"),
+      );
     }
     $("logout").hidden = !signedIn;
-    const name = signedIn
-      ? session.identity.display_name || session.identity.login || "已登录"
-      : "未登录";
-    $("account-name").textContent = name;
-    $("account-name").setAttribute("title", name);
+    const accountName = () =>
+      signedIn
+        ? session.identity.display_name ||
+          session.identity.login ||
+          t("已登录", "Signed in")
+        : t("未登录", "Not signed in");
+    bindText($("account-name"), accountName);
+    bindAttr($("account-name"), "title", accountName);
   }
 
   async function openWorkspace(session) {
@@ -828,8 +1094,12 @@
     state.uploadChunkBytes = Number(config.upload_chunk_bytes) || 0;
     if (!state.maxUpload)
       throw new Error("服务器未提供上传大小限制，请检查服务配置。");
-    $("file-help").textContent =
-      `.nii / .nii.gz · 最大 ${size(state.maxUpload)}`;
+    bindText($("file-help"), () =>
+      t(
+        `.nii / .nii.gz · 最大 ${size(state.maxUpload)}`,
+        `.nii / .nii.gz · Max ${size(state.maxUpload)}`,
+      ),
+    );
     renderExamples(config);
     await refreshTasks();
     if (epoch !== state.epoch) return;
@@ -839,7 +1109,7 @@
     const requested = new URL(location.href).searchParams.get("task");
     if (requested)
       await selectTask(requested).catch((err) => {
-        if (epoch === state.epoch) showError("connection-note", err.message);
+        if (epoch === state.epoch) showError("connection-note", err);
       });
     else setDraft();
     if (epoch !== state.epoch) return;
@@ -862,7 +1132,7 @@
     state.pendingRequest = null;
     $("drop-zone").classList.remove("has-file");
     updateSubmit();
-    $("file-name").textContent = file.name;
+    bindText($("file-name"), () => file.name);
     $("file-meta").hidden = true;
     showError("form-error", "");
     if (!/\.nii(?:\.gz)?$/i.test(file.name)) {
@@ -874,9 +1144,11 @@
       return;
     }
     if (!state.maxUpload || file.size > state.maxUpload) {
-      showError(
-        "form-error",
-        `文件超过上传限制（${size(state.maxUpload)}）。请使用更小的影像或通过本地 CLI 处理。`,
+      showError("form-error", () =>
+        t(
+          `文件超过上传限制（${size(state.maxUpload)}）。请使用更小的影像或通过本地 CLI 处理。`,
+          `The file exceeds the upload limit (${size(state.maxUpload)}). Use a smaller image or process it with the local CLI.`,
+        ),
       );
       return;
     }
@@ -884,11 +1156,11 @@
     state.upload = null;
     state.uploading = true;
     state.pendingRequest = null;
-    $("file-name").textContent = file.name;
+    bindText($("file-name"), () => file.name);
     $("file-meta").hidden = true;
     $("upload-progress").hidden = false;
     $("upload-bar").value = 0;
-    $("upload-status").textContent = "正在上传…";
+    bindText($("upload-status"), () => t("正在上传…", "Uploading…"));
     updateSubmit();
     if (file.size > state.singleUpload) {
       uploadInChunks(file);
@@ -909,8 +1181,11 @@
       ) {
         const n = Math.round((e.loaded / e.total) * 100);
         $("upload-bar").value = n;
-        $("upload-status").textContent =
-          n === 100 ? "上传完成，正在校验影像…" : `正在上传 ${n}%`;
+        bindText($("upload-status"), () =>
+          n === 100
+            ? t("上传完成，正在校验影像…", "Upload complete. Validating image…")
+            : t(`正在上传 ${number(n)}%`, `Uploading ${number(n)}%`),
+        );
       }
     };
     xhr.onload = () => {
@@ -934,7 +1209,7 @@
         return;
       }
       acceptUploadedImage(data, file);
-      $("upload-status").textContent = "影像已校验";
+      bindText($("upload-status"), () => t("影像已校验", "Image validated"));
       $("upload-bar").value = 100;
     };
     xhr.onerror = () => {
@@ -1005,7 +1280,12 @@
           (err.status && err.status < 500 && ![408, 429].includes(err.status))
         )
           throw err;
-        $("upload-status").textContent = "连接中断，正在重试上传…";
+        bindText($("upload-status"), () =>
+          t(
+            "连接中断，正在重试上传…",
+            "Connection interrupted. Retrying upload…",
+          ),
+        );
         await new Promise((resolve) => {
           const finish = () => {
             clearTimeout(timer);
@@ -1036,7 +1316,9 @@
           Math.round(((offset + event.loaded) / file.size) * 100),
         );
         $("upload-bar").value = progress;
-        $("upload-status").textContent = `正在上传 ${progress}%`;
+        bindText($("upload-status"), () =>
+          t(`正在上传 ${number(progress)}%`, `Uploading ${number(progress)}%`),
+        );
       };
       xhr.onload = () => {
         let data;
@@ -1047,10 +1329,8 @@
         }
         if (xhr.status >= 200 && xhr.status < 300) resolve(data);
         else {
-          const error = new Error(
-            errorMessage(
-              data.detail || data.error || `上传失败 (${xhr.status})`,
-            ),
+          const error = uiError(
+            data.detail || data.error || `上传失败 (${xhr.status})`,
           );
           error.status = xhr.status;
           reject(error);
@@ -1128,7 +1408,9 @@
         $("upload-bar").value = Math.round((offset / file.size) * 100);
       }
       if (!uploadIsCurrent(request)) return;
-      $("upload-status").textContent = "上传完成，正在校验影像…";
+      bindText($("upload-status"), () =>
+        t("上传完成，正在校验影像…", "Upload complete. Validating image…"),
+      );
       const data =
         session.upload ||
         (await retryUpload(request, () =>
@@ -1144,7 +1426,7 @@
       acceptUploadedImage(data, file);
     } catch (err) {
       if (uploadIsCurrent(request)) {
-        showError("form-error", err.message);
+        showError("form-error", err);
         $("upload-progress").hidden = true;
       }
     } finally {
@@ -1205,7 +1487,7 @@
     const epoch = state.epoch;
     refreshTasks().catch((err) => {
       if (state.authenticated && epoch === state.epoch)
-        showError("connection-note", err.message);
+        showError("connection-note", err);
     });
   }
 
@@ -1222,7 +1504,7 @@
           await refreshTasks();
         } catch (err) {
           if (state.authenticated && epoch === state.epoch)
-            showError("connection-note", err.message);
+            showError("connection-note", err);
         } finally {
           if (epoch === state.epoch) scheduleHistoryPoll();
         }
@@ -1234,7 +1516,7 @@
   function renderHistory() {
     $("task-list").replaceChildren();
     $("history-empty").hidden = state.tasks.length > 0;
-    $("task-count").textContent = state.tasks.length || "";
+    bindText($("task-count"), () => state.tasks.length || "");
     const query = $("history-search").value.trim().toLocaleLowerCase();
     const tasks = state.tasks.filter((task) =>
       [task.text, task.upload_name, task.input?.name]
@@ -1244,9 +1526,11 @@
         .includes(query),
     );
     $("history-empty").hidden = tasks.length > 0;
-    $("history-empty").textContent = query
-      ? "没有匹配的分割记录。"
-      : "暂无分割记录";
+    bindText($("history-empty"), () =>
+      query
+        ? t("没有匹配的分割记录。", "No matching segmentation tasks.")
+        : t("暂无分割记录", "No segmentation history yet"),
+    );
     for (const task of tasks) {
       const li = document.createElement("li"),
         button = document.createElement("button");
@@ -1258,22 +1542,26 @@
       );
       const title = document.createElement("span");
       title.className = "task-item-title";
-      title.textContent = task.text || task.input?.text || task.name || task.id;
+      bindText(
+        title,
+        () => task.text || task.input?.text || task.name || task.id,
+      );
       const meta = document.createElement("span");
       meta.className = "task-item-meta";
       const status = document.createElement("span");
-      status.textContent =
+      bindText(status, () =>
         statusOf(task) === "input_required"
-          ? statusNames.input_required
+          ? localizeMessage(statusNames.input_required)
           : task.error?.code === "MODALITY_REQUIRED"
-            ? "待补充说明"
-            : statusNames[statusOf(task)] || statusOf(task);
+            ? t("待补充说明", "Clarification needed")
+            : localizeMessage(statusNames[statusOf(task)]) || statusOf(task),
+      );
       if (
         statusOf(task) !== "input_required" &&
         task.input_available === false &&
         task.result_available === false
       )
-        status.textContent = "文件已清理";
+        bindText(status, () => t("文件已清理", "Files removed"));
       if (statusOf(task) === "failed") status.className = "failed";
       const date = document.createElement("span"),
         time = task.created_at || task.createdAt;
@@ -1281,24 +1569,24 @@
         const d = new Date(
           typeof time === "number" && time < 1e12 ? time * 1000 : time,
         );
-        date.textContent = Number.isNaN(d.valueOf())
-          ? ""
-          : d.toLocaleString("zh-CN", {
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+        bindText(date, () =>
+          Number.isNaN(d.valueOf())
+            ? ""
+            : d.toLocaleString(locale(), {
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+        );
       }
       meta.append(status, date);
       const source = document.createElement("span");
       source.className = "task-item-source";
-      source.textContent = task.upload_name || task.input?.name || "";
+      bindText(source, () => task.upload_name || task.input?.name || "");
       button.append(title, source, meta);
       button.addEventListener("click", () =>
-        selectTask(task.id).catch((err) =>
-          showError("connection-note", err.message),
-        ),
+        selectTask(task.id).catch((err) => showError("connection-note", err)),
       );
       li.append(button);
       $("task-list").append(li);
@@ -1346,36 +1634,54 @@
   const validSeconds = (value) => Number.isFinite(value) && value >= 0;
   function formatDuration(seconds) {
     const whole = Math.max(0, Math.floor(seconds));
-    if (whole < 60) return `${whole} 秒`;
+    if (whole < 60) return t(`${number(whole)} 秒`, `${number(whole)} s`);
     const minutes = Math.floor(whole / 60),
       rest = whole % 60;
-    return rest ? `${minutes} 分 ${rest} 秒` : `${minutes} 分钟`;
+    return rest
+      ? t(
+          `${number(minutes)} 分 ${number(rest)} 秒`,
+          `${number(minutes)} min ${number(rest)} s`,
+        )
+      : t(`${number(minutes)} 分钟`, `${number(minutes)} min`);
   }
 
   function taskStage(task) {
     const status = statusOf(task);
     if (!isWorkingTask(task) || ["canceling", "cancelling"].includes(status))
-      return statusNames[status] || status;
+      return localizeMessage(statusNames[status]) || status;
     const progress = task.agent_progress;
-    if (progress?.phase === "publishing") return "正在整理结果";
+    if (progress?.phase === "publishing")
+      return t("正在整理结果", "Preparing results");
     if (progress?.phase === "reasoning")
-      return progress.model_requests > 1 ? "正在分析与规划" : "正在理解请求";
+      return progress.model_requests > 1
+        ? t("正在分析与规划", "Analyzing and planning")
+        : t("正在理解请求", "Understanding request");
     if (progress?.phase === "tool") {
       return (
         {
-          get_capabilities: "正在匹配分割工具",
-          detect_modality: "正在识别影像类型",
+          get_capabilities: t(
+            "正在匹配分割工具",
+            "Selecting segmentation tools",
+          ),
+          detect_modality: t("正在识别影像类型", "Detecting image modality"),
           segment:
             task.progress === "Running local segmentation"
-              ? "正在分割"
-              : "正在准备分割",
-          inspect_artifact: "正在检查分割结果",
-          compose_masks: "正在合并分割结果",
-        }[progress.tool] || "正在处理"
+              ? t("正在分割", "Segmenting")
+              : t("正在准备分割", "Preparing segmentation"),
+          inspect_artifact: t(
+            "正在检查分割结果",
+            "Inspecting segmentation results",
+          ),
+          compose_masks: t(
+            "正在合并分割结果",
+            "Combining segmentation results",
+          ),
+        }[progress.tool] || t("正在处理", "Processing")
       );
     }
-    if (progress?.phase === "observed") return "正在分析结果";
-    return statusNames[status] || "正在处理";
+    if (progress?.phase === "observed")
+      return t("正在分析结果", "Analyzing results");
+    return localizeMessage(statusNames[status]) || t("正在处理", "Processing");
   }
 
   function stopTaskClock() {
@@ -1417,22 +1723,38 @@
         ? task.estimated_duration_seconds
         : DEFAULT_ESTIMATE_SECONDS;
     const overdue = validSeconds(elapsed) && elapsed >= estimate;
-    $("task-elapsed").textContent = validSeconds(elapsed)
-      ? `已用 ${formatDuration(elapsed)}`
-      : "正在计时";
-    $("task-estimate").textContent = overdue
-      ? "仍在处理中"
-      : `预计约 ${estimate} 秒`;
+    bindText($("task-elapsed"), () =>
+      validSeconds(elapsed)
+        ? t(
+            `已用 ${formatDuration(elapsed)}`,
+            `Elapsed ${formatDuration(elapsed)}`,
+          )
+        : t("正在计时", "Timing in progress"),
+    );
+    bindText($("task-estimate"), () =>
+      overdue
+        ? t("仍在处理中", "Still processing")
+        : t(
+            `预计约 ${number(estimate)} 秒`,
+            `Estimated ~${number(estimate)} s`,
+          ),
+    );
     const percent =
       typeof task.progress === "number"
         ? task.progress
         : task.progress?.percent;
     const measured = Number.isFinite(percent);
-    const label = measured ? "任务进度" : "预估进度";
-    $("task-progress").setAttribute("aria-label", label);
-    $("task-progress").setAttribute(
-      "aria-valuetext",
-      `${label}，${$("task-elapsed").textContent}，${$("task-estimate").textContent}`,
+    const progressLabel = () =>
+      measured
+        ? t("任务进度", "Task progress")
+        : t("预估进度", "Estimated progress");
+    bindAttr($("task-progress"), "aria-label", progressLabel);
+    bindAttr($("task-progress"), "aria-valuetext", () =>
+      [
+        progressLabel(),
+        $("task-elapsed").textContent,
+        $("task-estimate").textContent,
+      ].join(t("，", ", ")),
     );
     if (measured) $("task-progress").value = Math.max(0, Math.min(99, percent));
     else if (validSeconds(elapsed))
@@ -1497,24 +1819,31 @@
     renderOutputSelector(task, output);
     $("request").hidden = true;
     $("record-request").hidden = false;
-    $("request-text").textContent = task.text || "未提供文本请求";
-    $("request-meta").textContent = [
-      formatDate(task.created_at),
-      task.modality,
-      terminal.has(status) && validSeconds(task.elapsed_seconds)
-        ? `耗时 ${formatDuration(task.elapsed_seconds)}`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" · ");
+    bindText(
+      $("request-text"),
+      () => task.text || t("未提供文本请求", "No text request provided"),
+    );
+    bindText($("request-meta"), () =>
+      [
+        formatDate(task.created_at),
+        task.modality,
+        terminal.has(status) && validSeconds(task.elapsed_seconds)
+          ? t(
+              `耗时 ${formatDuration(task.elapsed_seconds)}`,
+              `Duration ${formatDuration(task.elapsed_seconds)}`,
+            )
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    );
     $("task-status").hidden = false;
     $("task-status").dataset.status = status;
-    const title =
+    bindText($("status-title"), () =>
       !waiting && task.error?.code === "MODALITY_REQUIRED"
-        ? "需要补充说明"
-        : taskStage(task);
-    if ($("status-title").textContent !== title)
-      $("status-title").textContent = title;
+        ? t("需要补充说明", "Clarification needed")
+        : taskStage(task),
+    );
     const clarification = waiting
       ? [
           task.error?.message,
@@ -1523,22 +1852,36 @@
           task.progress?.text,
         ].find((value) => typeof value === "string" && value.trim())
       : null;
-    $("status-detail").textContent = waiting
-      ? `${clarification || "请补充所需信息。"} 通过 A2A 继续。`
-      : partial
-        ? "已有部分结果，任务尚未完整完成。"
-        : complete
-          ? inputOK && resultOK
-            ? ""
-            : resultOK
-              ? "原图不可用，仍可下载分割结果"
-              : "分割文件已到期或已清理"
-          : {
-              queued: "等待推理资源",
-              routing: "正在理解分割请求",
-              validating: "正在检查影像",
-              working: "正在生成分割掩膜",
-            }[status] || "";
+    bindText($("status-detail"), () =>
+      waiting
+        ? `${clarification || t("请补充所需信息。", "Please provide the requested information.")} ${t("通过 A2A 继续。", "Continue via A2A.")}`
+        : partial
+          ? t(
+              "已有部分结果，任务尚未完整完成。",
+              "Partial results are available. The task has not completed fully.",
+            )
+          : complete
+            ? inputOK && resultOK
+              ? ""
+              : resultOK
+                ? t(
+                    "原图不可用，仍可下载分割结果",
+                    "The source image is unavailable. Segmentation results can still be downloaded.",
+                  )
+                : t(
+                    "分割文件已到期或已清理",
+                    "Segmentation files have expired or been removed",
+                  )
+            : {
+                queued: t("等待推理资源", "Waiting for inference resources"),
+                routing: t(
+                  "正在理解分割请求",
+                  "Understanding the segmentation request",
+                ),
+                validating: t("正在检查影像", "Checking image"),
+                working: t("正在生成分割掩膜", "Generating segmentation masks"),
+              }[status] || "",
+    );
     $("status-detail").hidden = !$("status-detail").textContent;
     syncTaskClock(task);
     $("cancel-task").hidden = terminal.has(status);
@@ -1552,11 +1895,14 @@
               ? "任务未完成，请查看错误信息后新建任务重试。"
               : ""),
     );
-    $("viewer-heading").textContent =
-      task.upload_name || input.name || "分割记录";
-    $("viewer-name").textContent = [task.modality, input.shape?.join(" × ")]
-      .filter(Boolean)
-      .join(" · ");
+    bindText(
+      $("viewer-heading"),
+      () =>
+        task.upload_name || input.name || t("分割记录", "Segmentation task"),
+    );
+    bindText($("viewer-name"), () =>
+      [task.modality, input.shape?.join(" × ")].filter(Boolean).join(" · "),
+    );
     $("viewer-name").hidden = !$("viewer-name").textContent;
     $("reuse-image").hidden = !inputOK;
     renderExampleContext();
@@ -1585,8 +1931,11 @@
       state.viewerController?.abort();
       state.viewerWanted = null;
       clearViewer();
-      $("empty-title").textContent =
-        waiting && !uploadID ? "尚未提供影像" : "原始影像不可用";
+      bindText($("empty-title"), () =>
+        waiting && !uploadID
+          ? t("尚未提供影像", "No image provided yet")
+          : t("原始影像不可用", "Source image unavailable"),
+      );
       showError(
         "viewer-error",
         waiting && !uploadID ? "" : "原始影像不可用，请重新上传。",
@@ -1597,7 +1946,12 @@
       }
     }
     if (complete && !resultOK)
-      $("result-empty").textContent = "分割文件已到期或已清理。";
+      bindText($("result-empty"), () =>
+        t(
+          "分割文件已到期或已清理。",
+          "Segmentation files have expired or been removed.",
+        ),
+      );
   }
 
   function schedulePoll() {
@@ -1623,7 +1977,7 @@
           }
           if (epoch === state.epoch) showError("connection-note", "");
         } catch (err) {
-          if (state.authenticated) showError("connection-note", err.message);
+          if (state.authenticated) showError("connection-note", err);
         } finally {
           if (epoch === state.epoch) schedulePoll();
         }
@@ -1691,10 +2045,14 @@
     };
     viewer.onLocationChange = (location) => {
       if (location.mm)
-        $("location").textContent = `位置 ${Array.from(location.mm)
-          .slice(0, 3)
-          .map((x) => Number(x).toFixed(1))
-          .join(", ")} mm`;
+        bindText(
+          $("location"),
+          () =>
+            `${t("位置", "Position")} ${Array.from(location.mm)
+              .slice(0, 3)
+              .map((x) => number(x, 1))
+              .join(", ")} mm`,
+        );
       updateSlices();
       scheduleSaveView();
     };
@@ -2098,7 +2456,9 @@
     $("result-empty").hidden = false;
     $("viewer-indicator").hidden = false;
     $("viewer-indicator").dataset.stage = "source";
-    $("viewer-loading-text").textContent = "正在载入影像…";
+    bindText($("viewer-loading-text"), () =>
+      t("正在载入影像…", "Loading image…"),
+    );
     $("retry-viewer").hidden = true;
     showError("viewer-error", "");
     $("niivue-canvas").style.visibility = "hidden";
@@ -2145,7 +2505,9 @@
         viewer.drawScene();
         if (request.completed) {
           $("viewer-indicator").dataset.stage = "overlay";
-          $("viewer-loading-text").textContent = "正在载入分割结果…";
+          bindText($("viewer-loading-text"), () =>
+            t("正在载入分割结果…", "Loading segmentation results…"),
+          );
           const position = viewPosition();
           const mask = await imageBuffer(
             request.maskURL ||
@@ -2186,11 +2548,13 @@
             removeVolumes();
             state.viewerKey = null;
           }
-          showError(
-            "viewer-error",
+          showError("viewer-error", () =>
             controller.signal.reason === "timeout"
-              ? "载入超时，请检查网络后重试。"
-              : `${hasSource ? "分割结果" : "影像"}显示失败：${err.message}`,
+              ? localizeMessage("载入超时，请检查网络后重试。")
+              : t(
+                  `${hasSource ? "分割结果" : "影像"}显示失败：${errorMessage(err)}`,
+                  `${hasSource ? "Segmentation result" : "Image"} display failed: ${errorMessage(err)}`,
+                ),
           );
           $("retry-viewer").hidden = false;
         }
@@ -2221,7 +2585,7 @@
     $("labels").replaceChildren();
     $("label-search").value = "";
     $("label-search").hidden = state.labels.length < 8;
-    $("label-count").textContent = `(${state.labels.length})`;
+    bindText($("label-count"), () => `(${state.labels.length})`);
     for (const label of state.labels) {
       const wrap = document.createElement("label");
       wrap.className = "label-option";
@@ -2242,8 +2606,8 @@
       swatch.style.backgroundColor = `rgb(${label.rgb.join(",")})`;
       const name = document.createElement("span");
       name.className = "label-name";
-      name.textContent = labelDisplayName(label.name, label.id);
-      name.title = label.name || "";
+      bindText(name, () => labelDisplayName(label.name, label.id));
+      bindAttr(name, "title", () => label.name || "");
       const detail = document.createElement("span");
       detail.className = "label-details";
       const count = document.createElement("span");
@@ -2251,21 +2615,32 @@
       const volumeML =
         label.volume_ml ??
         (Number.isFinite(label.volume_mm3) ? label.volume_mm3 / 1000 : null);
-      count.textContent = Number.isFinite(volumeML)
-        ? formatVolume(volumeML)
-        : "体积未计算";
-      count.title =
+      bindText(count, () =>
+        Number.isFinite(volumeML)
+          ? formatVolume(volumeML)
+          : t("体积未计算", "Volume not calculated"),
+      );
+      bindAttr(count, "title", () =>
         result.volume_measurement?.unit_assumption === "assumed_mm"
-          ? "影像未注明空间单位，体积按 mm 估算。"
-          : "";
-      wrap.title = [
-        `${name.textContent} (${label.name}) · 标签 ${label.id}`,
-        Number.isFinite(label.voxels)
-          ? `${label.voxels.toLocaleString()} 体素`
+          ? t(
+              "影像未注明空间单位，体积按 mm 估算。",
+              "The image does not specify spatial units. Volume is estimated assuming millimeters.",
+            )
           : "",
-      ]
-        .filter(Boolean)
-        .join("\n");
+      );
+      bindAttr(wrap, "title", () =>
+        [
+          `${labelDisplayName(label.name, label.id)} (${label.name}) · ${t("标签", "Label")} ${number(label.id)}`,
+          Number.isFinite(label.voxels)
+            ? t(
+                `${label.voxels.toLocaleString(locale())} 体素`,
+                `${label.voxels.toLocaleString(locale())} voxels`,
+              )
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      );
       detail.append(name, count);
       wrap.append(checkbox, swatch, detail);
       $("labels").append(wrap);
@@ -2283,28 +2658,49 @@
       result.duration_seconds ??
       result.elapsed_seconds ??
       result.runtime_seconds;
-    $("result-summary").textContent = [
-      partial ? "部分结果 · 任务未完成" : "",
-      Array.isArray(aggregate?.outputs) && aggregate.outputs.length > 1
-        ? `共 ${aggregate.outputs.length} 项结果`
-        : "",
-      Number.isFinite(elapsed) ? `处理用时 ${elapsed.toFixed(1)} 秒` : "",
-      result.detection_status === "no_target_detected" ? "未检出目标" : "",
-    ]
-      .filter(Boolean)
-      .join(" / ");
+    bindText($("result-summary"), () =>
+      [
+        partial
+          ? t("部分结果 · 任务未完成", "Partial results · Task incomplete")
+          : "",
+        Array.isArray(aggregate?.outputs) && aggregate.outputs.length > 1
+          ? t(
+              `共 ${number(aggregate.outputs.length)} 项结果`,
+              `${number(aggregate.outputs.length)} results`,
+            )
+          : "",
+        Number.isFinite(elapsed)
+          ? t(
+              `处理用时 ${number(elapsed, 1)} 秒`,
+              `Processed in ${number(elapsed, 1)} s`,
+            )
+          : "",
+        result.detection_status === "no_target_detected"
+          ? t("未检出目标", "No target detected")
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" / "),
+    );
     $("result-summary").hidden = !$("result-summary").textContent;
     const unresolved = Array.isArray(aggregate?.completion?.unresolved)
       ? aggregate.completion.unresolved.filter(
           (item) => typeof item === "string",
         )
       : [];
-    $("result-explanation").textContent = [
-      typeof aggregate?.summary === "string" ? aggregate.summary : "",
-      unresolved.length ? `尚未完成：${unresolved.join("；")}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
+    bindText($("result-explanation"), () =>
+      [
+        typeof aggregate?.summary === "string" ? aggregate.summary : "",
+        unresolved.length
+          ? t(
+              `尚未完成：${unresolved.join("；")}`,
+              `Unresolved: ${unresolved.join("; ")}`,
+            )
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
     $("result-explanation").hidden = !$("result-explanation").textContent;
   }
 
@@ -2318,7 +2714,7 @@
 
   function formatVolume(value) {
     if (value > 0 && value < 0.01) return "< 0.01 mL";
-    return `${value.toLocaleString("zh-CN", { maximumFractionDigits: 2 })} mL`;
+    return `${value.toLocaleString(locale(), { maximumFractionDigits: 2 })} mL`;
   }
 
   function updateOverlay() {
@@ -2394,7 +2790,7 @@
       await openWorkspace(session);
     } catch (err) {
       lockWorkspace();
-      showError("session-error", err.message);
+      showError("session-error", err);
     } finally {
       $("session-retry").disabled = false;
     }
@@ -2414,7 +2810,7 @@
       lockWorkspace();
       await connectWorkspace();
     } catch (err) {
-      showError("connection-note", err.message);
+      showError("connection-note", err);
     } finally {
       $("logout").disabled = false;
     }
@@ -2468,7 +2864,7 @@
       refreshHistoryInBackground();
       schedulePoll();
     } catch (err) {
-      showError("form-error", err.message);
+      showError("form-error", err);
     } finally {
       state.submitting = false;
       updateSubmit();
@@ -2481,7 +2877,7 @@
       if (state.selected?.id) await selectTask(state.selected.id);
       showError("connection-note", "");
     } catch (err) {
-      showError("connection-note", err.message);
+      showError("connection-note", err);
     }
   });
   $("cancel-task").addEventListener("click", async () => {
@@ -2493,7 +2889,7 @@
       if (state.selected?.id === id) await selectTask(id);
       refreshHistoryInBackground();
     } catch (err) {
-      showError("task-error", err.message);
+      showError("task-error", err);
     } finally {
       $("cancel-task").disabled = false;
     }
@@ -2504,7 +2900,7 @@
         await getViewer();
         applyViewMode(button.dataset.view);
       } catch (err) {
-        showError("viewer-error", err.message);
+        showError("viewer-error", err);
       }
     }),
   );
@@ -2650,7 +3046,7 @@
           renderTask(state.selected);
           renderHistory();
         }
-        showError("task-error", err.message);
+        showError("task-error", err);
       }
     } finally {
       $("reuse-image").disabled = false;
@@ -2713,12 +3109,17 @@
     }
     renderTask(task);
   });
-  $("label-search").addEventListener("input", () => {
+  function filterLabels() {
     const query = $("label-search").value.trim().toLocaleLowerCase();
     for (const row of $("labels").children)
       row.hidden = !(row.textContent + row.dataset.name)
         .toLocaleLowerCase()
         .includes(query);
+  }
+  $("label-search").addEventListener("input", filterLabels);
+  i18n.onChange(() => {
+    filterLabels();
+    drawTaskProgress();
   });
   $("niivue-canvas").addEventListener("pointerup", () => {
     syncWindowPreset();

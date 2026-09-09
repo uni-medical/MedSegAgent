@@ -76,6 +76,7 @@ class Element {
 
   set textContent(value) {
     this.text = String(value);
+    for (const child of this.children) child.parentElement = null;
     this.children = [];
   }
 
@@ -92,16 +93,28 @@ class Element {
   }
 
   append(...children) {
+    for (const child of children) child.parentElement = this;
     this.children.push(...children);
   }
 
   replaceChildren(...children) {
+    for (const child of this.children) child.parentElement = null;
     this.text = "";
     this.children = children;
+    for (const child of children) child.parentElement = this;
+  }
+
+  get isConnected() {
+    return this.connected || this.parentElement?.isConnected || false;
+  }
+
+  getAttribute(name) {
+    return this.attributes[name] ?? null;
   }
 
   setAttribute(name, value) {
     this.attributes[name] = String(value);
+    if (name === "title" || name === "placeholder") this[name] = String(value);
   }
 
   removeAttribute(name) {
@@ -274,31 +287,46 @@ function task(id) {
 async function eventually(predicate, message) {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     if (predicate()) return;
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
   assert.fail(message);
 }
 
 function browser(t, options = {}) {
   const elements = new Map();
-  for (const match of html.matchAll(/<(\w+)\b[^>]*\bid="([^"]+)"[^>]*>/g)) {
-    const element = new Element(match[1]);
-    element.id = match[2];
-    element.hidden = /\bhidden\b/.test(match[0]);
-    element.checked = /\bchecked\b/.test(match[0]);
-    element.disabled = /\bdisabled\b/.test(match[0]);
-    element.value = /\bvalue="([^"]*)"/.exec(match[0])?.[1] || "";
-    const href = /\bhref="([^"]*)"/.exec(match[0])?.[1];
-    if (href) element.href = href;
-    elements.set(element.id, element);
+  const staticElements = [];
+  const decodeAttribute = (value) =>
+    value
+      .replaceAll("&quot;", '"')
+      .replaceAll("&amp;", "&")
+      .replaceAll("&lt;", "<")
+      .replaceAll("&gt;", ">");
+  for (const match of html.matchAll(/<(\w+)\b[^>]*>/g)) {
+    const node = new Element(match[1]);
+    for (const attribute of match[0].matchAll(/([\w-]+)="([^"]*)"/g))
+      node.setAttribute(attribute[1], decodeAttribute(attribute[2]));
+    node.connected = true;
+    node.id = node.getAttribute("id") || "";
+    node.hidden = /\bhidden\b/.test(match[0]);
+    node.checked = /\bchecked\b/.test(match[0]);
+    node.disabled = /\bdisabled\b/.test(match[0]);
+    node.value = node.getAttribute("value") || "";
+    node.title = node.getAttribute("title") || "";
+    node.placeholder = node.getAttribute("placeholder") || "";
+    // The fake models state transitions; the real browser verifies HTML layout.
+    node.textContent = decodeAttribute(
+      html
+        .slice(match.index + match[0].length)
+        .split("<", 1)[0]
+        .replace(/\s+/g, " ")
+        .trim(),
+    );
+    if (node.getAttribute("data-view"))
+      node.dataset.view = node.getAttribute("data-view");
+    if (node.id) elements.set(node.id, node);
+    staticElements.push(node);
   }
-  const viewButtons = [
-    ...html.matchAll(/<button\b[^>]*\bdata-view="([^"]+)"[^>]*>/g),
-  ].map((match) => {
-    const element = new Element("button");
-    element.dataset.view = match[1];
-    return element;
-  });
+  const viewButtons = staticElements.filter((node) => node.dataset.view);
   function element(id) {
     assert.ok(elements.has(id), `Unknown DOM id: ${id}`);
     return elements.get(id);
@@ -330,10 +358,15 @@ function browser(t, options = {}) {
     options.storageDenied,
     options.storageEntries,
   );
+  const localStorage = storageFake(
+    options.localStorageDenied,
+    options.language ? [["medseg-language", options.language]] : [],
+  );
   const windowEvents = new Element("window");
   const documentEvents = new Element("document");
   const context = {
     console,
+    queueMicrotask,
     performance: clock ? { now: () => clock.now } : performance,
     Date: clock
       ? class extends Date {
@@ -384,6 +417,7 @@ function browser(t, options = {}) {
     URL,
     location,
     sessionStorage,
+    localStorage,
     history: {
       replaceState(_state, _title, url) {
         location.href = String(url);
@@ -415,15 +449,33 @@ function browser(t, options = {}) {
     },
     document: {
       hidden: false,
+      documentElement: staticElements.find((node) => node.tagName === "HTML"),
+      get title() {
+        return staticElements.find((node) => node.tagName === "TITLE")
+          .textContent;
+      },
+      set title(value) {
+        staticElements.find((node) => node.tagName === "TITLE").textContent =
+          value;
+      },
       getElementById: element,
       createElement: (tag) => new Element(tag),
       addEventListener: documentEvents.addEventListener.bind(documentEvents),
       querySelectorAll(selector) {
-        assert.ok(["[data-view]", "button[data-view]"].includes(selector));
-        return viewButtons;
+        if (["[data-view]", "button[data-view]"].includes(selector))
+          return viewButtons;
+        const attributes = selector.split(",").map((part) => {
+          const match = /^\[([\w-]+)\]$/.exec(part.trim());
+          assert.ok(match, `Unsupported test selector: ${selector}`);
+          return match[1];
+        });
+        return staticElements.filter((node) =>
+          attributes.some((name) => node.getAttribute(name) !== null),
+        );
       },
     },
     window: {
+      localStorage,
       addEventListener: windowEvents.addEventListener.bind(windowEvents),
       niivue: {
         SLICE_TYPE: sliceTypes,
@@ -549,7 +601,14 @@ function browser(t, options = {}) {
     },
   };
 
-  vm.runInNewContext(source, context, { filename: "app.js" });
+  const sandbox = vm.createContext(context);
+  if (!options.omitI18n)
+    vm.runInContext(
+      fs.readFileSync(path.join(staticRoot, "i18n.js"), "utf8"),
+      sandbox,
+      { filename: "i18n.js" },
+    );
+  vm.runInContext(source, sandbox, { filename: "app.js" });
   t.after(() => {
     for (const release of slow.values()) release?.();
     for (const timer of timers) clearTimeout(timer);
@@ -562,6 +621,13 @@ function browser(t, options = {}) {
     tasks,
     slow,
     sessionStorage,
+    localStorage,
+    document: context.document,
+    async language(locale) {
+      await element(locale === "en" ? "language-en" : "language-zh").dispatch(
+        "click",
+      );
+    },
     location,
     windowEvent: (name) => windowEvents.dispatch(name),
     async visibility(hidden) {
@@ -632,14 +698,30 @@ test("the initial workspace is visible without a separate login screen", async (
     slow: ["/api/session"],
   });
   assert.equal(b.element("workspace").hidden, false);
-  for (const id of ["choose-image", "file", "refresh-tasks", "instruction", "new-task"])
-    assert.equal(b.element(id).disabled, true, `${id} waits for a usable session`);
+  for (const id of [
+    "choose-image",
+    "file",
+    "refresh-tasks",
+    "instruction",
+    "new-task",
+  ])
+    assert.equal(
+      b.element(id).disabled,
+      true,
+      `${id} waits for a usable session`,
+    );
   assert.doesNotMatch(
     html,
     /login-dialog|guest-button|login-error|access-token|login-form|访问令牌|管理员|凭据/,
   );
-  assert.doesNotMatch(source, /login-dialog|guest-button|access-token|login-submit|login-form/);
-  assert.equal(b.requests.some((row) => row.url === "/api/auth/guest"), false);
+  assert.doesNotMatch(
+    source,
+    /login-dialog|guest-button|access-token|login-submit|login-form/,
+  );
+  assert.equal(
+    b.requests.some((row) => row.url === "/api/auth/guest"),
+    false,
+  );
   const release = b.slow.get("/api/session");
   b.slow.delete("/api/session");
   release();
@@ -666,7 +748,9 @@ test("first entry automatically creates a guest cookie before loading the worksp
   assert.equal(request.body, undefined);
   assert.equal(request.headers.Authorization, undefined);
   assert.equal(
-    b.requests.some((row) => row.url === "/api/session" && row.method === "POST"),
+    b.requests.some(
+      (row) => row.url === "/api/session" && row.method === "POST",
+    ),
     false,
   );
   assert.equal(b.viewer.volumes.length, 2);
@@ -678,14 +762,26 @@ for (const kind of ["guest", "github"]) {
       session: {
         authenticated: true,
         github_enabled: true,
-        identity: { kind, display_name: "Existing Researcher", login: "researcher" },
+        identity: {
+          kind,
+          display_name: "Existing Researcher",
+          login: "researcher",
+        },
       },
     });
     await b.loaded();
-    assert.equal(b.requests.filter((row) => row.url === "/api/session").length, 1);
-    assert.equal(b.requests.some((row) => row.url === "/api/auth/guest"), false);
-    assert.equal(b.element("account-name").textContent,
-      kind === "guest" ? "未登录" : "Existing Researcher");
+    assert.equal(
+      b.requests.filter((row) => row.url === "/api/session").length,
+      1,
+    );
+    assert.equal(
+      b.requests.some((row) => row.url === "/api/auth/guest"),
+      false,
+    );
+    assert.equal(
+      b.element("account-name").textContent,
+      kind === "guest" ? "未登录" : "Existing Researcher",
+    );
     assert.equal(b.element("logout").hidden, kind === "guest");
     assert.equal(b.element("github-login").hidden, kind === "github");
   });
@@ -725,12 +821,20 @@ test("a failed guest request leaves the workspace visible and can be retried inl
   assert.equal(b.element("session-retry").disabled, false);
   assert.match(html, /id="session-retry"[^>]*>\s*重新连接\s*</);
   assert.equal(b.element("file").disabled, true);
-  assert.equal(b.requests.some((row) => row.url === "/api/config" || row.url === "/api/tasks"), false);
+  assert.equal(
+    b.requests.some(
+      (row) => row.url === "/api/config" || row.url === "/api/tasks",
+    ),
+    false,
+  );
   await b.element("session-retry").dispatch("click");
   await b.loaded();
   assert.equal(b.element("session-error").hidden, true);
   assert.equal(attempts, 2);
-  assert.equal(b.requests.filter((row) => row.url === "/api/session").length, 2);
+  assert.equal(
+    b.requests.filter((row) => row.url === "/api/session").length,
+    2,
+  );
 });
 
 test("retry after configuration fails reuses the guest cookie already issued", async (t) => {
@@ -746,14 +850,23 @@ test("retry after configuration fails reuses the guest cookie already issued", a
         };
     },
   });
-  await eventually(() => !b.element("session-error").hidden, "Configuration error did not appear");
+  await eventually(
+    () => !b.element("session-error").hidden,
+    "Configuration error did not appear",
+  );
   assert.equal(b.element("workspace").hidden, false);
   assert.equal(b.element("file").disabled, true);
   await b.element("session-retry").dispatch("click");
   await b.loaded();
   assert.equal(configAttempts, 2);
-  assert.equal(b.requests.filter((row) => row.url === "/api/auth/guest").length, 1);
-  assert.equal(b.requests.filter((row) => row.url === "/api/session").length, 2);
+  assert.equal(
+    b.requests.filter((row) => row.url === "/api/auth/guest").length,
+    1,
+  );
+  assert.equal(
+    b.requests.filter((row) => row.url === "/api/session").length,
+    2,
+  );
 });
 
 for (const pending of ["/api/session", "/api/auth/guest"]) {
@@ -762,23 +875,40 @@ for (const pending of ["/api/session", "/api/auth/guest"]) {
       session: { authenticated: false, github_enabled: true },
       slow: [pending],
     });
-    await eventually(() => typeof b.slow.get(pending) === "function", "Connection did not wait");
+    await eventually(
+      () => typeof b.slow.get(pending) === "function",
+      "Connection did not wait",
+    );
     assert.equal(b.element("workspace").hidden, false);
     assert.equal(b.element("session-retry").disabled, true);
-    for (const id of ["choose-image", "file", "refresh-tasks", "instruction", "new-task"])
+    for (const id of [
+      "choose-image",
+      "file",
+      "refresh-tasks",
+      "instruction",
+      "new-task",
+    ])
       assert.equal(b.element(id).disabled, true);
     await b.element("session-retry").dispatch("click");
     await b.element("refresh-tasks").dispatch("click");
     b.element("file").files = [{ name: "too-early.nii", size: 128 }];
     await b.element("file").dispatch("change");
     assert.equal(b.uploads.length, 0);
-    assert.equal(b.requests.some((row) => row.url === "/api/config" || row.url === "/api/tasks"), false);
+    assert.equal(
+      b.requests.some(
+        (row) => row.url === "/api/config" || row.url === "/api/tasks",
+      ),
+      false,
+    );
     assert.equal(b.requests.filter((row) => row.url === pending).length, 1);
     const release = b.slow.get(pending);
     b.slow.delete(pending);
     release();
     await b.loaded();
-    assert.equal(b.requests.filter((row) => row.url === "/api/auth/guest").length, 1);
+    assert.equal(
+      b.requests.filter((row) => row.url === "/api/auth/guest").length,
+      1,
+    );
   });
 }
 
@@ -789,7 +919,10 @@ test("OAuth failure remains explained after guest entry and is removed from the 
   });
   await b.loaded();
   assert.equal(b.element("session-error").hidden, false);
-  assert.equal(b.element("session-error").textContent, "GitHub 登录未完成，请重试。");
+  assert.equal(
+    b.element("session-error").textContent,
+    "GitHub 登录未完成，请重试。",
+  );
   const url = new URL(b.location.href);
   assert.equal(url.searchParams.has("error"), false);
   assert.equal(url.searchParams.get("task"), "A");
@@ -812,25 +945,46 @@ test("an initial image returning 401 leaves a clean workspace awaiting explicit 
     },
   });
   await eventually(
-    () => !b.element("session-error").hidden && !b.element("session-retry").disabled,
+    () =>
+      !b.element("session-error").hidden &&
+      !b.element("session-retry").disabled,
     "Expired session did not offer reconnect",
   );
   assert.equal(b.element("workspace").hidden, false);
-  assert.equal(b.element("session-error").textContent, "会话已过期，请重新连接。");
+  assert.equal(
+    b.element("session-error").textContent,
+    "会话已过期，请重新连接。",
+  );
   assert.equal(b.element("session-retry").hidden, false);
   assert.equal(b.element("task-list").children.length, 0);
   assert.equal(b.viewer.volumes.length, 0);
-  for (const id of ["choose-image", "file", "refresh-tasks", "instruction", "new-task"])
+  for (const id of [
+    "choose-image",
+    "file",
+    "refresh-tasks",
+    "instruction",
+    "new-task",
+  ])
     assert.equal(b.element(id).disabled, true);
   const requestCount = b.requests.length;
   await b.advance(60000);
-  assert.equal(b.requests.length, requestCount, "Expired bootstrap cannot restart polling or create a guest loop");
+  assert.equal(
+    b.requests.length,
+    requestCount,
+    "Expired bootstrap cannot restart polling or create a guest loop",
+  );
   expired = false;
   await b.element("session-retry").dispatch("click");
   await b.loaded();
   assert.equal(b.element("session-error").hidden, true);
-  assert.equal(b.requests.filter((row) => row.url === "/api/session").length, 2);
-  assert.equal(b.requests.some((row) => row.url === "/api/auth/guest"), false);
+  assert.equal(
+    b.requests.filter((row) => row.url === "/api/session").length,
+    2,
+  );
+  assert.equal(
+    b.requests.some((row) => row.url === "/api/auth/guest"),
+    false,
+  );
 });
 
 test("GitHub identity is shown as text and logout clears account-specific view state", async (t) => {
@@ -1082,12 +1236,22 @@ for (const pending of ["/api/config", "/api/tasks"]) {
       "Initial request did not wait",
     );
     assert.equal(b.element("workspace").hidden, false);
-    for (const id of ["choose-image", "file", "refresh-tasks", "instruction", "new-task"])
+    for (const id of [
+      "choose-image",
+      "file",
+      "refresh-tasks",
+      "instruction",
+      "new-task",
+    ])
       assert.equal(b.element(id).disabled, true);
     const file = { name: "first.nii.gz", size: 128 };
     b.element("file").files = [file];
     await b.element("file").dispatch("change");
-    assert.equal(b.uploads.length, 0, "unready controls cannot start an upload");
+    assert.equal(
+      b.uploads.length,
+      0,
+      "unready controls cannot start an upload",
+    );
     assert.equal(b.element("form-error").hidden, true);
 
     const release = b.slow.get(pending);
@@ -2128,10 +2292,15 @@ test("task progress follows selected identity and stops for draft and logout", a
   await b.select("A");
   await b.element("logout").dispatch("click");
   const loggedOut = b.element("task-elapsed").textContent;
-  const detailRequests = b.requests.filter((row) => /^\/api\/tasks\/[AB]$/.test(row.url)).length;
+  const detailRequests = b.requests.filter((row) =>
+    /^\/api\/tasks\/[AB]$/.test(row.url),
+  ).length;
   await b.advance(10000);
   assert.equal(b.element("task-elapsed").textContent, loggedOut);
-  assert.equal(b.requests.filter((row) => /^\/api\/tasks\/[AB]$/.test(row.url)).length, detailRequests);
+  assert.equal(
+    b.requests.filter((row) => /^\/api\/tasks\/[AB]$/.test(row.url)).length,
+    detailRequests,
+  );
   assert.equal(b.element("task-list").children.length, 0);
 });
 
@@ -2652,8 +2821,236 @@ test("independent history refresh discovers new tasks without a selected detail 
   assert.match(b.element("task-list").textContent, /Synthetic task B/);
   assert.equal(b.requests.filter((r) => r.url === "/api/tasks").length, 2);
   await b.element("logout").dispatch("click");
-  const detailRequests = b.requests.filter((row) => row.url === "/api/tasks/A").length;
+  const detailRequests = b.requests.filter(
+    (row) => row.url === "/api/tasks/A",
+  ).length;
   await b.advance(30000);
-  assert.equal(b.requests.filter((row) => row.url === "/api/tasks/A").length, detailRequests);
+  assert.equal(
+    b.requests.filter((row) => row.url === "/api/tasks/A").length,
+    detailRequests,
+  );
   assert.equal(b.element("task-list").children.length, 0);
+});
+
+test("language starts in Chinese and switches without changing an unsent request", async (t) => {
+  const b = browser(t, { url: "http://example.test/", tasks: [] });
+  await eventually(
+    () => !b.element("instruction").disabled,
+    "Workspace not ready",
+  );
+  assert.equal(b.document.documentElement.lang, "zh-CN");
+  assert.match(b.document.title, /影像分割/);
+  b.element("instruction").value = "分割左肾 — keep this exact request";
+  const requests = b.requests.length;
+  await b.language("en");
+  assert.equal(b.document.documentElement.lang, "en");
+  assert.match(b.document.title, /[Ss]egmentation/);
+  assert.equal(b.element("language-en").attributes["aria-pressed"], "true");
+  assert.doesNotMatch(b.element("submit").textContent, /[\p{Script=Han}]/u);
+  assert.match(b.element("instruction").getAttribute("placeholder"), /CT/);
+  assert.equal(
+    b.element("instruction").value,
+    "分割左肾 — keep this exact request",
+  );
+  assert.equal(
+    b.requests.length,
+    requests,
+    "Switching language must not send requests",
+  );
+  assert.equal(b.localStorage.getItem("medseg-language"), "en");
+  await b.language("zh-CN");
+  assert.equal(b.element("submit").textContent, "开始分割");
+  assert.equal(
+    b.element("instruction").value,
+    "分割左肾 — keep this exact request",
+  );
+  assert.equal(b.localStorage.getItem("medseg-language"), "zh-CN");
+});
+
+for (const language of ["en", "unsupported"]) {
+  test(`stored language ${language} is restored or defaults to Chinese`, async (t) => {
+    const b = browser(t, { language, url: "http://example.test/", tasks: [] });
+    await eventually(
+      () => !b.element("instruction").disabled,
+      "Workspace not ready",
+    );
+    assert.equal(
+      b.document.documentElement.lang,
+      language === "en" ? "en" : "zh-CN",
+    );
+    if (language === "en")
+      assert.doesNotMatch(b.element("submit").textContent, /[\p{Script=Han}]/u);
+    else assert.equal(b.element("submit").textContent, "开始分割");
+  });
+}
+
+test("language switching still works when preference storage is disabled", async (t) => {
+  const b = browser(t, { localStorageDenied: true });
+  await b.loaded();
+  await b.language("en");
+  assert.equal(b.document.documentElement.lang, "en");
+  await b.language("zh-CN");
+  assert.equal(b.document.documentElement.lang, "zh-CN");
+});
+
+test("language switching preserves loaded volumes, label visibility, and user content", async (t) => {
+  const a = task("A");
+  a.text = "新建分割";
+  a.upload_name = "正在上传…";
+  const b = browser(t, { tasks: [a] });
+  await b.loaded();
+  const viewer = b.viewer;
+  const volumes = [...viewer.volumes];
+  const decodes = b.decodes.length;
+  const requests = b.requests.length;
+  const checkbox = b.element("labels").children[0].children[0];
+  checkbox.checked = false;
+  await checkbox.dispatch("change");
+  const visibleColors = JSON.stringify(volumes[1].labelMap);
+  await b.language("en");
+  assert.equal(b.viewer, viewer);
+  assert.deepEqual(b.viewer.volumes, volumes);
+  assert.equal(b.decodes.length, decodes);
+  assert.equal(b.requests.length, requests);
+  assert.equal(b.element("labels").children[0].children[0].checked, false);
+  assert.equal(JSON.stringify(volumes[1].labelMap), visibleColors);
+  assert.equal(b.element("request-text").textContent, "新建分割");
+  assert.equal(b.element("viewer-heading").textContent, "正在上传…");
+  assert.doesNotMatch(
+    b.element("labels").children[0].textContent,
+    /[\p{Script=Han}]/u,
+  );
+  await b.language("zh-CN");
+  assert.match(b.element("labels").children[0].textContent, /肝脏/);
+  assert.equal(b.element("labels").children[0].children[0].checked, false);
+});
+
+test("an already visible task error follows language changes", async (t) => {
+  const a = task("A");
+  a.status = "failed";
+  a.error = { code: "UNSUPPORTED_REQUEST", message: "internal model details" };
+  const b = browser(t, { tasks: [a] });
+  await b.loaded();
+  assert.match(b.element("task-error").textContent, /不支持/);
+  await b.language("en");
+  assert.match(b.element("task-error").textContent, /support/i);
+  assert.doesNotMatch(b.element("task-error").textContent, /[\p{Script=Han}]/u);
+  await b.language("zh-CN");
+  assert.match(b.element("task-error").textContent, /不支持/);
+});
+
+test("language switching keeps an active task clock and image intact", async (t) => {
+  const b = browser(t, { tasks: [runningTask()], clock: true });
+  await b.loaded();
+  const sourceImage = b.viewer.volumes[0];
+  const progress = b.element("task-progress").value;
+  const requests = b.requests.length;
+  await b.language("en");
+  assert.doesNotMatch(
+    b.element("status-title").textContent,
+    /[\p{Script=Han}]/u,
+  );
+  assert.doesNotMatch(
+    b.element("task-elapsed").textContent,
+    /[\p{Script=Han}]/u,
+  );
+  assert.match(b.element("task-elapsed").textContent, /20/);
+  assert.equal(b.element("task-progress").value, progress);
+  assert.equal(b.requests.length, requests);
+  await b.advance(1000);
+  assert.match(b.element("task-elapsed").textContent, /21/);
+  assert.doesNotMatch(
+    b.element("task-elapsed").textContent,
+    /[\p{Script=Han}]/u,
+  );
+  assert.equal(b.viewer.volumes[0], sourceImage);
+  await b.language("zh-CN");
+  assert.equal(b.element("task-elapsed").textContent, "已用 21 秒");
+});
+
+test("language switching leaves an in-flight upload running", async (t) => {
+  const b = browser(t, { tasks: [], url: "http://example.test/" });
+  await eventually(() => !b.element("file").disabled, "Workspace not ready");
+  b.element("instruction").value = "My draft";
+  await b
+    .element("file")
+    .dispatch("change", {
+      target: { files: [{ name: "synthetic.nii", size: 512 }] },
+    });
+  assert.equal(b.uploads.length, 1);
+  const upload = b.uploads[0];
+  upload.upload.onprogress({ lengthComputable: true, loaded: 128, total: 512 });
+  await b.language("en");
+  assert.equal(b.uploads.length, 1);
+  assert.equal(!!upload.aborted, false);
+  assert.match(b.element("upload-status").textContent, /25/);
+  assert.doesNotMatch(
+    b.element("upload-status").textContent,
+    /[\p{Script=Han}]/u,
+  );
+  assert.equal(b.element("instruction").value, "My draft");
+  await b.language("zh-CN");
+  assert.match(b.element("upload-status").textContent, /正在上传 25%/);
+});
+
+test("official example suggestions follow the language without rewriting a draft", async (t) => {
+  const config = {
+    examples: [
+      {
+        id: "liver-ct",
+        title: "腹部 CT",
+        modality: "CT",
+        size_bytes: 128,
+        description: "肝脏与腹部器官的三维查看和分割。",
+        preview_url: "/api/examples/liver-ct/preview",
+        prompts: [{ label: "肝脏", text: "分割这份 CT 中的肝脏。" }],
+      },
+    ],
+  };
+  const b = browser(t, { tasks: [], config, url: "http://example.test/" });
+  await eventually(() => !b.element("file").disabled, "Workspace not ready");
+  await b.language("en");
+  assert.match(b.element("example-cards").textContent, /Abdominal CT/);
+  await b.example("liver-ct");
+  await b.loaded("");
+  await b.element("example-prompts").children[0].dispatch("click");
+  assert.match(b.element("instruction").value, /Segment the liver/);
+  const input = b.element("instruction").value;
+  const image = b.viewer.volumes[0];
+  await b.language("zh-CN");
+  assert.equal(b.element("example-prompts").children[0].textContent, "肝脏");
+  assert.equal(b.element("instruction").value, input);
+  assert.equal(b.viewer.volumes[0], image);
+  await b.element("example-prompts").children[0].dispatch("click");
+  assert.equal(b.element("instruction").value, "分割这份 CT 中的肝脏。");
+});
+
+test("changing language preserves the selected output and leaves model prose untouched", async (t) => {
+  const a = multiOutputTask();
+  const b = browser(t, { tasks: [a] });
+  await b.loaded();
+  b.element("result-output").value = "nodules";
+  await b.element("result-output").dispatch("change");
+  await b.loaded();
+  const volume = b.viewer.volumes[1];
+  await b.element("refresh-tasks").dispatch("click");
+  await b.language("en");
+  assert.equal(b.element("result-output").value, "nodules");
+  assert.equal(b.viewer.volumes[1], volume);
+  assert.equal(b.element("result-explanation").textContent, a.result.summary);
+  assert.equal(b.element("result-output").textContent, "双肺肺结节");
+  assert.doesNotMatch(b.element("labels").textContent, /[\p{Script=Han}]/u);
+  assert.equal(
+    b.element("download-labels").children[0].href,
+    "/api/tasks/A/files/nodules.nii.gz",
+  );
+});
+
+test("the Chinese workspace still loads if the language script is unavailable", async (t) => {
+  const b = browser(t, { omitI18n: true });
+  await b.loaded();
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("status-title").textContent, "分割完成");
+  assert.equal(b.viewer.volumes.length, 2);
+  assert.equal(b.element("viewer-error").hidden, true);
 });

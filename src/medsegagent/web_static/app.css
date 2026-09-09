@@ -184,7 +184,7 @@ h2 {
 .new-task:hover {
   background: #cddfd1;
 }
-.new-task span {
+.new-task span[aria-hidden] {
   font-size: 23px;
   line-height: 1;
   font-weight: 400;
@@ -195,7 +195,8 @@ h2 {
   align-items: center;
   gap: 8px;
 }
-.section-heading h2 span {
+.section-heading h2 #task-count,
+.section-heading h2 #label-count {
   font-size: 13px;
   font-weight: 400;
   margin-left: 4px;
@@ -319,8 +320,45 @@ details p {
   padding: 27px 24px 12px;
 }
 .viewer-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   padding-bottom: 24px;
   min-width: 0;
+}
+.viewer-heading > div:first-child {
+  min-width: 0;
+}
+.language-switch {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #e9ede6;
+}
+.language-switch button {
+  min-width: 38px;
+  min-height: 32px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.language-switch button:hover {
+  color: var(--ink);
+}
+.language-switch button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 1px 3px #20332b14;
 }
 .viewer-heading h1 {
   font-size: 24px;
@@ -1071,7 +1109,7 @@ select {
 .window-numbers label {
   font-size: 14px;
 }
-.window-numbers label > span {
+.window-numbers label > span:not([data-i18n-en]) {
   color: var(--muted);
   font-size: 12px;
 }

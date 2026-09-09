@@ -6,82 +6,183 @@
     <meta name="color-scheme" content="light" />
     <meta name="referrer" content="no-referrer" />
     <meta name="theme-color" content="#edf0ec" />
-    <title>MedSegAgent · 影像分割</title>
+    <title data-i18n-en="MedSegAgent · Image Segmentation">
+      MedSegAgent · 影像分割
+    </title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
     <link rel="stylesheet" href="/static/app.css" />
     <script defer src="/static/vendor/niivue-0.69.0.umd.js"></script>
+    <script defer src="/static/i18n.js"></script>
     <script defer src="/static/app.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#request">跳到分割请求</a>
+    <a
+      class="skip-link"
+      href="#request"
+      data-i18n-en="Skip to segmentation request"
+      >跳到分割请求</a
+    >
     <main id="workspace">
-      <aside class="sidebar" aria-label="分割记录导航">
-        <a class="brand" href="/" aria-label="MedSegAgent 首页"
+      <aside
+        class="sidebar"
+        aria-label="分割记录导航"
+        data-i18n-aria-label-en="Segmentation history navigation"
+      >
+        <a
+          class="brand"
+          href="/"
+          aria-label="MedSegAgent 首页"
+          data-i18n-aria-label-en="MedSegAgent home"
           ><img src="/static/logo.svg" width="34" height="34" alt="" /><span
             >MedSegAgent</span
           ></a
         >
         <button type="button" id="new-task" class="new-task" disabled>
-          <span aria-hidden="true">＋</span>新建分割
+          <span aria-hidden="true">＋</span
+          ><span data-i18n-en="New segmentation">新建分割</span>
         </button>
         <section class="history" aria-labelledby="history-heading">
           <div class="section-heading">
-            <h2 id="history-heading">分割记录 <span id="task-count"></span></h2>
+            <h2 id="history-heading">
+              <span data-i18n-en="History">分割记录</span>
+              <span id="task-count"></span>
+            </h2>
             <button
               type="button"
               class="quiet"
               id="refresh-tasks"
               disabled
               aria-label="刷新分割记录"
+              data-i18n-aria-label-en="Refresh segmentation history"
             >
-              刷新
+              <span data-i18n-en="Refresh">刷新</span>
             </button>
           </div>
           <input
             type="search"
             id="history-search"
             placeholder="搜索影像或分割目标"
+            data-i18n-placeholder-en="Search images or segmentation targets"
             aria-label="搜索分割记录"
+            data-i18n-aria-label-en="Search segmentation history"
           />
-          <p id="history-empty" class="muted">暂无分割记录</p>
+          <p
+            id="history-empty"
+            class="muted"
+            data-i18n-en="No segmentations yet"
+          >
+            暂无分割记录
+          </p>
           <ol id="task-list"></ol>
         </section>
         <div class="sidebar-footer">
           <div class="account-line">
-            <span id="account-name">未登录</span>
+            <span id="account-name" data-i18n-en="Not signed in">未登录</span>
             <a
               id="github-login"
               class="quiet"
               aria-disabled="true"
               title="正在检查登录服务"
+              data-i18n-title-en="Checking sign-in service"
+              data-i18n-en="Sign in with GitHub"
               >GitHub 登录</a
-            ><button class="quiet" id="logout" type="button" hidden>
+            ><button
+              class="quiet"
+              id="logout"
+              type="button"
+              data-i18n-en="Sign out"
+              hidden
+            >
               退出登录
             </button>
           </div>
           <p id="session-error" class="error" role="alert" hidden></p>
-          <button class="quiet" id="session-retry" type="button" hidden>
+          <button
+            class="quiet"
+            id="session-retry"
+            type="button"
+            data-i18n-en="Reconnect"
+            hidden
+          >
             重新连接
           </button>
-          <small>仅供研究</small>
+          <small data-i18n-en="For research use only">仅供研究</small>
         </div>
       </aside>
       <section class="image-workspace" aria-labelledby="viewer-heading">
         <header class="viewer-heading">
           <div>
-            <h1 id="viewer-heading">新建分割</h1>
+            <h1 id="viewer-heading" data-i18n-en="New segmentation">
+              新建分割
+            </h1>
             <p id="viewer-name" hidden></p>
           </div>
+          <div
+            class="language-switch"
+            role="group"
+            aria-label="界面语言"
+            data-i18n-aria-label-en="Interface language"
+          >
+            <button
+              id="language-zh"
+              type="button"
+              lang="zh-CN"
+              aria-pressed="true"
+              aria-label="切换为中文"
+              data-i18n-aria-label-en="Switch to Chinese"
+            >
+              中文
+            </button>
+            <button
+              id="language-en"
+              type="button"
+              lang="en"
+              aria-pressed="false"
+              aria-label="切换为英文"
+              data-i18n-aria-label-en="Switch to English"
+            >
+              EN
+            </button>
+          </div>
         </header>
-        <div class="viewer-toolbar" aria-label="影像显示控制">
-          <div class="view-modes" role="group" aria-label="查看方式">
-            <button type="button" data-view="multiplanar" aria-pressed="true">
+        <div
+          class="viewer-toolbar"
+          aria-label="影像显示控制"
+          data-i18n-aria-label-en="Image display controls"
+        >
+          <div
+            class="view-modes"
+            role="group"
+            aria-label="查看方式"
+            data-i18n-aria-label-en="View mode"
+          >
+            <button
+              type="button"
+              data-view="multiplanar"
+              aria-pressed="true"
+              data-i18n-en="Four views"
+            >
               四视图</button
-            ><button type="button" data-view="axial" aria-pressed="false">
+            ><button
+              type="button"
+              data-view="axial"
+              aria-pressed="false"
+              data-i18n-en="Axial"
+            >
               轴位</button
-            ><button type="button" data-view="coronal" aria-pressed="false">
+            ><button
+              type="button"
+              data-view="coronal"
+              aria-pressed="false"
+              data-i18n-en="Coronal"
+            >
               冠状位</button
-            ><button type="button" data-view="sagittal" aria-pressed="false">
+            ><button
+              type="button"
+              data-view="sagittal"
+              aria-pressed="false"
+              data-i18n-en="Sagittal"
+            >
               矢状位</button
             ><button type="button" data-view="render" aria-pressed="false">
               3D
@@ -93,6 +194,7 @@
               type="button"
               class="quiet"
               aria-label="缩小影像"
+              data-i18n-aria-label-en="Zoom out"
             >
               −</button
             ><button
@@ -100,6 +202,7 @@
               type="button"
               class="quiet"
               aria-label="放大影像"
+              data-i18n-aria-label-en="Zoom in"
             >
               ＋</button
             ><button
@@ -107,8 +210,9 @@
               type="button"
               class="quiet"
               title="重置切片、缩放、窗宽窗位与 3D 视角"
+              data-i18n-title-en="Reset slices, zoom, window width and level, and 3D orientation"
             >
-              复位
+              <span data-i18n-en="Reset">复位</span>
             </button>
           </div>
         </div>
@@ -122,11 +226,14 @@
             id="niivue-canvas"
             tabindex="0"
             aria-label="影像四视图：点击定位，滚轮切片；右键拖动调整窗宽窗位，中键平移"
+            data-i18n-aria-label-en="Four-view image viewer: click to locate, scroll through slices, right-drag to adjust window width and level, and middle-drag to pan"
           ></canvas>
           <div class="pane-chrome" data-pane="axial">
-            <span class="pane-title" title="Axial">轴位</span>
+            <span class="pane-title" title="Axial" data-i18n-en="Axial"
+              >轴位</span
+            >
             <div class="slice-control">
-              <label for="slice-axial">切片</label
+              <label for="slice-axial" data-i18n-en="Slice">切片</label
               ><input
                 id="slice-axial"
                 type="range"
@@ -134,13 +241,16 @@
                 max="1"
                 value="0"
                 aria-label="轴位切片"
+                data-i18n-aria-label-en="Axial slice"
               /><output id="slice-axial-value"></output>
             </div>
           </div>
           <div class="pane-chrome" data-pane="sagittal">
-            <span class="pane-title" title="Sagittal">矢状位</span>
+            <span class="pane-title" title="Sagittal" data-i18n-en="Sagittal"
+              >矢状位</span
+            >
             <div class="slice-control">
-              <label for="slice-sagittal">切片</label
+              <label for="slice-sagittal" data-i18n-en="Slice">切片</label
               ><input
                 id="slice-sagittal"
                 type="range"
@@ -148,13 +258,16 @@
                 max="1"
                 value="0"
                 aria-label="矢状位切片"
+                data-i18n-aria-label-en="Sagittal slice"
               /><output id="slice-sagittal-value"></output>
             </div>
           </div>
           <div class="pane-chrome" data-pane="coronal">
-            <span class="pane-title" title="Coronal">冠状位</span>
+            <span class="pane-title" title="Coronal" data-i18n-en="Coronal"
+              >冠状位</span
+            >
             <div class="slice-control">
-              <label for="slice-coronal">切片</label
+              <label for="slice-coronal" data-i18n-en="Slice">切片</label
               ><input
                 id="slice-coronal"
                 type="range"
@@ -162,17 +275,31 @@
                 max="1"
                 value="0"
                 aria-label="冠状位切片"
+                data-i18n-aria-label-en="Coronal slice"
               /><output id="slice-coronal-value"></output>
             </div>
           </div>
           <div class="pane-chrome" data-pane="render">
-            <span class="pane-title">3D <small>体渲染</small></span
-            ><span class="render-hint">拖动旋转 · 滚轮缩放</span>
+            <span class="pane-title"
+              >3D <small data-i18n-en="Volume rendering">体渲染</small></span
+            ><span
+              class="render-hint"
+              data-i18n-en="Drag to rotate · Scroll to zoom"
+              >拖动旋转 · 滚轮缩放</span
+            >
           </div>
           <div class="viewer-empty" id="viewer-empty">
             <div class="welcome-upload">
-              <h3 id="empty-title">从一张影像开始</h3>
-              <button type="button" id="choose-image" class="primary" disabled>
+              <h3 id="empty-title" data-i18n-en="Start with an image">
+                从一张影像开始
+              </h3>
+              <button
+                type="button"
+                id="choose-image"
+                class="primary"
+                data-i18n-en="Choose NIfTI image"
+                disabled
+              >
                 选择 NIfTI 影像
               </button>
             </div>
@@ -182,7 +309,9 @@
               aria-labelledby="examples-heading"
               hidden
             >
-              <h4 id="examples-heading">试用示例</h4>
+              <h4 id="examples-heading" data-i18n-en="Try an example">
+                试用示例
+              </h4>
               <div id="example-cards" class="example-cards"></div>
             </section>
             <section
@@ -190,7 +319,12 @@
               aria-labelledby="capability-heading"
             >
               <header class="capability-heading">
-                <h2 id="capability-heading">支持 300+ 人体结构与病灶分割目标类别</h2>
+                <h2
+                  id="capability-heading"
+                  data-i18n-en="Segment 300+ anatomical structures and lesion classes"
+                >
+                  支持 300+ 人体结构与病灶分割目标类别
+                </h2>
               </header>
               <div class="capability-modalities">
                 <section
@@ -198,10 +332,16 @@
                   aria-labelledby="capability-ct"
                 >
                   <h3 id="capability-ct">CT</h3>
-                  <p class="capability-range">
+                  <p
+                    class="capability-range"
+                    data-i18n-en="Thoracic, abdominal and pelvic organs, lung lobes, individual vertebrae, liver segments, teeth and pulp, plus head and neck structures, bones, muscles, vessels and airways."
+                  >
                     胸腹盆腔脏器、各肺叶、逐节脊椎、肝段、牙齿与牙髓，以及头颈结构、骨骼、肌群、血管与气道。
                   </p>
-                  <p class="capability-lesions">
+                  <p
+                    class="capability-lesions"
+                    data-i18n-en="Lung nodules, liver lesions, kidney cysts, intracerebral hemorrhage, and pleural and pericardial effusions."
+                  >
                     肺结节、肝脏病灶、肾囊肿、脑内出血、胸腔及心包积液。
                   </p>
                 </section>
@@ -210,10 +350,18 @@
                   aria-labelledby="capability-mr"
                 >
                   <h3 id="capability-mr">MR</h3>
-                  <p class="capability-range">
+                  <p
+                    class="capability-range"
+                    data-i18n-en="Brain, thoracic, abdominal and pelvic organs, left and right lungs, individual vertebrae, intervertebral discs, liver segments, plus bones, muscles and major vessels."
+                  >
                     脑、胸腹盆腔脏器、左右肺、逐节脊椎、椎间盘、肝段，以及骨骼、肌群与主要血管。
                   </p>
-                  <p class="capability-lesions">肝脏病灶、脑动脉瘤。</p>
+                  <p
+                    class="capability-lesions"
+                    data-i18n-en="Liver lesions and cerebral aneurysms."
+                  >
+                    肝脏病灶、脑动脉瘤。
+                  </p>
                 </section>
               </div>
             </section>
@@ -225,14 +373,28 @@
             hidden
           >
             <span class="spinner" aria-hidden="true"></span
-            ><span id="viewer-loading-text">正在载入影像…</span>
+            ><span id="viewer-loading-text" data-i18n-en="Loading image…"
+              >正在载入影像…</span
+            >
           </div>
           <div id="viewer-error" class="viewer-error" role="alert" hidden></div>
-          <button type="button" id="retry-viewer" hidden>重新加载影像</button>
+          <button
+            type="button"
+            id="retry-viewer"
+            data-i18n-en="Reload image"
+            hidden
+          >
+            重新加载影像
+          </button>
         </div>
         <div class="viewer-caption">
-          <span id="location">点击定位 · 滚轮切片 · 右键调窗</span
-          ><span>放射学方向 R / L</span>
+          <span
+            id="location"
+            data-i18n-en="Click to locate · Scroll through slices · Right-drag to adjust window"
+            >点击定位 · 滚轮切片 · 右键调窗</span
+          ><span data-i18n-en="Radiological orientation R / L"
+            >放射学方向 R / L</span
+          >
         </div>
 
         <p
@@ -242,14 +404,24 @@
           hidden
         ></p>
       </section>
-      <aside class="context-panel" aria-label="当前影像操作">
-        <div class="context-tabs" role="tablist" aria-label="影像操作">
+      <aside
+        class="context-panel"
+        aria-label="当前影像操作"
+        data-i18n-aria-label-en="Current image actions"
+      >
+        <div
+          class="context-tabs"
+          role="tablist"
+          aria-label="影像操作"
+          data-i18n-aria-label-en="Image actions"
+        >
           <button
             type="button"
             role="tab"
             id="tab-request"
             aria-controls="panel-request"
             aria-selected="true"
+            data-i18n-en="Segmentation"
           >
             分割请求
           </button>
@@ -260,6 +432,7 @@
             aria-controls="panel-results"
             aria-selected="false"
             tabindex="-1"
+            data-i18n-en="Display &amp; results"
           >
             显示与结果
           </button>
@@ -271,7 +444,7 @@
             aria-labelledby="tab-request"
           >
             <div id="record-request" class="record-request" hidden>
-              <h2>本次请求</h2>
+              <h2 data-i18n-en="Current request">本次请求</h2>
               <p id="request-text"></p>
               <div class="request-meta" id="request-meta"></div>
             </div>
@@ -292,7 +465,10 @@
                     stroke-linejoin="round"
                   />
                 </svg>
-                <strong id="file-name">选择或拖入 NIfTI</strong
+                <strong
+                  id="file-name"
+                  data-i18n-en="Choose or drop a NIfTI file"
+                  >选择或拖入 NIfTI</strong
                 ><span id="file-help">.nii / .nii.gz</span
                 ><!-- Omit accept: macOS can disable .nii.gz for compound-extension filters.
                      uploadFile and the server enforce the actual NIfTI format. -->
@@ -309,18 +485,22 @@
                   max="100"
                   value="0"
                   aria-label="上传进度"
+                  data-i18n-aria-label-en="Upload progress"
                 ></progress
                 ><span id="upload-status"></span>
               </div>
               <dl class="file-meta" id="file-meta" hidden>
-                <dt>文件大小</dt>
+                <dt data-i18n-en="File size">文件大小</dt>
                 <dd id="file-size"></dd>
-                <dt>影像尺寸</dt>
+                <dt data-i18n-en="Dimensions">影像尺寸</dt>
                 <dd id="file-shape"></dd>
-                <dt>体素间距</dt>
+                <dt data-i18n-en="Voxel spacing">体素间距</dt>
                 <dd id="file-spacing"></dd>
               </dl>
-              <label for="instruction" class="field-label"
+              <label
+                for="instruction"
+                class="field-label"
+                data-i18n-en="What would you like to segment?"
                 >需要分割什么？</label
               >
               <textarea
@@ -329,15 +509,23 @@
                 rows="5"
                 maxlength="4000"
                 placeholder="例如：分割这张 CT 中的肝脏和左右肾。"
+                data-i18n-placeholder-en="For example: Segment the liver and both kidneys in this CT image."
                 required
               ></textarea>
               <div
                 id="example-prompts"
                 class="example-prompts"
                 aria-label="示例分割需求"
+                data-i18n-aria-label-en="Example segmentation requests"
                 hidden
               ></div>
-              <button id="submit" class="primary" type="submit" disabled>
+              <button
+                id="submit"
+                class="primary"
+                type="submit"
+                data-i18n-en="Start segmentation"
+                disabled
+              >
                 开始分割
               </button>
               <p id="form-error" class="error" role="alert" hidden></p>
@@ -346,7 +534,13 @@
               <div class="status-line">
                 <span class="status-dot" aria-hidden="true"></span
                 ><strong id="status-title" aria-live="polite"></strong
-                ><button id="cancel-task" type="button" class="quiet" hidden>
+                ><button
+                  id="cancel-task"
+                  type="button"
+                  class="quiet"
+                  data-i18n-en="Cancel task"
+                  hidden
+                >
                   取消任务
                 </button>
               </div>
@@ -359,14 +553,21 @@
                 id="task-progress"
                 max="100"
                 aria-label="预估进度"
+                data-i18n-aria-label-en="Estimated progress"
               ></progress>
               <p id="task-error" class="error" hidden></p>
             </div>
-            <button type="button" id="reuse-image" class="secondary" hidden>
+            <button
+              type="button"
+              id="reuse-image"
+              class="secondary"
+              data-i18n-en="New segmentation with this image"
+              hidden
+            >
               基于此影像新建分割
             </button>
             <details id="example-switch" class="example-switch" hidden>
-              <summary>切换示例</summary>
+              <summary data-i18n-en="Switch example">切换示例</summary>
               <div id="example-switch-list" class="example-switch-list"></div>
             </details>
           </section>
@@ -377,18 +578,26 @@
             hidden
           >
             <section class="display-settings">
-              <h2>影像显示</h2>
-              <label for="window-preset" class="field-label">窗宽窗位</label
+              <h2 data-i18n-en="Image display">影像显示</h2>
+              <label
+                for="window-preset"
+                class="field-label"
+                data-i18n-en="Window width / level"
+                >窗宽窗位</label
               ><select id="window-preset" disabled>
-                <option value="auto">自动</option>
-                <option value="custom" disabled>手动调整</option>
-                <option value="soft">CT 软组织</option>
-                <option value="lung">CT 肺窗</option>
-                <option value="bone">CT 骨窗</option>
+                <option value="auto" data-i18n-en="Auto">自动</option>
+                <option value="custom" data-i18n-en="Manual" disabled>
+                  手动调整
+                </option>
+                <option value="soft" data-i18n-en="CT soft tissue">
+                  CT 软组织
+                </option>
+                <option value="lung" data-i18n-en="CT lung">CT 肺窗</option>
+                <option value="bone" data-i18n-en="CT bone">CT 骨窗</option>
               </select>
               <div class="window-numbers">
                 <label for="window-width"
-                  >窗宽 <span>WW</span>
+                  ><span data-i18n-en="Width">窗宽</span> <span>WW</span>
                   <input
                     id="window-width"
                     type="number"
@@ -399,7 +608,7 @@
                   />
                 </label>
                 <label for="window-level"
-                  >窗位 <span>WL</span>
+                  ><span data-i18n-en="Level">窗位</span> <span>WL</span>
                   <input
                     id="window-level"
                     type="number"
@@ -412,17 +621,17 @@
               </div>
               <p id="window-error" class="error" role="alert" hidden></p>
               <label class="crosshair-setting"
-                ><input
-                  id="crosshair-toggle"
-                  type="checkbox"
-                  checked
-                />显示十字线</label
+                ><input id="crosshair-toggle" type="checkbox" checked /><span
+                  data-i18n-en="Show crosshair"
+                  >显示十字线</span
+                ></label
               >
             </section>
             <section
               class="result-panel"
               id="result-panel"
               aria-label="分割标签"
+              data-i18n-aria-label-en="Segmentation labels"
               hidden
             >
               <div
@@ -430,22 +639,43 @@
                 class="result-output-choice"
                 hidden
               >
-                <label for="result-output">结果</label>
-                <select id="result-output" aria-label="选择分割结果"></select>
+                <label for="result-output" data-i18n-en="Result">结果</label>
+                <select
+                  id="result-output"
+                  aria-label="选择分割结果"
+                  data-i18n-aria-label-en="Choose segmentation result"
+                ></select>
               </div>
               <div class="section-heading">
-                <h2>分割标签 <span id="label-count"></span></h2>
-                <div class="label-actions" aria-label="标签显隐">
-                  <button id="labels-all" type="button" class="quiet">
+                <h2>
+                  <span data-i18n-en="Labels">分割标签</span>
+                  <span id="label-count"></span>
+                </h2>
+                <div
+                  class="label-actions"
+                  aria-label="标签显隐"
+                  data-i18n-aria-label-en="Label visibility"
+                >
+                  <button
+                    id="labels-all"
+                    type="button"
+                    class="quiet"
+                    data-i18n-en="Show all"
+                  >
                     显示全部</button
-                  ><button id="labels-none" type="button" class="quiet">
+                  ><button
+                    id="labels-none"
+                    type="button"
+                    class="quiet"
+                    data-i18n-en="Hide all"
+                  >
                     隐藏全部
                   </button>
                 </div>
               </div>
               <div class="overlay-settings">
                 <label for="opacity"
-                  >叠加透明度
+                  ><span data-i18n-en="Overlay opacity">叠加透明度</span>
                   <output id="opacity-value" for="opacity">55%</output></label
                 ><input
                   id="opacity"
@@ -459,32 +689,46 @@
                 type="search"
                 id="label-search"
                 placeholder="查找标签"
+                data-i18n-placeholder-en="Find a label"
                 aria-label="查找分割标签"
+                data-i18n-aria-label-en="Search segmentation labels"
                 hidden
               />
               <div class="labels" id="labels"></div>
               <p id="result-summary" class="muted"></p>
               <p id="result-explanation" hidden></p>
             </section>
-            <p id="result-empty" class="muted result-empty">尚无分割结果</p>
+            <p
+              id="result-empty"
+              class="muted result-empty"
+              data-i18n-en="No segmentation results yet"
+            >
+              尚无分割结果
+            </p>
             <section class="downloads" id="downloads" hidden>
-              <h2>下载文件</h2>
+              <h2 data-i18n-en="Downloads">下载文件</h2>
               <a id="download-source" class="file-download" download
-                ><span>原始影像</span><span>NIfTI</span></a
+                ><span data-i18n-en="Original image">原始影像</span
+                ><span>NIfTI</span></a
               >
               <div id="download-labels" hidden></div>
             </section>
           </section>
         </div>
         <details class="workspace-help">
-          <summary>操作帮助</summary>
-          <p>
+          <summary data-i18n-en="Viewer help">操作帮助</summary>
+          <p
+            data-i18n-en="Click to locate and scroll through slices. Middle-drag to pan; right-drag to adjust window width and level. Drag in the 3D view to rotate."
+          >
             点击定位，滚轮切片；中键拖动平移，右键拖动调整窗宽窗位。3D
             视图可拖动旋转。
           </p>
         </details>
       </aside>
     </main>
-    <noscript>请启用 JavaScript 以使用影像查看器。</noscript>
+    <noscript
+      >请启用 JavaScript 以使用影像查看器。 / Enable JavaScript to use the image
+      viewer.</noscript
+    >
   </body>
 </html>
