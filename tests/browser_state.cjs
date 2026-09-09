@@ -3097,6 +3097,70 @@ test("changing language preserves the selected output and leaves model prose unt
   );
 });
 
+test("native cardiac output groups localize without changing their selection or files", async (t) => {
+  const cardiac = [
+    "heart", "aorta", "pulmonary_vein", "atrial_appendage_left",
+    "superior_vena_cava", "inferior_vena_cava",
+  ];
+  for (const includeTargets of [true, false]) {
+    const a = multiOutputTask();
+    a.result.outputs = [cardiac, ["pericardium"]].map((targets, index) => ({
+      id: index ? "pericardium" : "cardiac",
+      task: index ? "trunk_cavities" : "total",
+      name: targets.join(", "),
+      ...(includeTargets ? { targets } : {}),
+      labels: targets.map((name, labelIndex) => ({
+        id: labelIndex + 1, name, voxels: 10, volume_ml: 1,
+      })),
+      files: [{
+        name: `cardiac-${index}.nii.gz`,
+        url: `/api/tasks/A/files/cardiac-${index}.nii.gz`,
+      }],
+    }));
+    const original = JSON.stringify(a);
+    const b = browser(t, { tasks: [a] });
+    await b.loaded();
+    assert.equal(b.element("result-output-choice").hidden, false);
+    b.element("result-output").value = "pericardium";
+    await b.element("result-output").dispatch("change");
+    await b.loaded();
+    const volumes = [...b.viewer.volumes];
+    const downloads = b.element("download-labels").children.map((item) => item.href);
+    for (const [locale, names] of [
+      ["zh-CN", ["心脏整体、主动脉等 6 项", "心包"]],
+      ["en", ["Whole heart, Aorta and 4 more", "Pericardium"]],
+      ["zh-CN", ["心脏整体、主动脉等 6 项", "心包"]],
+    ]) {
+      await b.language(locale);
+      assert.deepEqual(b.element("result-output").children.map((option) => option.textContent), names);
+      assert.deepEqual(b.element("result-output").children.map((option) => option.value), ["cardiac", "pericardium"]);
+      assert.equal(b.element("result-output").value, "pericardium");
+      assert.equal(b.sessionStorage.getItem("medseg-output:A"), "pericardium");
+      assert.deepEqual(b.viewer.volumes, volumes);
+      assert.deepEqual(b.element("download-labels").children.map((item) => item.href), downloads);
+      assert.equal(JSON.stringify(a), original);
+    }
+  }
+});
+
+test("custom composition names are preserved even when they resemble native label groups", async (t) => {
+  for (const name of ["heart, aorta", "heart", "心包附近区域"]) {
+    const a = multiOutputTask();
+    Object.assign(a.result.outputs[0], {
+      task: "composition", name,
+      targets: name === "heart, aorta" ? ["heart", "aorta"] : [name],
+    });
+    const b = browser(t, { tasks: [a] });
+    await b.loaded();
+    for (const locale of ["zh-CN", "en", "zh-CN"]) {
+      await b.language(locale);
+      assert.equal(b.element("result-output").children[0].textContent, name);
+      assert.equal(b.element("result-output").value, "lungs");
+      assert.equal(b.element("download-labels").children[0].href, "/api/tasks/A/files/lungs.nii.gz");
+    }
+  }
+});
+
 test("the Chinese workspace still loads if the language script is unavailable", async (t) => {
   const b = browser(t, { omitI18n: true });
   await b.loaded();

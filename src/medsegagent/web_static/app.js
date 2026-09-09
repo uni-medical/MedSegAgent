@@ -408,9 +408,16 @@
       const targets = Array.isArray(output.targets)
         ? output.targets
         : output.labels.map((label) => label.name);
+      const nativeGroupName =
+        output.task !== "composition" &&
+        targets.length > 0 &&
+        targets.every((target) => window.MedSegLabels?.has(target)) &&
+        output.name === targets.join(", ");
       const outputName = () =>
-        output.name && !/\.nii(?:\.gz)?$/i.test(output.name)
-          ? labelDisplayName(output.name)
+        output.name && !/\.nii(?:\.gz)?$/i.test(output.name) && !nativeGroupName
+          ? output.task === "composition"
+            ? output.name
+            : labelDisplayName(output.name)
           : targets.length
             ? targets
                 .slice(0, 2)
