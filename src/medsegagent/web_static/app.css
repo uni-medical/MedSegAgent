@@ -307,7 +307,8 @@ details p {
   color: var(--muted);
   font-size: 12px;
 }
-.account-line > button {
+.account-line > button,
+.account-line > a {
   flex-shrink: 0;
 }
 .image-workspace {
@@ -1251,61 +1252,9 @@ input[type="range"] {
 .workspace-help summary {
   font-size: 12px;
 }
-dialog {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 38px;
-  background: var(--surface);
-  width: min(440px, calc(100% - 32px));
-  box-shadow: 0 16px 60px #213c2920;
-}
-dialog::backdrop {
-  background: #edf0eaf5;
-}
-.login-content {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-dialog h1 {
-  font-size: 25px;
-  font-weight: 600;
-  letter-spacing: -0.7px;
-}
-dialog p {
-  font-size: 15px;
-  color: var(--muted);
-  line-height: 1.75;
-}
-dialog small {
-  color: var(--muted);
-  text-align: center;
+#session-error {
+  padding: 4px 8px;
   font-size: 12px;
-}
-.login-emblem {
-  margin-bottom: 8px;
-}
-.login-options {
-  display: grid;
-  gap: 12px;
-  margin: 6px 0;
-}
-.github-login {
-  display: block;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px 16px;
-  text-align: center;
-  text-decoration: none;
-  font-weight: 600;
-  color: var(--ink);
-}
-.github-login:hover {
-  background: var(--accent-soft);
-}
-dialog .login-footnote {
-  font-size: 12px;
-  line-height: 1.7;
 }
 #account-name {
   min-width: 0;

@@ -44,6 +44,7 @@
   ];
   const state = {
     authenticated: false,
+    ready: false,
     identity: null,
     epoch: 0,
     upload: null,
@@ -130,8 +131,16 @@
       state.uploading ||
       state.submitting ||
       !!state.exampleRequest ||
-      !state.authenticated;
+      !state.ready;
     $("submit").textContent = state.submitting ? "正在提交…" : "开始分割";
+    for (const id of [
+      "choose-image",
+      "file",
+      "refresh-tasks",
+      "instruction",
+      "new-task",
+    ])
+      $(id).disabled = !state.ready;
     updateExampleButtons();
   };
 
@@ -385,7 +394,7 @@
 
   function updateExampleButtons() {
     for (const button of state.exampleButtons) {
-      button.disabled = state.uploading || state.submitting;
+      button.disabled = !state.ready || state.uploading || state.submitting;
       button.setAttribute(
         "aria-busy",
         String(state.exampleRequest?.id === button.dataset.example),
@@ -568,7 +577,7 @@
 
   async function loadExample(example) {
     if (
-      !state.authenticated ||
+      !state.ready ||
       $("workspace").hidden ||
       state.uploading ||
       state.submitting
@@ -606,6 +615,7 @@
   }
 
   async function api(path, options = {}) {
+    const epoch = state.epoch;
     const { timeoutMs = 30000, ...requestOptions } = options;
     const controller = new AbortController();
     const abort = () => controller.abort();
@@ -626,7 +636,13 @@
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        if (response.status === 401 && path !== "/api/session") lockWorkspace();
+        if (
+          response.status === 401 &&
+          path !== "/api/session" &&
+          epoch === state.epoch &&
+          !controller.signal.aborted
+        )
+          lockWorkspace();
         const err = new Error(
           errorMessage(
             data.detail ||
@@ -710,6 +726,7 @@
       /* Storage may be disabled. */
     }
     state.authenticated = false;
+    state.ready = false;
     state.identity = null;
     state.epoch += 1;
     clearTimeout(state.poll);
@@ -734,11 +751,12 @@
     $("example-switch-list").replaceChildren();
     renderExampleContext();
     $("history-search").value = "";
-    $("workspace").hidden = true;
     $("logout").hidden = true;
-    $("account-name").textContent = "";
+    $("github-login").hidden = false;
+    $("account-name").textContent = "未登录";
     $("account-name").removeAttribute("title");
     $("task-list").replaceChildren();
+    renderHistory();
     $("labels").replaceChildren();
     $("request").reset();
     $("request").hidden = false;
@@ -770,22 +788,41 @@
     $("drop-zone").classList.remove("has-file");
     clearViewer();
     updateSubmit();
-    if (!$("login-dialog").open) $("login-dialog").showModal();
+    showError("session-error", "会话已过期，请重新连接。");
+    $("session-retry").hidden = false;
   }
 
   function configureLogin(session) {
-    $("github-login").hidden = session.github_enabled !== true;
+    const signedIn = session.identity?.kind === "github";
+    $("github-login").hidden = signedIn;
+    $("github-login").setAttribute(
+      "aria-disabled",
+      String(session.github_enabled !== true),
+    );
+    if (session.github_enabled === true) {
+      $("github-login").href = "/api/auth/github/start";
+      $("github-login").title = "登录后进入个人账号，游客记录不会转入";
+    } else {
+      $("github-login").removeAttribute("href");
+      $("github-login").title = "GitHub 登录暂未开放";
+    }
+    $("logout").hidden = !signedIn;
+    const name = signedIn
+      ? session.identity.display_name || session.identity.login || "已登录"
+      : "未登录";
+    $("account-name").textContent = name;
+    $("account-name").setAttribute("title", name);
   }
 
   async function openWorkspace(session) {
     clearSourceImage();
     state.authenticated = true;
+    state.ready = false;
     state.identity = session.identity || null;
-    state.epoch += 1;
-    $("workspace").hidden = true;
-    $("logout").hidden = true;
-    showError("login-error", "");
+    const epoch = ++state.epoch;
+    updateSubmit();
     const config = await api("/api/config");
+    if (epoch !== state.epoch) return;
     state.maxUpload = Number(config.max_upload_bytes) || 0;
     state.singleUpload = Number(config.single_upload_bytes) || state.maxUpload;
     state.uploadChunkBytes = Number(config.upload_chunk_bytes) || 0;
@@ -795,23 +832,17 @@
       `.nii / .nii.gz · 最大 ${size(state.maxUpload)}`;
     renderExamples(config);
     await refreshTasks();
-    // Upload controls are usable only after their limits and initial history are ready.
-    // Show the canvas before selectTask can start NiiVue initialization.
-    $("login-dialog").close();
-    $("workspace").hidden = false;
-    $("logout").hidden = false;
-    const name =
-      state.identity?.display_name ||
-      state.identity?.login ||
-      (state.identity?.kind === "guest" ? "游客" : "已登录");
-    $("account-name").textContent = name;
-    $("account-name").setAttribute("title", name);
+    if (epoch !== state.epoch) return;
+    // Keep the workspace visible while session, upload limits and history load.
+    state.ready = true;
+    updateSubmit();
     const requested = new URL(location.href).searchParams.get("task");
     if (requested)
-      await selectTask(requested).catch((err) =>
-        showError("connection-note", err.message),
-      );
+      await selectTask(requested).catch((err) => {
+        if (epoch === state.epoch) showError("connection-note", err.message);
+      });
     else setDraft();
+    if (epoch !== state.epoch) return;
     schedulePoll();
     scheduleHistoryPoll();
   }
@@ -819,7 +850,7 @@
   function uploadFile(file) {
     if (
       !file ||
-      !state.authenticated ||
+      !state.ready ||
       $("workspace").hidden ||
       state.uploading ||
       state.submitting
@@ -1023,7 +1054,7 @@
           );
           error.status = xhr.status;
           reject(error);
-          if (xhr.status === 401) lockWorkspace();
+          if (xhr.status === 401 && uploadIsCurrent(request)) lockWorkspace();
         }
       };
       xhr.onerror = () =>
@@ -1954,7 +1985,7 @@
       throw new DOMException("Image request was canceled", "AbortError");
     if (response.status === 401) {
       lockWorkspace();
-      throw new Error("登录已过期，请重新登录。");
+      throw new Error("会话已过期，请重新连接。");
     }
     if (!response.ok)
       throw new Error(
@@ -2347,31 +2378,31 @@
     viewer.drawScene();
   }
 
-  $("login-dialog").addEventListener("cancel", (event) =>
-    event.preventDefault(),
-  );
-  $("guest-button").addEventListener("click", async () => {
-    if ($("guest-button").disabled) return;
-    $("guest-button").disabled = true;
-    $("guest-button").textContent = "正在进入…";
-    showError("login-error", "");
+  async function connectWorkspace() {
+    if ($("session-retry").disabled) return;
+    $("session-retry").disabled = true;
+    $("session-retry").hidden = true;
+    showError("session-error", "");
     try {
-      const session = await api("/api/auth/guest", {
-        method: "POST",
-      });
+      let session = await api("/api/session");
+      configureLogin(session);
       if (session.authenticated !== true)
-        throw new Error("暂时无法开始体验，请重试。");
+        session = await api("/api/auth/guest", { method: "POST" });
+      if (session.authenticated !== true)
+        throw new Error("暂时无法建立游客会话，请重新连接。");
       configureLogin(session);
       await openWorkspace(session);
     } catch (err) {
       lockWorkspace();
-      showError("login-error", err.message);
+      showError("session-error", err.message);
     } finally {
-      $("guest-button").disabled = false;
-      $("guest-button").textContent = "立即体验";
+      $("session-retry").disabled = false;
     }
-  });
+  }
+  $("session-retry").addEventListener("click", connectWorkspace);
   $("logout").addEventListener("click", async () => {
+    if ($("logout").disabled || $("session-retry").disabled) return;
+    $("logout").disabled = true;
     // Start cleanup while the authentication cookie still exists.
     cancelUpload();
     updateSubmit();
@@ -2381,8 +2412,11 @@
       url.searchParams.delete("task");
       history.replaceState({}, "", url);
       lockWorkspace();
+      await connectWorkspace();
     } catch (err) {
       showError("connection-note", err.message);
+    } finally {
+      $("logout").disabled = false;
     }
   });
   $("file").addEventListener("change", (event) =>
@@ -2405,7 +2439,8 @@
   });
   $("request").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!state.upload || state.uploading || state.submitting) return;
+    if (!state.ready || !state.upload || state.uploading || state.submitting)
+      return;
     const text = $("instruction").value.trim();
     if (!text) {
       showError("form-error", "请填写需要分割的目标。");
@@ -2440,6 +2475,7 @@
     }
   });
   $("refresh-tasks").addEventListener("click", async () => {
+    if (!state.ready) return;
     try {
       await refreshTasks();
       if (state.selected?.id) await selectTask(state.selected.id);
@@ -2622,7 +2658,7 @@
   }
   $("reuse-image").addEventListener("click", useSelectedImage);
   function newTask() {
-    if (state.submitting) return;
+    if (!state.ready || state.submitting) return;
     cancelExample();
     cancelUpload();
     invalidateViewer();
@@ -2635,6 +2671,7 @@
   }
   $("new-task").addEventListener("click", newTask);
   $("choose-image").addEventListener("click", () => {
+    if (!state.ready) return;
     newTask();
     $("file").click();
   });
@@ -2718,24 +2755,13 @@
   });
   const loginUrl = new URL(location.href);
   const oauthFailed = loginUrl.searchParams.get("error") === "oauth";
-  const oauthError = "登录未完成或已过期，请重新选择登录方式。";
+  const oauthError = "GitHub 登录未完成，请重试。";
   if (oauthFailed) {
     loginUrl.searchParams.delete("error");
     history.replaceState({}, "", loginUrl);
   }
-  api("/api/session")
-    .then(async (session) => {
-      configureLogin(session);
-      if (session.authenticated !== true) {
-        lockWorkspace();
-        if (oauthFailed) showError("login-error", oauthError);
-      } else {
-        await openWorkspace(session);
-        if (oauthFailed) showError("connection-note", oauthError);
-      }
-    })
-    .catch((err) => {
-      lockWorkspace();
-      if (err.status !== 401) showError("login-error", err.message);
-    });
+  updateSubmit();
+  connectWorkspace().then(() => {
+    if (oauthFailed && state.ready) showError("session-error", oauthError);
+  });
 })();

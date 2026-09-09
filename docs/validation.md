@@ -22,7 +22,7 @@ HTTP transport and viewer.
 Start the application using the [deployment guide](deployment.md), then open
 [localhost:8767](http://127.0.0.1:8767) in a browser.
 
-1. Enter as a guest or with GitHub, open an example, and edit its suggested request.
+1. Confirm the workspace opens automatically as a guest, with the GitHub login option in the sidebar footer. Open an example and edit its suggested request.
 2. Upload a NIfTI image and inspect the linked slices, 3D view and window controls.
 3. Run a request, inspect the resulting labels, and download individual class masks.
 4. Reopen the record, reuse its image, and check multiple results from one request.

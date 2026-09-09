@@ -14,14 +14,14 @@
   </head>
   <body>
     <a class="skip-link" href="#request">跳到分割请求</a>
-    <main id="workspace" hidden>
+    <main id="workspace">
       <aside class="sidebar" aria-label="分割记录导航">
         <a class="brand" href="/" aria-label="MedSegAgent 首页"
           ><img src="/static/logo.svg" width="34" height="34" alt="" /><span
             >MedSegAgent</span
           ></a
         >
-        <button type="button" id="new-task" class="new-task">
+        <button type="button" id="new-task" class="new-task" disabled>
           <span aria-hidden="true">＋</span>新建分割
         </button>
         <section class="history" aria-labelledby="history-heading">
@@ -31,6 +31,7 @@
               type="button"
               class="quiet"
               id="refresh-tasks"
+              disabled
               aria-label="刷新分割记录"
             >
               刷新
@@ -47,11 +48,21 @@
         </section>
         <div class="sidebar-footer">
           <div class="account-line">
-            <span id="account-name"></span
+            <span id="account-name">未登录</span>
+            <a
+              id="github-login"
+              class="quiet"
+              aria-disabled="true"
+              title="正在检查登录服务"
+              >GitHub 登录</a
             ><button class="quiet" id="logout" type="button" hidden>
               退出登录
             </button>
           </div>
+          <p id="session-error" class="error" role="alert" hidden></p>
+          <button class="quiet" id="session-retry" type="button" hidden>
+            重新连接
+          </button>
           <small>仅供研究</small>
         </div>
       </aside>
@@ -161,7 +172,7 @@
           <div class="viewer-empty" id="viewer-empty">
             <div class="welcome-upload">
               <h3 id="empty-title">从一张影像开始</h3>
-              <button type="button" id="choose-image" class="primary">
+              <button type="button" id="choose-image" class="primary" disabled>
                 选择 NIfTI 影像
               </button>
             </div>
@@ -285,7 +296,12 @@
                 ><span id="file-help">.nii / .nii.gz</span
                 ><!-- Omit accept: macOS can disable .nii.gz for compound-extension filters.
                      uploadFile and the server enforce the actual NIfTI format. -->
-                <input id="file" type="file" aria-describedby="file-help" />
+                <input
+                  id="file"
+                  type="file"
+                  aria-describedby="file-help"
+                  disabled
+                />
               </label>
               <div class="upload-progress" id="upload-progress" hidden>
                 <progress
@@ -309,6 +325,7 @@
               >
               <textarea
                 id="instruction"
+                disabled
                 rows="5"
                 maxlength="4000"
                 placeholder="例如：分割这张 CT 中的肝脏和左右肾。"
@@ -468,36 +485,6 @@
         </details>
       </aside>
     </main>
-    <dialog id="login-dialog" aria-labelledby="login-title">
-      <div class="login-content">
-        <img
-          class="login-emblem"
-          src="/static/logo.svg"
-          width="52"
-          height="52"
-          alt="MedSegAgent"
-        />
-        <h1 id="login-title">进入 MedSegAgent</h1>
-        <p>上传影像，用自然语言完成分割。</p>
-        <div class="login-options">
-          <button type="button" class="primary" id="guest-button">
-            立即体验
-          </button>
-          <a
-            id="github-login"
-            class="github-login"
-            href="/api/auth/github/start"
-            hidden
-            >GitHub 登录</a
-          >
-        </div>
-        <p id="login-error" class="error" role="alert" hidden></p>
-        <p class="login-footnote">
-          分割记录按账号独立保存。GitHub 登录后进入个人账号，游客记录不会转入。
-        </p>
-        <small>仅供研究</small>
-      </div>
-    </dialog>
     <noscript>请启用 JavaScript 以使用影像查看器。</noscript>
   </body>
 </html>

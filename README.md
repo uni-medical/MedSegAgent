@@ -40,7 +40,7 @@ uv run medsegagent doctor
 uv run medsegagent serve --host 127.0.0.1 --port 8767
 ```
 
-Open [localhost:8767](http://127.0.0.1:8767), choose guest access, and upload a
+Open [localhost:8767](http://127.0.0.1:8767) to enter automatically as a guest and upload a
 `.nii` or `.nii.gz` image. Try “Segment the liver and kidneys.” The
 [deployment guide](docs/deployment.md) covers the full model catalog and GitHub login.
 

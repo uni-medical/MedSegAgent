@@ -286,6 +286,7 @@ function browser(t, options = {}) {
     element.id = match[2];
     element.hidden = /\bhidden\b/.test(match[0]);
     element.checked = /\bchecked\b/.test(match[0]);
+    element.disabled = /\bdisabled\b/.test(match[0]);
     element.value = /\bvalue="([^"]*)"/.exec(match[0])?.[1] || "";
     const href = /\bhref="([^"]*)"/.exec(match[0])?.[1];
     if (href) element.href = href;
@@ -511,7 +512,12 @@ function browser(t, options = {}) {
       }
       if (url === "/api/config")
         return json({ max_upload_bytes: 1024, ...options.config });
-      if (url === "/api/tasks") return json(tasks);
+      if (url === "/api/tasks")
+        return json(
+          session.identity?.kind === "guest" && options.guestTasks !== undefined
+            ? options.guestTasks
+            : tasks,
+        );
       const selected = /^\/api\/tasks\/([^/]+)$/.exec(url)?.[1];
       if (selected) return json(tasks.find((item) => item.id === selected));
       if (failures.delete(url))
@@ -620,69 +626,83 @@ function browser(t, options = {}) {
   };
 }
 
-test("anonymous sessions show guest and configured GitHub access without loading private history", async (t) => {
+test("the initial workspace is visible without a separate login screen", async (t) => {
   const b = browser(t, {
     session: { authenticated: false, github_enabled: true },
+    slow: ["/api/session"],
   });
-  await eventually(
-    () => b.element("login-dialog").open,
-    "Login did not appear",
+  assert.equal(b.element("workspace").hidden, false);
+  for (const id of ["choose-image", "file", "refresh-tasks", "instruction", "new-task"])
+    assert.equal(b.element(id).disabled, true, `${id} waits for a usable session`);
+  assert.doesNotMatch(
+    html,
+    /login-dialog|guest-button|login-error|access-token|login-form|访问令牌|管理员|凭据/,
   );
-  assert.equal(b.element("workspace").hidden, true);
-  assert.equal(b.element("github-login").hidden, false);
-  assert.equal(b.element("github-login").href, "/api/auth/github/start");
-  assert.equal(
-    b.requests.some(
-      (row) => row.url === "/api/config" || row.url === "/api/tasks",
-    ),
-    false,
-  );
-  assert.doesNotMatch(html, /access-token|login-form|访问令牌|管理员|凭据/);
-  assert.doesNotMatch(source, /access-token|login-submit|login-form/);
+  assert.doesNotMatch(source, /login-dialog|guest-button|access-token|login-submit|login-form/);
+  assert.equal(b.requests.some((row) => row.url === "/api/auth/guest"), false);
+  const release = b.slow.get("/api/session");
+  b.slow.delete("/api/session");
+  release();
+  await b.loaded();
 });
 
-test("guest access creates a cookie session and opens the existing image workspace", async (t) => {
+test("first entry automatically creates a guest cookie before loading the workspace data", async (t) => {
   const b = browser(t, {
     session: { authenticated: false, github_enabled: true },
   });
-  await eventually(
-    () => b.element("login-dialog").open,
-    "Login did not appear",
-  );
-  await b.element("guest-button").dispatch("click");
   await b.loaded();
-  assert.equal(b.element("login-dialog").open, false);
-  assert.equal(b.element("account-name").textContent, "游客");
-  assert.equal(b.element("guest-button").disabled, false);
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("account-name").textContent, "未登录");
+  assert.equal(b.element("logout").hidden, true);
+  assert.equal(b.element("github-login").hidden, false);
+  assert.equal(b.element("github-login").href, "/api/auth/github/start");
+  assert.deepEqual(
+    b.requests.slice(0, 4).map((request) => request.url),
+    ["/api/session", "/api/auth/guest", "/api/config", "/api/tasks"],
+  );
   const request = b.requests.find((row) => row.url === "/api/auth/guest");
   assert.equal(request.method, "POST");
   assert.equal(request.credentials, "same-origin");
   assert.equal(request.body, undefined);
   assert.equal(request.headers.Authorization, undefined);
   assert.equal(
-    b.requests.some(
-      (row) => row.url === "/api/session" && row.method === "POST",
-    ),
+    b.requests.some((row) => row.url === "/api/session" && row.method === "POST"),
     false,
   );
   assert.equal(b.viewer.volumes.length, 2);
 });
 
-test("unconfigured GitHub access is hidden while guest access remains available", async (t) => {
+for (const kind of ["guest", "github"]) {
+  test(`an existing ${kind} cookie is reused without creating another guest`, async (t) => {
+    const b = browser(t, {
+      session: {
+        authenticated: true,
+        github_enabled: true,
+        identity: { kind, display_name: "Existing Researcher", login: "researcher" },
+      },
+    });
+    await b.loaded();
+    assert.equal(b.requests.filter((row) => row.url === "/api/session").length, 1);
+    assert.equal(b.requests.some((row) => row.url === "/api/auth/guest"), false);
+    assert.equal(b.element("account-name").textContent,
+      kind === "guest" ? "未登录" : "Existing Researcher");
+    assert.equal(b.element("logout").hidden, kind === "guest");
+    assert.equal(b.element("github-login").hidden, kind === "github");
+  });
+}
+
+test("unconfigured GitHub access stays visible and disabled for guests", async (t) => {
   const b = browser(t, {
     session: { authenticated: false, github_enabled: false },
   });
-  await eventually(
-    () => b.element("login-dialog").open,
-    "Login did not appear",
-  );
-  assert.equal(b.element("github-login").hidden, true);
-  await b.element("guest-button").dispatch("click");
   await b.loaded();
-  assert.equal(b.element("account-name").textContent, "游客");
+  assert.equal(b.element("account-name").textContent, "未登录");
+  assert.equal(b.element("github-login").hidden, false);
+  assert.equal(b.element("github-login").href, "");
+  assert.equal(b.element("github-login").attributes["aria-disabled"], "true");
 });
 
-test("a failed guest request keeps the login usable and can be retried", async (t) => {
+test("a failed guest request leaves the workspace visible and can be retried inline", async (t) => {
   let attempts = 0;
   const b = browser(t, {
     session: { authenticated: false, github_enabled: true },
@@ -696,62 +716,121 @@ test("a failed guest request keeps the login usable and can be retried", async (
     },
   });
   await eventually(
-    () => b.element("login-dialog").open,
-    "Login did not appear",
+    () => !b.element("session-error").hidden,
+    "Guest connection error did not appear",
   );
-  await b.element("guest-button").dispatch("click");
-  assert.equal(b.element("workspace").hidden, true);
-  assert.equal(b.element("login-error").textContent, "暂时无法建立游客会话");
-  assert.equal(b.element("guest-button").disabled, false);
-  assert.equal(b.element("guest-button").textContent, "立即体验");
-  await b.element("guest-button").dispatch("click");
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("session-error").textContent, "暂时无法建立游客会话");
+  assert.equal(b.element("session-retry").hidden, false);
+  assert.equal(b.element("session-retry").disabled, false);
+  assert.match(html, /id="session-retry"[^>]*>\s*重新连接\s*</);
+  assert.equal(b.element("file").disabled, true);
+  assert.equal(b.requests.some((row) => row.url === "/api/config" || row.url === "/api/tasks"), false);
+  await b.element("session-retry").dispatch("click");
   await b.loaded();
-  assert.equal(b.element("login-error").hidden, true);
+  assert.equal(b.element("session-error").hidden, true);
   assert.equal(attempts, 2);
+  assert.equal(b.requests.filter((row) => row.url === "/api/session").length, 2);
 });
 
-test("pending guest access prevents duplicate session requests", async (t) => {
+test("retry after configuration fails reuses the guest cookie already issued", async (t) => {
+  let configAttempts = 0;
   const b = browser(t, {
     session: { authenticated: false, github_enabled: true },
+    handleFetch(url) {
+      if (url === "/api/config" && ++configAttempts === 1)
+        return {
+          ok: false,
+          status: 503,
+          json: async () => ({ detail: "配置暂时不可用" }),
+        };
+    },
   });
-  await eventually(
-    () => b.element("login-dialog").open,
-    "Login did not appear",
-  );
-  b.slow.set("/api/auth/guest", null);
-  const pending = b.element("guest-button").dispatch("click");
-  await eventually(
-    () => b.slow.get("/api/auth/guest"),
-    "Guest request did not start",
-  );
-  assert.equal(b.element("guest-button").textContent, "正在进入…");
-  await b.element("guest-button").dispatch("click");
-  b.slow.get("/api/auth/guest")();
-  await pending;
+  await eventually(() => !b.element("session-error").hidden, "Configuration error did not appear");
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("file").disabled, true);
+  await b.element("session-retry").dispatch("click");
   await b.loaded();
-  assert.equal(
-    b.requests.filter((row) => row.url === "/api/auth/guest").length,
-    1,
-  );
+  assert.equal(configAttempts, 2);
+  assert.equal(b.requests.filter((row) => row.url === "/api/auth/guest").length, 1);
+  assert.equal(b.requests.filter((row) => row.url === "/api/session").length, 2);
 });
 
-test("OAuth failure is explained and removed from the return URL", async (t) => {
+for (const pending of ["/api/session", "/api/auth/guest"]) {
+  test(`pending ${pending} prevents duplicate connection and protected actions`, async (t) => {
+    const b = browser(t, {
+      session: { authenticated: false, github_enabled: true },
+      slow: [pending],
+    });
+    await eventually(() => typeof b.slow.get(pending) === "function", "Connection did not wait");
+    assert.equal(b.element("workspace").hidden, false);
+    assert.equal(b.element("session-retry").disabled, true);
+    for (const id of ["choose-image", "file", "refresh-tasks", "instruction", "new-task"])
+      assert.equal(b.element(id).disabled, true);
+    await b.element("session-retry").dispatch("click");
+    await b.element("refresh-tasks").dispatch("click");
+    b.element("file").files = [{ name: "too-early.nii", size: 128 }];
+    await b.element("file").dispatch("change");
+    assert.equal(b.uploads.length, 0);
+    assert.equal(b.requests.some((row) => row.url === "/api/config" || row.url === "/api/tasks"), false);
+    assert.equal(b.requests.filter((row) => row.url === pending).length, 1);
+    const release = b.slow.get(pending);
+    b.slow.delete(pending);
+    release();
+    await b.loaded();
+    assert.equal(b.requests.filter((row) => row.url === "/api/auth/guest").length, 1);
+  });
+}
+
+test("OAuth failure remains explained after guest entry and is removed from the return URL", async (t) => {
   const b = browser(t, {
     url: "http://example.test/?task=A&error=oauth",
     session: { authenticated: false, github_enabled: true },
   });
-  await eventually(
-    () => !b.element("login-error").hidden,
-    "OAuth error did not appear",
-  );
-  assert.equal(
-    b.element("login-error").textContent,
-    "登录未完成或已过期，请重新选择登录方式。",
-  );
+  await b.loaded();
+  assert.equal(b.element("session-error").hidden, false);
+  assert.equal(b.element("session-error").textContent, "GitHub 登录未完成，请重试。");
   const url = new URL(b.location.href);
   assert.equal(url.searchParams.has("error"), false);
   assert.equal(url.searchParams.get("task"), "A");
   assert.equal(b.element("github-login").hidden, false);
+  assert.equal(b.element("account-name").textContent, "未登录");
+});
+
+test("an initial image returning 401 leaves a clean workspace awaiting explicit reconnect", async (t) => {
+  let expired = true;
+  const b = browser(t, {
+    session: {
+      authenticated: true,
+      github_enabled: true,
+      identity: { kind: "guest", display_name: "游客" },
+    },
+    clock: true,
+    handleFetch(url) {
+      if (expired && url === "/api/uploads/A/file")
+        return { ok: false, status: 401 };
+    },
+  });
+  await eventually(
+    () => !b.element("session-error").hidden && !b.element("session-retry").disabled,
+    "Expired session did not offer reconnect",
+  );
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("session-error").textContent, "会话已过期，请重新连接。");
+  assert.equal(b.element("session-retry").hidden, false);
+  assert.equal(b.element("task-list").children.length, 0);
+  assert.equal(b.viewer.volumes.length, 0);
+  for (const id of ["choose-image", "file", "refresh-tasks", "instruction", "new-task"])
+    assert.equal(b.element(id).disabled, true);
+  const requestCount = b.requests.length;
+  await b.advance(60000);
+  assert.equal(b.requests.length, requestCount, "Expired bootstrap cannot restart polling or create a guest loop");
+  expired = false;
+  await b.element("session-retry").dispatch("click");
+  await b.loaded();
+  assert.equal(b.element("session-error").hidden, true);
+  assert.equal(b.requests.filter((row) => row.url === "/api/session").length, 2);
+  assert.equal(b.requests.some((row) => row.url === "/api/auth/guest"), false);
 });
 
 test("GitHub identity is shown as text and logout clears account-specific view state", async (t) => {
@@ -762,6 +841,7 @@ test("GitHub identity is shown as text and logout clears account-specific view s
       github_enabled: true,
       identity: { kind: "github", display_name: name, login: "alice" },
     },
+    guestTasks: [],
     storageEntries: [
       ["medseg-output:A", "native"],
       ["unrelated-setting", "keep"],
@@ -770,8 +850,13 @@ test("GitHub identity is shown as text and logout clears account-specific view s
   await b.loaded();
   assert.equal(b.element("account-name").textContent, name);
   assert.equal(b.element("account-name").children.length, 0);
+  assert.equal(b.element("logout").hidden, false);
+  assert.equal(b.element("github-login").hidden, true);
   await b.element("logout").dispatch("click");
-  assert.equal(b.element("account-name").textContent, "");
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("account-name").textContent, "未登录");
+  assert.equal(b.element("logout").hidden, true);
+  assert.equal(b.element("github-login").hidden, false);
   assert.equal(b.element("task-list").children.length, 0);
   assert.equal(b.sessionStorage.getItem("medseg-output:A"), null);
   assert.equal(b.sessionStorage.getItem("medseg-view:A"), null);
@@ -809,8 +894,8 @@ const exampleConfig = {
 test("examples load source images and suggestion buttons only fill the request", async (t) => {
   const b = browser(t, { url: "http://example.test/", config: exampleConfig });
   await eventually(
-    () => !b.element("workspace").hidden,
-    "Workspace stayed hidden",
+    () => b.element("file").disabled === false,
+    "Workspace did not become ready",
   );
   assert.equal(b.element("example-cards").children.length, 3);
   assert.equal(
@@ -873,8 +958,8 @@ test("gallery license notices require the example's authenticated same-origin ro
     config.examples[0].attribution.notice_url = notice;
     const b = browser(t, { url: "http://example.test/", config });
     await eventually(
-      () => !b.element("workspace").hidden,
-      "Workspace stayed hidden",
+      () => b.element("file").disabled === false,
+      "Workspace did not become ready",
     );
     const credits = b.element("example-cards").children[0].children[1].children;
     assert.equal(credits.length, 1);
@@ -890,8 +975,8 @@ for (const next of ["new", "upload", "record", "logout", "example"]) {
       ignoreAbort: true,
     });
     await eventually(
-      () => !b.element("workspace").hidden,
-      "Workspace stayed hidden",
+      () => b.element("file").disabled === false,
+      "Workspace did not become ready",
     );
     b.slow.set("/api/examples/ct", null);
     const pending = b.example("ct");
@@ -933,7 +1018,7 @@ for (const next of ["new", "upload", "record", "logout", "example"]) {
     }
     if (next === "record")
       assert.equal(b.element("canvas-shell").dataset.task, "A");
-    if (next === "logout") assert.equal(b.element("workspace").hidden, true);
+    if (next === "logout") assert.equal(b.element("workspace").hidden, false);
     if (next === "example")
       assert.equal(b.element("canvas-shell").dataset.source, "example-mr");
   });
@@ -951,8 +1036,8 @@ test("example errors are recoverable and previews cannot point outside the authe
     failures: ["/api/examples/ct"],
   });
   await eventually(
-    () => !b.element("workspace").hidden,
-    "Workspace stayed hidden",
+    () => b.element("file").disabled === false,
+    "Workspace did not become ready",
   );
   assert.equal(b.element("example-cards").children.length, 3);
   await b.example("ct");
@@ -996,20 +1081,21 @@ for (const pending of ["/api/config", "/api/tasks"]) {
       () => typeof b.slow.get(pending) === "function",
       "Initial request did not wait",
     );
-    assert.equal(b.element("workspace").hidden, true);
-    assert.equal(b.element("logout").hidden, true);
+    assert.equal(b.element("workspace").hidden, false);
+    for (const id of ["choose-image", "file", "refresh-tasks", "instruction", "new-task"])
+      assert.equal(b.element(id).disabled, true);
     const file = { name: "first.nii.gz", size: 128 };
     b.element("file").files = [file];
     await b.element("file").dispatch("change");
-    assert.equal(b.uploads.length, 0, "hidden controls cannot start an upload");
+    assert.equal(b.uploads.length, 0, "unready controls cannot start an upload");
     assert.equal(b.element("form-error").hidden, true);
 
     const release = b.slow.get(pending);
     b.slow.delete(pending);
     release();
     await eventually(
-      () => !b.element("workspace").hidden,
-      "Ready workspace stayed hidden",
+      () => b.element("file").disabled === false,
+      "Workspace controls stayed disabled",
     );
     assert.equal(b.element("viewer-heading").textContent, "新建分割");
     assert.equal(
@@ -1073,8 +1159,8 @@ test("logout aborts an in-flight download and removes volumes", async (t) => {
     "B download did not start",
   );
   await b.element("logout").dispatch("click");
-  assert.equal(b.element("workspace").hidden, true);
-  assert.equal(b.element("login-dialog").open, true);
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("account-name").textContent, "未登录");
   assert.equal(b.viewer.volumes.length, 0);
   assert.ok(
     b.requests.find((item) => item.url === "/api/uploads/B/file").signal
@@ -1087,8 +1173,8 @@ test("disabled browser storage does not prevent login, overlay display or logout
   await b.loaded();
   assert.equal(b.viewer.volumes[1].opacity, 0.55);
   await b.element("logout").dispatch("click");
-  assert.equal(b.element("workspace").hidden, true);
-  assert.equal(b.element("login-dialog").open, true);
+  assert.equal(b.element("workspace").hidden, false);
+  assert.equal(b.element("account-name").textContent, "未登录");
 });
 
 test("corrupt view preferences fall back to a visible segmentation", async (t) => {
@@ -1846,14 +1932,12 @@ test("an invalid chunk acknowledgement cannot skip bytes or finish the upload", 
   assert.equal(b.uploads.length, 1);
 });
 
-test("logging in with no records opens a clean draft instead of the previous identity's record", async (t) => {
-  const b = browser(t);
+test("logout automatically enters an empty guest draft without the previous identity's record", async (t) => {
+  const b = browser(t, { guestTasks: [] });
   await b.loaded();
   await b.element("logout").dispatch("click");
-  b.tasks.splice(0);
-  await b.element("guest-button").dispatch("click");
   assert.equal(b.element("workspace").hidden, false);
-  assert.equal(b.element("login-dialog").open, false);
+  assert.equal(b.element("account-name").textContent, "未登录");
   assert.equal(b.element("record-request").hidden, true);
   assert.equal(b.element("request-text").textContent, "");
   assert.equal(b.element("request").hidden, false);
@@ -2026,6 +2110,7 @@ test("terminal elapsed is fixed in request metadata and old unknown time is omit
 test("task progress follows selected identity and stops for draft and logout", async (t) => {
   const b = browser(t, {
     tasks: [runningTask("A", 20), runningTask("B", 5)],
+    guestTasks: [],
     clock: true,
   });
   await b.loaded();
@@ -2043,9 +2128,11 @@ test("task progress follows selected identity and stops for draft and logout", a
   await b.select("A");
   await b.element("logout").dispatch("click");
   const loggedOut = b.element("task-elapsed").textContent;
+  const detailRequests = b.requests.filter((row) => /^\/api\/tasks\/[AB]$/.test(row.url)).length;
   await b.advance(10000);
   assert.equal(b.element("task-elapsed").textContent, loggedOut);
-  assert.equal(b.pendingTimers, 0);
+  assert.equal(b.requests.filter((row) => /^\/api\/tasks\/[AB]$/.test(row.url)).length, detailRequests);
+  assert.equal(b.element("task-list").children.length, 0);
 });
 
 test("tool phases have readable progress without internal tool names", async (t) => {
@@ -2397,7 +2484,6 @@ test("logout clears a decoded source even when the next account has the same upl
   await b.loaded();
   const original = b.viewer.volumes[0];
   await b.element("logout").dispatch("click");
-  await b.element("guest-button").dispatch("click");
   await b.select("A");
   await b.loaded();
   assert.notEqual(b.viewer.volumes[0], original);
@@ -2423,7 +2509,6 @@ test("a source decode finishing after logout cannot populate the next account ca
     "source decode not pending",
   );
   await b.element("logout").dispatch("click");
-  await b.element("guest-button").dispatch("click");
   await b.select("A");
   await b.loaded();
   const original = b.viewer.volumes[0];
@@ -2505,7 +2590,6 @@ test("a canceled old overlay returning 401 cannot log out the replacement accoun
     "mask was not delayed",
   );
   await b.element("logout").dispatch("click");
-  await b.element("guest-button").dispatch("click");
   await b.select("A");
   await b.loaded();
   delayed = true;
@@ -2514,7 +2598,7 @@ test("a canceled old overlay returning 401 cannot log out the replacement accoun
   release();
   await new Promise(setImmediate);
   assert.equal(b.element("workspace").hidden, false);
-  assert.equal(b.element("login-dialog").open, false);
+  assert.equal(b.element("account-name").textContent, "未登录");
   assert.equal(b.viewer.volumes.length, 2);
 });
 
@@ -2561,12 +2645,15 @@ test("slow history refresh does not delay selected task polling or terminal stat
 });
 
 test("independent history refresh discovers new tasks without a selected detail dependency", async (t) => {
-  const b = browser(t, { tasks: [runningTask()], clock: true });
+  const b = browser(t, { tasks: [runningTask()], guestTasks: [], clock: true });
   await b.loaded();
   b.tasks.push(task("B"));
   await b.advance(30000);
   assert.match(b.element("task-list").textContent, /Synthetic task B/);
   assert.equal(b.requests.filter((r) => r.url === "/api/tasks").length, 2);
   await b.element("logout").dispatch("click");
-  assert.equal(b.pendingTimers, 0);
+  const detailRequests = b.requests.filter((row) => row.url === "/api/tasks/A").length;
+  await b.advance(30000);
+  assert.equal(b.requests.filter((row) => row.url === "/api/tasks/A").length, detailRequests);
+  assert.equal(b.element("task-list").children.length, 0);
 });

@@ -25,7 +25,8 @@ The current Agent model is `deepseek-v4-flash`. Keep credentials, image data and
 in private storage. For a custom temporary directory, create it with mode 700 before
 starting the app. Concurrent validation and export can use about 8 GiB of temporary space.
 
-Guest access works immediately. For GitHub login, set `MEDSEGAGENT_GITHUB_CLIENT_ID`
+The workspace opens automatically as a guest, with a GitHub login option in the
+sidebar footer. For GitHub login, set `MEDSEGAGENT_GITHUB_CLIENT_ID`
 and `MEDSEGAGENT_GITHUB_CLIENT_SECRET` together and register this OAuth callback:
 
 ```text
