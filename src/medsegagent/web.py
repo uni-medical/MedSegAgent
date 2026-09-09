@@ -57,6 +57,13 @@ def create_app(root: Path | None = None, public_url: str | None = None):
     public_url = auth.public_url
     examples = Examples(service)
     upload_sessions = UploadSessions(service)
+    omni = None
+    if os.environ.get("MEDSEGAGENT_OMNI_ENABLED") == "1":
+        from medsegagent.omni import OmniService
+        from medsegagent.omni_agent import run_agent as run_interactive_agent
+
+        omni = OmniService(service)
+        omni.agent_runner = run_interactive_agent
     login_attempts = deque()
 
     def login_capacity():
@@ -171,6 +178,8 @@ def create_app(root: Path | None = None, public_url: str | None = None):
                 "capabilities": CAPABILITIES,
                 "examples": example_catalog,
                 "warning": "Research use only. No clinical validation.",
+                **({"interactive": {"enabled": True}} if omni is not None
+                   and not request.url.path.startswith("/a2a/") else {}),
             }
         )
 
@@ -318,6 +327,45 @@ def create_app(root: Path | None = None, public_url: str | None = None):
     async def health(request):
         return JSONResponse({"status": "ok"})
 
+    async def interactive_open(request):
+        principal = authenticate(request)
+        if request.method == "GET":
+            return JSONResponse(omni.list_workspaces(principal))
+        body = await json_body(request)
+        return JSONResponse(await omni.open_workspace(principal, body.get("upload_id")), 201)
+
+    async def interactive_source(request):
+        path = await omni.prepare_source(authenticate(request), request.path_params["workspace_id"])
+        return FileResponse(path, media_type="application/octet-stream", filename=path.name)
+
+    async def interactive_workspace(request):
+        return JSONResponse(omni.get_workspace(
+            authenticate(request), request.path_params["workspace_id"]
+        ))
+
+    async def interactive_submit(request):
+        principal = authenticate(request)
+        body = await json_body(request, limit=65536)
+        operation = body.pop("operation", None)
+        return JSONResponse(await omni.submit(
+            principal, request.path_params["workspace_id"], operation, body
+        ), 202)
+
+    async def interactive_job(request):
+        return JSONResponse(omni.get_job(authenticate(request), request.path_params["job_id"]))
+
+    async def interactive_cancel(request):
+        return JSONResponse(await omni.cancel_job(
+            authenticate(request), request.path_params["job_id"]
+        ))
+
+    async def interactive_file(request):
+        path = await omni.prepare_download(
+            authenticate(request), request.path_params["workspace_id"],
+            request.path_params["revision_id"],
+        )
+        return FileResponse(path, media_type="application/gzip", filename=path.name)
+
     async def ready(request):
         configured = bool(os.environ.get("OPENAI_API_KEY")) and bool(
             os.environ.get("OPENAI_BASE_URL")
@@ -345,6 +393,8 @@ def create_app(root: Path | None = None, public_url: str | None = None):
         try:
             yield
         finally:
+            if omni is not None:
+                await omni.close()
             await service.close()
 
     routes = [
@@ -373,6 +423,16 @@ def create_app(root: Path | None = None, public_url: str | None = None):
         Route("/api/tasks/{task_id}/files/{name}", result_file),
         Mount("/static", StaticFiles(directory=STATIC, check_dir=False)),
     ]
+    if omni is not None:
+        routes.extend([
+            Route("/api/omni/workspaces", interactive_open, methods=["GET", "POST"]),
+            Route("/api/omni/workspaces/{workspace_id}", interactive_workspace),
+            Route("/api/omni/workspaces/{workspace_id}/source", interactive_source),
+            Route("/api/omni/workspaces/{workspace_id}/jobs", interactive_submit, methods=["POST"]),
+            Route("/api/omni/jobs/{job_id}", interactive_job),
+            Route("/api/omni/jobs/{job_id}/cancel", interactive_cancel, methods=["POST"]),
+            Route("/api/omni/workspaces/{workspace_id}/revisions/{revision_id}/file", interactive_file),
+        ])
     # Public A2A resources share handlers and validation with the private Web API.
     routes.extend(
         [
@@ -405,6 +465,7 @@ def create_app(root: Path | None = None, public_url: str | None = None):
     )
     app.state.service = service
     app.state.auth = auth
+    app.state.omni = omni
 
     async def security_headers(request: Request, call_next):
         # No arbitrary Host values; proxy can connect through loopback while preserving public Host.

@@ -104,6 +104,7 @@
     examples: [],
     exampleButtons: [],
     exampleRequest: null,
+    interactive: null,
   };
   const statusOf = (task) =>
     typeof task.status === "string"
@@ -1054,6 +1055,48 @@
     updateSubmit();
     const config = await api("/api/config");
     if (epoch !== state.epoch) return;
+    if (config.interactive?.enabled && !state.interactive) {
+      try {
+        const extension = await import("/static/interactive.mjs");
+        if (epoch !== state.epoch) return;
+        state.interactive = extension.mount({
+          api,
+          showWorkspace: async (workspace) => {
+            if (!state.ready || state.uploading || state.submitting) return false;
+            const epoch = state.epoch;
+            const previous = [state.viewerWanted, state.upload, state.selected];
+            const upload = await api(`/api/uploads/${workspace.upload_id}`).catch(() => null);
+            if (epoch !== state.epoch || !state.ready ||
+                previous[0] !== state.viewerWanted || previous[1] !== state.upload ||
+                previous[2] !== state.selected) return false;
+            cancelExample();
+            setDraft(upload?.available === false ? null : upload);
+            $("viewer-heading").textContent = "区域交互";
+            $("viewer-name").textContent = workspace.geometry.shape.join(" × ");
+            $("viewer-name").hidden = false;
+            queueViewer({
+              key: `interactive:${workspace.id}`,
+              uploadID: workspace.upload_id,
+              name: "区域影像.nii.gz",
+              sourceURL: `/api/omni/workspaces/${workspace.id}/source`,
+            });
+            await state.viewerQueue;
+            return $("canvas-shell").dataset.loaded === "true" &&
+              $("canvas-shell").dataset.source === workspace.upload_id &&
+              state.viewerWanted?.key === `interactive:${workspace.id}`;
+          },
+          context: () => ({
+            epoch: state.epoch,
+            ready: state.ready,
+            viewer: state.viewer,
+            source: $("canvas-shell").dataset.loaded === "true"
+              ? $("canvas-shell").dataset.source : null,
+          }),
+        });
+      } catch {
+        showError("connection-note", "区域交互组件加载失败，刷新后重试。");
+      }
+    }
     state.maxUpload = Number(config.max_upload_bytes) || 0;
     state.singleUpload = Number(config.single_upload_bytes) || state.maxUpload;
     state.uploadChunkBytes = Number(config.upload_chunk_bytes) || 0;
@@ -2354,7 +2397,7 @@
       );
       try {
         const bytes = await imageBuffer(
-          uploadURL(request.uploadID),
+          request.sourceURL || uploadURL(request.uploadID),
           cached.controller,
         );
         if (state.sourceImage !== cached || cached.controller.signal.aborted)

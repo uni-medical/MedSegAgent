@@ -1,0 +1,23 @@
+[project]
+name = "medsegagent-nninteractive-runtime"
+version = "0.1.0"
+description = "Isolated Linux CUDA runtime for the optional nnInteractive worker"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "nnInteractive==2.5.1",
+    "nnunetv2==2.8.1",
+    "torch==2.8.0",
+    "nibabel==5.4.2",
+    "numpy==2.5.3",
+]
+
+[tool.uv]
+environments = ["sys_platform == 'linux'"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
