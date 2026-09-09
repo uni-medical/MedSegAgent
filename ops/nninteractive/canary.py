@@ -15,19 +15,39 @@ import importlib.util
 import io
 import json
 import os
+import pwd
+import re
+import resource
 import sqlite3
+import subprocess
 import sys
 import time
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 
-SCRATCH = Path("/mnt/disks/bulk/huangziyan/MedSegAgent-nninteractive-canary-20260909")
-PRODUCTION_DB = Path("/mnt/disks/bulk/huangziyan/MedSegAgent/runtime/state.sqlite3")
-SHARED_LOCKS = Path("/home/huangziyan/.cache/medsegagent/scheduler")
-GPU_UUID = "GPU-4853932d-66a0-200c-035f-fbda7598fd54"
+# Set only by required command-line arguments; no workstation-specific defaults.
+SCRATCH: Path
+PRODUCTION_DB: Path
+SHARED_LOCKS: Path
+GPU_UUID: str
 CHECKPOINT_SHA256 = "b3ac4421f85457bbd1aa0d87f5e67bcb7bc8e2ce6b824b6ac45077cc5d630ea9"
-RUN = SCRATCH / "canary/synthetic-canary-001"
+RUN: Path
+
+
+def target_arguments():
+    return [
+        "--scratch",
+        str(SCRATCH),
+        "--production-db",
+        str(PRODUCTION_DB),
+        "--shared-locks",
+        str(SHARED_LOCKS),
+        "--gpu-uuid",
+        GPU_UUID,
+        "--run-id",
+        RUN.name,
+    ]
 
 
 def timestamp():
@@ -68,6 +88,88 @@ def production_counts():
     with sqlite3.connect(f"file:{PRODUCTION_DB}?mode=ro", uri=True, timeout=2) as db:
         db.execute("PRAGMA query_only=ON")
         return dict(db.execute("SELECT status, COUNT(*) FROM tasks GROUP BY status"))
+
+
+def production_runtime():
+    """Verify current running service, rather than assuming an old checkout is live."""
+    raw = subprocess.check_output(
+        [
+            "systemctl",
+            "--user",
+            "show",
+            "medsegagent.service",
+            "--property=ControlGroup",
+            "--property=WorkingDirectory",
+            "--property=MainPID",
+            "--property=ActiveState",
+        ],
+        text=True,
+        timeout=5,
+    )
+    properties = dict(line.split("=", 1) for line in raw.splitlines() if "=" in line)
+    group = properties.get("ControlGroup", "")
+    result = {"unit": properties, "database_processes": [], "matches_expected": False}
+    if properties.get("ActiveState") != "active" or not group.startswith("/"):
+        return result
+    pids = (Path("/sys/fs/cgroup") / group.lstrip("/") / "cgroup.procs").read_text().split()
+    expected_scheduler_sha = sha256(SCRATCH / "src/medsegagent/gpu_scheduler.py")
+    for pid in pids:
+        process = Path("/proc") / pid
+        try:
+            if not any(
+                fd.resolve() == PRODUCTION_DB.resolve() for fd in (process / "fd").iterdir()
+            ):
+                continue
+            # Read only the necessary values; never export complete process environment.
+            wanted = {
+                "HOME",
+                "MEDSEGAGENT_SCHEDULER_LOCK_DIR",
+                "MEDSEGAGENT_LOCK_PATH",
+                "MEDSEGAGENT_MAX_CONCURRENT_INFERENCES",
+            }
+            env = {}
+            for item in (process / "environ").read_bytes().split(b"\0"):
+                if b"=" in item:
+                    key, value = item.split(b"=", 1)
+                    if key.decode() in wanted:
+                        env[key.decode()] = value.decode()
+            cwd = (process / "cwd").resolve()
+            legacy = env.get("MEDSEGAGENT_LOCK_PATH")
+            process_home = env.get("HOME", pwd.getpwuid(process.stat().st_uid).pw_dir)
+            default_locks = (
+                Path(legacy).with_name(Path(legacy).name + ".scheduler")
+                if legacy
+                else Path(process_home) / ".cache/medsegagent/scheduler"
+            )
+            configured_locks = Path(env.get("MEDSEGAGENT_SCHEDULER_LOCK_DIR", default_locks))
+            if str(configured_locks).startswith("~/"):
+                configured_locks = Path(process_home) / str(configured_locks)[2:]
+            if not configured_locks.is_absolute():
+                configured_locks = cwd / configured_locks
+            slots = int(env.get("MEDSEGAGENT_MAX_CONCURRENT_INFERENCES", "3"))
+            scheduler_sha = sha256(cwd / "src/medsegagent/gpu_scheduler.py")
+            matches = (
+                configured_locks.resolve() == SHARED_LOCKS.resolve()
+                and slots == 3
+                and scheduler_sha == expected_scheduler_sha
+            )
+            result["database_processes"].append(
+                {
+                    "pid": int(pid),
+                    "cwd": str(cwd),
+                    "opened_database": str(PRODUCTION_DB),
+                    "lock_directory": str(configured_locks),
+                    "max_concurrent": slots,
+                    "scheduler_sha256": scheduler_sha,
+                    "matches_expected": matches,
+                }
+            )
+        except (OSError, ValueError):
+            return result
+    result["matches_expected"] = bool(result["database_processes"]) and all(
+        item["matches_expected"] for item in result["database_processes"]
+    )
+    return result
 
 
 def has_active_jobs(counts):
@@ -203,6 +305,7 @@ def run_instrumented_worker(request_path, response_path):
     worker._load_session = instrumented_loader
     started = time.monotonic()
     exit_code = worker.main(["--request", str(request_path), "--response", str(response_path)])
+    peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     write_json(
         RUN / "worker-metrics.json",
         {
@@ -214,6 +317,10 @@ def run_instrumented_worker(request_path, response_path):
             "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
             "cuda_max_allocated_bytes": torch.cuda.max_memory_allocated(),
             "cuda_max_reserved_bytes": torch.cuda.max_memory_reserved(),
+            "peak_rss_bytes": int(peak_rss * (1024 if sys.platform.startswith("linux") else 1)),
+            "peak_rss_source": (
+                "getrusage(RUSAGE_SELF).ru_maxrss; Linux KiB converted to bytes; excludes children."
+            ),
             "scope": "Instrumented real adapter; stage snapshots add small CPU/file overhead.",
             "timing_notes": [
                 "Model initialization includes the upstream warmup network forward.",
@@ -224,6 +331,11 @@ def run_instrumented_worker(request_path, response_path):
                 (
                     "Three interactions are three public prediction calls, not three total network "
                     "forwards; upstream warmup and autozoom may perform additional forwards."
+                ),
+                (
+                    "This single worker request replays three prompts under one model load. "
+                    "The current Omni service starts a new worker for each submitted request; "
+                    "later-interaction timings here are not separate UI edit end-to-end latency."
                 ),
             ],
         },
@@ -262,9 +374,12 @@ async def run_controller():
         "status": "preparing",
         "started_at": timestamp(),
         "gpu_uuid": GPU_UUID,
+        "scratch_root": str(SCRATCH),
+        "production_database": str(PRODUCTION_DB),
         "timeout_seconds": 600,
         "clinical_validation": False,
         "single_job": True,
+        "run_id": RUN.name,
         "controller_source": str(Path(core.__file__).resolve()),
         "controller_source_sha256": sha256(core.__file__),
         "canary_script_sha256": sha256(__file__),
@@ -286,15 +401,22 @@ async def run_controller():
 
     async def preflight():
         # Last read immediately before launch, repeated after obtaining the lease.
+        runtime = production_runtime()
         counts = production_counts()
         gpu = await snapshot()
         ready = (
-            not has_active_jobs(counts)
+            runtime["matches_expected"]
+            and not has_active_jobs(counts)
             and gpu["free_memory_mib"] >= 16384
             and gpu["utilization_percent"] <= 5
             and not gpu["compute_pids"]
         )
-        return {"production_status_counts": counts, "gpu": gpu, "ready": ready}
+        return {
+            "production_runtime": runtime,
+            "production_status_counts": counts,
+            "gpu": gpu,
+            "ready": ready,
+        }
 
     async def monitor():
         while not finished.is_set():
@@ -353,7 +475,7 @@ async def run_controller():
         )
         report["preflight"] = await preflight()
         if not report["preflight"]["ready"]:
-            report.update(status="skipped", reason="production_or_gpu_busy")
+            report.update(status="skipped", reason="production_runtime_changed_or_resources_busy")
             return report
         config = SchedulerConfig(
             lock_dir=SHARED_LOCKS,
@@ -368,7 +490,9 @@ async def run_controller():
             report["lease_gpu_uuid"] = lease.gpu_uuid
             report["final_preflight"] = await preflight()
             if not report["final_preflight"]["ready"]:
-                report.update(status="skipped", reason="production_or_gpu_became_busy")
+                report.update(
+                    status="skipped", reason="production_runtime_changed_or_resources_busy"
+                )
                 return report
             report["status"] = "running"
             # The fixed exclusive run directory makes accidental reruns fail closed.
@@ -380,6 +504,7 @@ async def run_controller():
                     [
                         report["worker_python"],
                         str(Path(__file__)),
+                        *target_arguments(),
                         "--worker-request",
                         str(request_path),
                         "--response",
@@ -480,10 +605,29 @@ async def run_controller():
 
 
 def main():
+    global SCRATCH, PRODUCTION_DB, SHARED_LOCKS, GPU_UUID, RUN
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--scratch", type=Path, required=True)
+    parser.add_argument("--production-db", type=Path, required=True)
+    parser.add_argument("--shared-locks", type=Path, required=True)
+    parser.add_argument("--gpu-uuid", required=True)
+    parser.add_argument("--run-id", required=True)
     parser.add_argument("--worker-request", type=Path)
     parser.add_argument("--response", type=Path)
     args = parser.parse_args()
+    if not all(p.is_absolute() for p in (args.scratch, args.production_db, args.shared_locks)):
+        parser.error("All target paths must be absolute.")
+    SCRATCH = args.scratch.resolve()
+    PRODUCTION_DB = args.production_db.resolve()
+    SHARED_LOCKS = args.shared_locks.resolve()
+    GPU_UUID = args.gpu_uuid
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", args.run_id):
+        parser.error("--run-id must be a simple lowercase name, 1-64 characters, without paths.")
+    RUN = SCRATCH / "canary" / args.run_id
+    if SCRATCH.is_relative_to(PRODUCTION_DB.parent) or PRODUCTION_DB.is_relative_to(SCRATCH):
+        parser.error("Scratch and production data must be separate directory trees.")
+    if Path(__file__).resolve() != SCRATCH / "ops/nninteractive/canary.py":
+        parser.error("Run only the script copy inside the specified scratch root.")
     os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
     os.environ["PYTHONPATH"] = str(SCRATCH / "src")
     for key, relative in (

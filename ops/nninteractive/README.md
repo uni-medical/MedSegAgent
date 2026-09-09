@@ -1,9 +1,10 @@
 # Optional nnInteractive worker
 
 This runtime is separate from the MedSegAgent/TotalSegmentator environment. It is
-an opt-in backend, not a production install or deployment. The adapter's geometry
-and API tests pass with a fake session; real checkpoint output, CPU operation,
-RTX 3090 memory and latency still need acceptance testing on the target host.
+an opt-in backend, not a production install or deployment. Geometry/API tests and
+one real-checkpoint RTX 3090 synthetic canary have passed. See the measured scope
+and results in [the acceptance record](../../docs/nninteractive.md).
+Real CT/MR quality, long-volume performance and CPU inference remain unmeasured.
 
 ## Dependency isolation
 
@@ -20,8 +21,10 @@ PyTorch 2.8.0 with CUDA 12.6 wheels, nibabel 5.4.2, and NumPy 2.5.3. CUDA 12.6
 needs a compatible NVIDIA driver. The PyTorch 2.8 choice avoids the upstream
 explicit exclusion of `torch==2.9.*`; CUDA 12.6 follows the upstream documented
 installation route. The combined set was resolved successfully with Python
-3.12.13 into this subproject's `uv.lock` (109 packages), **without installing a
-runtime or downloading model weights**. Use `uv sync --locked --project
+3.12.13 into this subproject's `uv.lock` (109 packages); lock generation alone does
+not install a runtime or download weights. The isolated GPU acceptance environment
+used Python 3.12.3 and passed the locked sync, offline lock check and `pip check`.
+Use `uv sync --locked --project
 ops/nninteractive --python 3.12` to install the resolved set, and record
 `uv pip freeze --python ops/nninteractive/.venv/bin/python` during host acceptance.
 Do not run pip against the production environment or add these dependencies to

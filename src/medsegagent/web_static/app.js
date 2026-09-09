@@ -1061,6 +1061,8 @@
         if (epoch !== state.epoch) return;
         state.interactive = extension.mount({
           api,
+          i18n,
+          errorMessage,
           showWorkspace: async (workspace) => {
             if (!state.ready || state.uploading || state.submitting) return false;
             const epoch = state.epoch;
@@ -1071,13 +1073,13 @@
                 previous[2] !== state.selected) return false;
             cancelExample();
             setDraft(upload?.available === false ? null : upload);
-            $("viewer-heading").textContent = "区域交互";
-            $("viewer-name").textContent = workspace.geometry.shape.join(" × ");
+            bindText($("viewer-heading"), () => t("区域交互", "Region interaction"));
+            bindText($("viewer-name"), () => workspace.geometry.shape.join(" × "));
             $("viewer-name").hidden = false;
             queueViewer({
               key: `interactive:${workspace.id}`,
               uploadID: workspace.upload_id,
-              name: "区域影像.nii.gz",
+              name: t("区域影像.nii.gz", "region-image.nii.gz"),
               sourceURL: `/api/omni/workspaces/${workspace.id}/source`,
             });
             await state.viewerQueue;
@@ -1094,7 +1096,10 @@
           }),
         });
       } catch {
-        showError("connection-note", "区域交互组件加载失败，刷新后重试。");
+        showError("connection-note", () => t(
+          "区域交互组件加载失败，刷新后重试。",
+          "The region interaction component failed to load. Refresh to retry.",
+        ));
       }
     }
     state.maxUpload = Number(config.max_upload_bytes) || 0;
