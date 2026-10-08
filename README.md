@@ -111,10 +111,10 @@ If you use MedSegAgent in your research, please cite:
   journal={IEEE Journal of Biomedical and Health Informatics},
   title={MedSegAgent: A Universal and Scalable Multi-Agent System for Instructive Medical Image Segmentation},
   year={2026},
-  volume={},
-  number={},
-  pages={1-12},
-  keywords={Image segmentation;Medical diagnostic imaging;Filtering;Solid modeling;Natural languages;Computed tomography;Computational modeling;Accuracy;Multi-agent systems;Liver;Universal Medical Image Segmentation;Multi-Agent System;Natural Language Instruction},
+  volume={30},
+  number={10},
+  pages={8751-8762},
+  keywords={Image segmentation;Medical diagnostic imaging;Filtering;Solid modeling;Natural languages;Computed tomography;Computational modeling;Accuracy;Multi-agent systems;Liver;Universal medical image segmentation;multi-agent system;natural language instruction},
   doi={10.1109/JBHI.2026.3677444}
 }
 ```
